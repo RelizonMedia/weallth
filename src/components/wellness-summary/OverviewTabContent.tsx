@@ -3,12 +3,25 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { DailyWellnessEntry } from "@/types/wellness";
 import WellnessChart from "@/components/WellnessChart";
 import WellnessHistoryItem from "./WellnessHistoryItem";
+import { format } from "date-fns";
 
 interface OverviewTabContentProps {
   data: DailyWellnessEntry[];
 }
 
 const OverviewTabContent = ({ data }: OverviewTabContentProps) => {
+  // Format the data to include readable dates and times
+  const formattedData = data.map(entry => {
+    const timestamp = entry.timestamp || entry.date;
+    const entryDate = timestamp ? new Date(timestamp) : new Date();
+    
+    return {
+      ...entry,
+      formattedDate: format(entryDate, "MMM d, yyyy"),
+      formattedTime: format(entryDate, "h:mm a")
+    };
+  });
+
   const noDataMessage = (
     <Card>
       <CardContent className="flex flex-col items-center justify-center py-10">
@@ -34,7 +47,7 @@ const OverviewTabContent = ({ data }: OverviewTabContentProps) => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {data.slice(0, 3).map((entry, index) => (
+              {formattedData.slice(0, 3).map((entry, index) => (
                 <WellnessHistoryItem key={index} entry={entry} compact={true} />
               ))}
             </div>
