@@ -1,9 +1,7 @@
-
 import { MessageCircle, PartyPopper, Star, Trophy, Check, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { WellnessRating } from "@/types/wellness";
 import { Separator } from "@/components/ui/separator";
-
 interface WellnessStatsCardsProps {
   totalPoints: number;
   tipsShared: number;
@@ -11,8 +9,7 @@ interface WellnessStatsCardsProps {
   allRatings: WellnessRating[];
   communityMembers?: number;
 }
-
-const WellnessStatsCards = ({ 
+const WellnessStatsCards = ({
   totalPoints,
   tipsShared,
   celebrationsGiven,
@@ -21,21 +18,19 @@ const WellnessStatsCards = ({
 }: WellnessStatsCardsProps) => {
   // Calculate total completed baby steps
   const totalBabyStepsCompleted = allRatings.filter(rating => rating.completed).length;
-  
+
   // Calculate total daily wellness entries
   const uniqueDates = new Set(allRatings.map(rating => rating.date));
   const totalDailyEntries = uniqueDates.size;
-  
+
   // Calculate external stars (tips + celebrations)
   const externalStars = tipsShared + celebrationsGiven;
-  
-  return (
-    <div className="space-y-6 mb-6">
+  return <div className="space-y-6 mb-6">
       {/* Internal Stars Section */}
       <div>
         <div className="flex items-center mb-2">
           <Star className="h-5 w-5 mr-2 text-amber-500 fill-amber-500" />
-          <h2 className="text-lg font-semibold">Internal Stars Awarded</h2>
+          <h2 className="text-lg font-semibold">Personal Stars Awarded</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
@@ -129,8 +124,6 @@ const WellnessStatsCards = ({
           </Card>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default WellnessStatsCards;
