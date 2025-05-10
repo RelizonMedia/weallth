@@ -5,10 +5,10 @@ import WellnessTrackingForm from "@/components/WellnessTrackingForm";
 import WellnessResultsView from "@/components/WellnessResultsView";
 import { useWellnessTracking } from "@/hooks/wellness/useWellnessTracking";
 import WellnessSummary from "@/components/WellnessSummary";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CalendarPlus, Target } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const TrackPage = () => {
   const {
@@ -21,8 +21,22 @@ const TrackPage = () => {
     setSubmitted
   } = useWellnessTracking();
   
+  // Get the current location to check for query parameters
+  const location = useLocation();
+  
   // Add state to control view between history and form
   const [showingHistory, setShowingHistory] = useState(true);
+  
+  // Check URL parameters on component mount
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const mode = params.get('mode');
+    
+    // If mode=new, show the tracking form
+    if (mode === 'new') {
+      setShowingHistory(false);
+    }
+  }, [location]);
   
   // Check if we're still loading data
   if (isLoading) {

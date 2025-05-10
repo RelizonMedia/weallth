@@ -1,76 +1,39 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { MessageConversation, ConversationResult } from "@/types/message";
+import { Conversation } from "@/types/message";
+import { useAuth } from "@/contexts/AuthContext";
 
-export function useConversations(userId: string | undefined) {
-  const [conversations, setConversations] = useState<MessageConversation[]>([]);
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+export const useConversations = () => {
+  const { user } = useAuth();
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
 
-  useEffect(() => {
-    if (!userId) return;
-    
-    const fetchConversations = async () => {
-      setLoading(true);
+  const { data: conversations = [], isLoading: conversationsLoading } = useQuery({
+    queryKey: ['conversations', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
       
-      try {
-        // Using type assertion for the RPC function call
-        const { data: sentMessages, error: sentError } = await supabase
-          .rpc('get_user_conversations', { 
-            user_id: userId 
-          }) as unknown as { 
-            data: ConversationResult[], 
-            error: any 
-          };
-          
-        if (sentError) throw sentError;
-        
-        // Process the conversations
-        const processedConversations = (sentMessages || []).map((conv: ConversationResult) => ({
-          userId: conv.other_user_id,
-          userName: conv.other_user_name || 'Unknown User',
-          lastMessage: conv.last_message || '',
-          timestamp: conv.last_message_time || '',
-          unreadCount: conv.unread_count || 0,
-        }));
-        
-        setConversations(processedConversations);
-      } catch (error) {
-        console.error("Error fetching conversations:", error);
-        toast({
-          title: "Error loading conversations",
-          description: "Please try again later",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
+      const { data, error } = await supabase
+        .from('conversations')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false });
+      
+      if (error) {
+        console.error("Failed to fetch conversations:", error);
+        throw new Error(error.message);
       }
-    };
-    
-    // For demo purposes - using mock data until RPC function is available
-    const mockConversations: MessageConversation[] = [
-      {
-        userId: "1",
-        userName: "Taylor Wilson",
-        lastMessage: "Thanks for your message!",
-        timestamp: new Date().toISOString(),
-        unreadCount: 2
-      },
-      {
-        userId: "2",
-        userName: "Jordan Lee",
-        lastMessage: "Let's chat about our wellness goals",
-        timestamp: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
-        unreadCount: 0
-      }
-    ];
-    
-    setConversations(mockConversations);
-    // Uncomment when RPC function is available
-    // fetchConversations();
-  }, [userId, toast]);
+      
+      return data as Conversation[];
+    },
+    enabled: !!user
+  });
 
-  return { conversations, loading, setConversations };
-}
+  return {
+    conversations,
+    selectedConversation,
+    setSelectedConversation,
+    conversationsLoading
+  };
+};

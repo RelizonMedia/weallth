@@ -108,7 +108,7 @@ const Index = () => {
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <Button asChild>
-                  <Link to="/track">
+                  <Link to="/track?mode=new">
                     <CalendarPlus className="mr-2 h-4 w-4" />
                     Track Today
                   </Link>
