@@ -12,7 +12,7 @@ interface WellnessChartProps {
 const getScoreColor = (score: number): string => {
   if (score < 4.0) return "#F97316"; // Unhealthy - Orange
   if (score < 4.5) return "#4ECDC4"; // Healthy - Teal
-  if (score < 4.7) return "#6C5DD3"; // Great - Purple
+  if (score < 4.7) return "#0EA5E9"; // Great - Blue (updated color)
   return "#8B5CF6"; // Amazing - Vivid Purple
 };
 
@@ -132,7 +132,7 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
                 dataKey="score"
                 y1={4.5} 
                 y2={4.7} 
-                fill="#6C5DD3" 
+                fill="#0EA5E9" 
                 fillOpacity={0.2} 
                 strokeOpacity={0}
                 name="Great (4.5-4.7)"
@@ -158,7 +158,7 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
               
               {/* Reference lines for category boundaries */}
               <ReferenceLine y={4.7} stroke="#8B5CF6" strokeDasharray="3 3" />
-              <ReferenceLine y={4.5} stroke="#6C5DD3" strokeDasharray="3 3" />
+              <ReferenceLine y={4.5} stroke="#0EA5E9" strokeDasharray="3 3" />
               <ReferenceLine y={4.0} stroke="#4ECDC4" strokeDasharray="3 3" />
               
               {/* Line to show the actual score trend with color-based dots */}
@@ -176,7 +176,7 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
           </ResponsiveContainer>
         </div>
         
-        {/* Legend for score categories */}
+        {/* Small legend for categories */}
         <div className="flex flex-wrap justify-center gap-4 mt-4 text-xs">
           <div className="flex items-center">
             <div className="w-3 h-3 rounded-full mr-1" style={{ backgroundColor: "#F97316" }}></div>
@@ -187,7 +187,7 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
             <span>4.0-4.5: Healthy</span>
           </div>
           <div className="flex items-center">
-            <div className="w-3 h-3 rounded-full mr-1" style={{ backgroundColor: "#6C5DD3" }}></div>
+            <div className="w-3 h-3 rounded-full mr-1" style={{ backgroundColor: "#0EA5E9" }}></div>
             <span>4.5-4.7: Great</span>
           </div>
           <div className="flex items-center">

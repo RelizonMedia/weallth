@@ -17,7 +17,7 @@ interface WellnessHistoryItemProps {
 const getScoreColor = (score: number): string => {
   if (score < 4.0) return "bg-red-100 text-red-600 border-red-200"; // Unhealthy
   if (score < 4.5) return "bg-green-100 text-green-600 border-green-200"; // Healthy
-  if (score < 4.7) return "bg-orange-100 text-orange-600 border-orange-200"; // Great
+  if (score < 4.7) return "bg-blue-100 text-blue-600 border-blue-200"; // Great - updated to blue
   return "bg-purple-100 text-purple-600 border-purple-200"; // Amazing
 };
 
@@ -34,7 +34,7 @@ const getCategoryTextColor = (category: string): string => {
   switch (category) {
     case "Unhealthy": return "text-red-600";
     case "Healthy": return "text-green-600";
-    case "Great": return "text-orange-600";
+    case "Great": return "text-blue-600"; // Updated to blue
     case "Amazing": return "text-purple-600";
     default: return "text-wellness-teal";
   }
