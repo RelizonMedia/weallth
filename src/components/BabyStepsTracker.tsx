@@ -239,7 +239,7 @@ const BabyStepsTracker = ({ ratings, onComplete, onToggleStep }: BabyStepsTracke
           </>
         )}
       </CardContent>
-    
+    </Card>
   );
 };
 
