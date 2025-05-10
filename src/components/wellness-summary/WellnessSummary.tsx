@@ -54,7 +54,7 @@ const WellnessSummary = ({ data, onClose }: WellnessSummaryProps) => {
     );
   }
 
-  // Safely convert the data for the chart to include readable dates and times
+  // Convert filtered data to include readable dates and times
   const dataWithFormattedDates = filteredData.map(entry => {
     // Ensure entry has valid timestamp or date
     const timestamp = entry.timestamp || entry.date;
@@ -103,18 +103,20 @@ const WellnessSummary = ({ data, onClose }: WellnessSummaryProps) => {
         </h3>
         <DateRangeSelector onRangeChange={setDateRange} />
       </div>
+
+      <Tabs value={activeTab} defaultValue="overview">
+        <TabsContent value="overview" className="mt-4">
+          <OverviewTabContent data={filteredData} />
+        </TabsContent>
         
-      <TabsContent value="overview" className="mt-4">
-        <OverviewTabContent data={filteredData} />
-      </TabsContent>
-      
-      <TabsContent value="metrics" className="mt-4">
-        <MetricsTabContent data={filteredData} />
-      </TabsContent>
-      
-      <TabsContent value="history" className="mt-4">
-        <WellnessHistoryView data={dataWithFormattedDates} />
-      </TabsContent>
+        <TabsContent value="metrics" className="mt-4">
+          <MetricsTabContent data={filteredData} />
+        </TabsContent>
+        
+        <TabsContent value="history" className="mt-4">
+          <WellnessHistoryView data={dataWithFormattedDates} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
