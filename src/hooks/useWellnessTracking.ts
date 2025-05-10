@@ -44,10 +44,12 @@ export const useWellnessTracking = () => {
           babyStep: rating.baby_step || '',
           completed: rating.completed || false,
           date: entry.date, // Use entry date for all ratings
-          id: rating.id
+          id: rating.id,
+          timestamp: rating.created_at || new Date().toISOString() // Add timestamp information
         })),
         overallScore: entry.overall_score,
-        category: entry.category as WellnessScoreCategory
+        category: entry.category as WellnessScoreCategory,
+        timestamp: entry.created_at || new Date().toISOString() // Add timestamp to the entry
       }));
     },
     enabled: !!user
@@ -63,6 +65,7 @@ export const useWellnessTracking = () => {
       if (!user) throw new Error("User not authenticated");
       
       const today = new Date().toISOString().split('T')[0];
+      const timestamp = new Date().toISOString(); // Capture current timestamp
       
       // Check if entry for today exists
       const { data: existingEntry, error: checkError } = await supabase
@@ -84,7 +87,7 @@ export const useWellnessTracking = () => {
           .update({
             overall_score: newEntry.overallScore,
             category: newEntry.category,
-            updated_at: new Date().toISOString()
+            updated_at: timestamp
           })
           .eq('id', existingEntry.id);
         
@@ -104,7 +107,8 @@ export const useWellnessTracking = () => {
           metric_id: rating.metricId,
           score: rating.score,
           baby_step: rating.babyStep,
-          completed: rating.completed
+          completed: rating.completed,
+          created_at: timestamp
         }));
         
         const { error: ratingsError } = await supabase
@@ -122,7 +126,8 @@ export const useWellnessTracking = () => {
             user_id: user.id,
             date: today,
             overall_score: newEntry.overallScore,
-            category: newEntry.category
+            category: newEntry.category,
+            created_at: timestamp
           })
           .select('id')
           .single();
@@ -135,7 +140,8 @@ export const useWellnessTracking = () => {
           metric_id: rating.metricId,
           score: rating.score,
           baby_step: rating.babyStep,
-          completed: rating.completed
+          completed: rating.completed,
+          created_at: timestamp
         }));
   
         const { error: ratingsError } = await supabase
@@ -181,9 +187,12 @@ export const useWellnessTracking = () => {
   const handleSubmit = (submittedRatings: WellnessRating[]) => {
     // Add creation date to each rating
     const today = new Date().toISOString().split('T')[0];
+    const timestamp = new Date().toISOString();
+    
     const ratingsWithDate = submittedRatings.map(rating => ({
       ...rating,
-      date: today
+      date: today,
+      timestamp: timestamp // Add timestamp to each rating
     }));
     
     setRatings(ratingsWithDate);
@@ -227,7 +236,8 @@ export const useWellnessTracking = () => {
       date: today,
       ratings: ratingsWithDate,
       overallScore: calculatedOverallScore,
-      category: wellnessCategory
+      category: wellnessCategory,
+      timestamp: timestamp // Add timestamp to the entry
     };
     
     // Add the new entry to the history

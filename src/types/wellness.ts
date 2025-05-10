@@ -13,6 +13,7 @@ export type WellnessRating = {
   completed: boolean;
   date: string; // ISO string
   id?: string; // Database ID for the rating
+  timestamp?: string; // ISO string for exact time
 };
 
 export type WellnessScoreCategory = 
@@ -26,6 +27,7 @@ export type DailyWellnessEntry = {
   ratings: WellnessRating[];
   overallScore: number;
   category: WellnessScoreCategory;
+  timestamp?: string; // ISO string for exact time
 };
 
 export type UserWellnessData = {

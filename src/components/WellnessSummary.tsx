@@ -9,6 +9,7 @@ import WellnessScoreDisplay from "./WellnessScoreDisplay";
 import MetricHistoryChart from "./MetricHistoryChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, ChartBar, ChartLine, Clock } from "lucide-react";
+import { format } from "date-fns";
 
 interface WellnessSummaryProps {
   data: DailyWellnessEntry[];
@@ -19,8 +20,8 @@ const WellnessSummary = ({ data, onClose }: WellnessSummaryProps) => {
   const [activeTab, setActiveTab] = useState("overview");
 
   // Get the latest entry for current wellness
-  const latestEntry = data.length > 0 ? data[data.length - 1] : null;
-  const previousEntry = data.length > 1 ? data[data.length - 2] : null;
+  const latestEntry = data.length > 0 ? data[0] : null;
+  const previousEntry = data.length > 1 ? data[1] : null;
 
   if (!latestEntry) {
     return (
@@ -100,49 +101,48 @@ const WellnessSummary = ({ data, onClose }: WellnessSummaryProps) => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {data.slice().reverse().map((entry, index) => (
-                  <div key={index} className="p-4 border rounded-lg">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium">
-                        {new Date(entry.date).toLocaleDateString(undefined, {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </span>
-                      <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(entry.date).toLocaleTimeString(undefined, {
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
+                {data.slice().reverse().map((entry, index) => {
+                  // Format the date and time
+                  const entryDate = new Date(entry.timestamp || entry.date);
+                  const formattedDate = format(entryDate, "EEEE, MMMM d, yyyy");
+                  const formattedTime = format(entryDate, "h:mm a");
+                  
+                  return (
+                    <div key={index} className="p-4 border rounded-lg">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-medium">
+                          {formattedDate}
                         </span>
+                        <div className="flex items-center">
+                          <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">
+                            {formattedTime}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-4">
-                      <div className="h-12 w-12 bg-wellness-teal/20 rounded-full flex items-center justify-center text-wellness-teal">
-                        <span className="text-xl font-bold">{entry.overallScore.toFixed(1)}</span>
-                      </div>
-                      <div>
-                        <span className="text-lg font-medium">{entry.category}</span>
-                        <div className="grid grid-cols-5 gap-1 mt-2">
-                          {entry.ratings.slice(0, 5).map(rating => {
-                            const metric = wellnessMetrics.find(m => m.id === rating.metricId);
-                            return (
-                              <div key={rating.metricId} className="text-center" title={metric?.name}>
-                                <span className="text-xs text-muted-foreground">{metric?.name.substring(0, 3)}.</span>
-                                <div className="font-semibold">{rating.score}</div>
-                              </div>
-                            );
-                          })}
+                      
+                      <div className="flex items-center space-x-4">
+                        <div className="h-12 w-12 bg-wellness-teal/20 rounded-full flex items-center justify-center text-wellness-teal">
+                          <span className="text-xl font-bold">{entry.overallScore.toFixed(1)}</span>
+                        </div>
+                        <div>
+                          <span className="text-lg font-medium">{entry.category}</span>
+                          <div className="grid grid-cols-5 gap-1 mt-2">
+                            {entry.ratings.slice(0, 5).map(rating => {
+                              const metric = wellnessMetrics.find(m => m.id === rating.metricId);
+                              return (
+                                <div key={rating.metricId} className="text-center" title={metric?.name}>
+                                  <span className="text-xs text-muted-foreground">{metric?.name.substring(0, 3)}.</span>
+                                  <div className="font-semibold">{rating.score}</div>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>

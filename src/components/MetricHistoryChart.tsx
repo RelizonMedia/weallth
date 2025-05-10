@@ -2,6 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { DailyWellnessEntry, WellnessMetric } from "@/types/wellness";
+import { format } from "date-fns";
 
 interface MetricHistoryChartProps {
   data: DailyWellnessEntry[];
@@ -14,7 +15,8 @@ const MetricHistoryChart = ({ data, metric }: MetricHistoryChartProps) => {
     const metricRating = entry.ratings.find(r => r.metricId === metric.id);
     return {
       date: entry.date,
-      score: metricRating?.score || 0
+      score: metricRating?.score || 0,
+      fullDate: entry.date // Store full date for tooltip
     };
   }).filter(item => item.score > 0); // Only include days with ratings
 
@@ -68,7 +70,7 @@ const MetricHistoryChart = ({ data, metric }: MetricHistoryChartProps) => {
                 formatter={(value: number) => [`${value.toFixed(1)}`, `${metric.name} Score`]}
                 labelFormatter={(label) => {
                   const date = new Date(label as string);
-                  return date.toLocaleDateString();
+                  return format(date, "MMM d, yyyy h:mm a");
                 }}
               />
               <Line

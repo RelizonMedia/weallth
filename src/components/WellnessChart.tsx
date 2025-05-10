@@ -2,6 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { DailyWellnessEntry } from "@/types/wellness";
+import { format } from "date-fns";
 
 interface WellnessChartProps {
   data: DailyWellnessEntry[];
@@ -50,7 +51,7 @@ const WellnessChart = ({ data }: WellnessChartProps) => {
                 formatter={(value: number) => [`${value.toFixed(1)}`, 'Wellness Score']}
                 labelFormatter={(label) => {
                   const date = new Date(label as string);
-                  return date.toLocaleDateString();
+                  return format(date, "MMM d, yyyy h:mm a");
                 }}
               />
               <Legend />
