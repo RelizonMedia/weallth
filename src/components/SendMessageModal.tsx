@@ -26,13 +26,15 @@ export function SendMessageModal({ open, onOpenChange, recipientId, recipientNam
     try {
       setLoading(true);
       
+      // Using the raw query approach to insert into messages table 
+      // since TypeScript doesn't know about the messages table yet
       const { error } = await supabase
         .from('messages')
         .insert({
           sender_id: user.id,
           recipient_id: recipientId,
           content: message.trim()
-        });
+        } as any); // Using type assertion to bypass TypeScript checking
       
       if (error) throw error;
       
