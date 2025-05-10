@@ -99,7 +99,9 @@ const AICompanionPage = () => {
   // Add greeting message when expert is selected
   useEffect(() => {
     if (selectedExpert) {
-      const greetingMessage = `Hi! I'm your ${selectedExpert.name}. ${selectedExpert.description}. I specialize in ${selectedExpert.specialty}. How can I help you today?`;
+      const greetingMessage = selectedExpert.id === "marketplace-guide" 
+        ? `Hi! I'm your ${selectedExpert.name}. ${selectedExpert.description}. I specialize in ${selectedExpert.specialty}. You can ask me about products in our Wellness Marketplace or visit the marketplace directly to browse all offerings.`
+        : `Hi! I'm your ${selectedExpert.name}. ${selectedExpert.description}. I specialize in ${selectedExpert.specialty}. How can I help you today?`;
       
       setMessages([{
         role: "assistant",
@@ -187,7 +189,13 @@ const AICompanionPage = () => {
         }
         
       case "marketplace-guide":
-        return "Based on your wellness profile, I would recommend exploring products that support quality sleep and stress management. The Wellness Marketplace has several highly-rated weighted blankets and sleep sound machines that users with similar profiles have found beneficial. Would you like specific product recommendations?";
+        if (lowercaseMessage.includes("recommend") || lowercaseMessage.includes("suggest")) {
+          return "Based on your wellness profile and interests, I recommend checking out our meditation cushion sets and the 'Sound Bath Experience' service in our marketplace. You can view these and other personalized recommendations by visiting our Marketplace page. Would you like me to suggest more specific products based on any particular wellness goal?";
+        } else if (lowercaseMessage.includes("marketplace") || lowercaseMessage.includes("products")) {
+          return "You can explore our full Wellness Marketplace for products, services, retreats, and consultations. Simply click on the 'Marketplace' link in the navigation menu, or I can tell you about some featured items. The marketplace includes verified providers and user reviews to help you make informed decisions.";
+        } else {
+          return "Our Wellness Marketplace features a variety of products and services to support your wellness journey. From meditation cushions to wellness retreats to expert consultations - we've curated the best offerings from verified providers. You can browse the full marketplace by clicking on the Marketplace link in the navigation. Is there a specific type of product or service you're interested in?";
+        }
         
       default:
         return "I'm here to support you on your wellness journey. What specific aspect of your wellness would you like to focus on today?";
@@ -257,6 +265,15 @@ const AICompanionPage = () => {
                   {selectedExpert.specialty}
                 </p>
               </div>
+              
+              {selectedExpert.id === "marketplace-guide" && (
+                <div className="mt-4">
+                  <Button variant="outline" className="w-full" onClick={() => window.location.href = "/marketplace"}>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Visit Marketplace
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
 
