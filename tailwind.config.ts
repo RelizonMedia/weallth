@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,17 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Custom wellness app colors
+				wellness: {
+					teal: '#4ECDC4',
+					purple: '#9b87f5',
+					'light-purple': '#D6BCFA',
+					peach: '#FFDAB9',
+					cream: '#FFF8E1',
+					mint: '#E0F2F1',
+					'soft-blue': '#D3E4FD',
+					'soft-gray': '#F1F0FB',
 				}
 			},
 			borderRadius: {
@@ -84,11 +96,25 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-gentle': {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.8' }
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-10px)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-gentle': 'pulse-gentle 4s ease-in-out infinite',
+				'float': 'float 6s ease-in-out infinite'
+			},
+			fontFamily: {
+				sans: ['Inter', 'sans-serif'],
+				display: ['Playfair Display', 'serif']
 			}
 		}
 	},
