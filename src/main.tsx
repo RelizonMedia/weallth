@@ -12,14 +12,16 @@ const currentHostname = window.location.hostname;
 const isPreviewDomain = currentHostname.includes('preview--') || 
                         currentHostname.includes('lovable.app') || 
                         currentHostname === 'weallth.ai';
+const isProductionDomain = currentHostname === 'weallth.ai';
 
 // Log application startup with domain information
 console.log(`Initializing Weallth application on ${currentHostname}...`);
 console.log(`Current theme: ${localStorage.getItem("theme") || "light"}`);
 console.log(`Is preview or production domain: ${isPreviewDomain}`);
+console.log(`Is production domain: ${isProductionDomain}`);
 
 // Force HTTPS redirection on production domain
-if (currentHostname === 'weallth.ai' && window.location.protocol !== 'https:') {
+if (isProductionDomain && window.location.protocol !== 'https:') {
   window.location.href = 'https://weallth.ai' + window.location.pathname + window.location.search;
 }
 
@@ -35,9 +37,24 @@ const createFallbackContent = (error: any) => {
         <li>Clearing your browser cache</li>
         <li>Trying a different browser</li>
       </ul>
-      <p>If the problem persists, please contact support.</p>
       <p>Error details: ${error instanceof Error ? error.message : String(error)}</p>
       <p>Domain: ${currentHostname}</p>
+      <p><a href="/auth" style="color: #4f46e5; text-decoration: underline;">Go to login page</a></p>
+    </div>
+  `;
+};
+
+// Production domain specific fallback
+const createProductionFallback = () => {
+  return `
+    <div style="padding: 20px; margin: 20px; font-family: system-ui, -apple-system, sans-serif; text-align: center; max-width: 500px; margin: 0 auto;">
+      <h1 style="color: #6366f1;">Weallth</h1>
+      <h2 style="margin-bottom: 20px;">Track and improve your wellness journey</h2>
+      <div style="margin-bottom: 30px;">
+        <p>Welcome to Weallth, your personal wellness tracker.</p>
+        <p style="margin-top: 10px;">Please sign in or create an account to continue.</p>
+      </div>
+      <a href="/auth" style="display: inline-block; background-color: #6366f1; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;">Sign in / Register</a>
     </div>
   `;
 };
@@ -53,12 +70,19 @@ if (!root) {
   errorDiv.style.padding = '20px';
   errorDiv.style.margin = '20px';
   errorDiv.style.border = '1px solid red';
-  errorDiv.innerHTML = `
-    <h1>Application Error</h1>
-    <p>The application could not initialize properly. The root element was not found.</p>
-    <p>Please try refreshing the page or contact support.</p>
-    <p>Domain: ${currentHostname}</p>
-  `;
+  
+  if (isProductionDomain) {
+    errorDiv.innerHTML = createProductionFallback();
+  } else {
+    errorDiv.innerHTML = `
+      <h1>Application Error</h1>
+      <p>The application could not initialize properly. The root element was not found.</p>
+      <p>Please try refreshing the page or contact support.</p>
+      <p>Domain: ${currentHostname}</p>
+      <p><a href="/auth" style="color: blue;">Go to login page</a></p>
+    `;
+  }
+  
   document.body.appendChild(errorDiv);
 } else {
   try {
@@ -85,11 +109,42 @@ if (!root) {
       const reactRoot = createRoot(root);
       reactRoot.render(<App />);
       console.log("Weallth application mounted successfully");
+      
+      // For production domain, ensure a navigation is possible to auth
+      if (isProductionDomain) {
+        // Add a backup navigation option after a brief delay
+        setTimeout(() => {
+          const hasContent = document.body.innerText.length > 100;
+          if (!hasContent) {
+            console.log("Detected potential blank page on production domain - adding fallback links");
+            const navDiv = document.createElement('div');
+            navDiv.style.position = 'fixed';
+            navDiv.style.bottom = '20px';
+            navDiv.style.right = '20px';
+            navDiv.style.padding = '10px';
+            navDiv.style.backgroundColor = 'rgba(255,255,255,0.8)';
+            navDiv.style.borderRadius = '8px';
+            navDiv.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+            navDiv.innerHTML = `
+              <strong>Navigation:</strong>
+              <div style="margin-top: 8px;">
+                <a href="/auth" style="display: block; padding: 8px 16px; background-color: #6366f1; color: white; text-decoration: none; border-radius: 4px; text-align: center;">Sign In / Register</a>
+              </div>
+            `;
+            document.body.appendChild(navDiv);
+          }
+        }, 2000);
+      }
     } catch (reactError) {
       console.error(`React render error on ${currentHostname}:`, reactError);
       
-      // Create a more detailed fallback UI in case of React failure
-      root.innerHTML = createFallbackContent(reactError);
+      if (isProductionDomain) {
+        // Special handling for production domain - just show auth link
+        root.innerHTML = createProductionFallback();
+      } else {
+        // Create a more detailed fallback UI in case of React failure
+        root.innerHTML = createFallbackContent(reactError);
+      }
       
       // Try to report the error (can be expanded with analytics)
       try {
@@ -100,7 +155,9 @@ if (!root) {
     }
   } catch (error) {
     console.error(`Critical initialization error on ${currentHostname}:`, error);
-    if (root) {
+    if (isProductionDomain) {
+      root.innerHTML = createProductionFallback();
+    } else if (root) {
       root.innerHTML = createFallbackContent(error);
     }
   }

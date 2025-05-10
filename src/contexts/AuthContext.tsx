@@ -106,6 +106,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.log("Found existing user session, ensuring profile exists");
           // Ensure profile exists for existing session
           await ensureProfile();
+        } else {
+          // If on production domain and no session, redirect to auth immediately
+          const isProductionDomain = window.location.hostname === 'weallth.ai';
+          if (isProductionDomain && window.location.pathname !== '/auth') {
+            console.log("No session on production domain - redirecting to auth page");
+            navigate('/auth');
+          }
         }
         
         setLoading(false);
@@ -167,7 +174,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(false);
         setAuthInitialized(true);
       }
-    }, 5000); // 5 second timeout
+    }, 3000); // Reduced from 5 seconds to 3 seconds for faster response
 
     return () => clearTimeout(timeout);
   }, [authInitialized]);

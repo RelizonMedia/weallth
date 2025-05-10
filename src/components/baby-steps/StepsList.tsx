@@ -22,7 +22,7 @@ const StepsList = ({ ratings, onStepToggle }: StepsListProps) => {
     <div className="space-y-3 max-h-[320px] overflow-y-auto">
       {stepsWithNames.map((step, index) => (
         <StepItem 
-          key={`${step.metricId}-${index}`} 
+          key={`${step.metricId}-${index}-${step.id || ''}`} 
           step={step} 
           onToggle={onStepToggle} 
         />

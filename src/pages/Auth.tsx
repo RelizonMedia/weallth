@@ -13,22 +13,39 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Debug values specific to the production domain
+  const isProdDomain = window.location.hostname === 'weallth.ai';
+  
   useEffect(() => {
+    console.log(`Auth page mounted on domain: ${window.location.hostname}`);
+    console.log(`Is production domain: ${isProdDomain}`);
+    
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Auth page session check result:", session ? "User already logged in" : "No session found");
+      
       if (session) {
+        console.log("Redirecting to home page from auth page");
         navigate("/");
       }
+      
+      setInitialLoading(false);
+    }).catch(err => {
+      console.error("Error checking session in Auth page:", err);
+      setInitialLoading(false);
     });
-  }, [navigate]);
+  }, [navigate, isProdDomain]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       setLoading(true);
+      console.log("Attempting signup with email:", email);
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -37,6 +54,7 @@ const Auth = () => {
       if (error) throw error;
 
       if (data) {
+        console.log("Signup successful:", data);
         toast({
           title: "Account created successfully",
           description: "Please check your email for confirmation",
@@ -44,7 +62,7 @@ const Auth = () => {
         });
       }
     } catch (error: any) {
-      console.error(error);
+      console.error("Signup error:", error);
       toast({
         title: "Error signing up",
         description: error.message || "An error occurred during sign up",
@@ -60,6 +78,8 @@ const Auth = () => {
     e.preventDefault();
     try {
       setLoading(true);
+      console.log("Attempting signin with email:", email);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -68,6 +88,7 @@ const Auth = () => {
       if (error) throw error;
 
       if (data.session) {
+        console.log("Signin successful, redirecting to home");
         navigate("/");
         toast({
           title: "Signed in successfully",
@@ -75,7 +96,7 @@ const Auth = () => {
         });
       }
     } catch (error: any) {
-      console.error(error);
+      console.error("Signin error:", error);
       toast({
         title: "Error signing in",
         description: error.message || "Check your credentials and try again",
@@ -86,6 +107,17 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+  if (initialLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
+        <div className="text-center">
+          <div className="animate-spin h-8 w-8 border-4 border-primary rounded-full border-t-transparent mb-4 mx-auto"></div>
+          <p className="text-muted-foreground">Loading authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
