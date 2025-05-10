@@ -5,7 +5,16 @@ import { useWellnessTracking } from "@/hooks/useWellnessTracking";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BabyStepsHistory from "@/components/BabyStepsHistory";
 import WellnessChart from "@/components/WellnessChart";
-import { Wallet, Star, Coins } from "lucide-react";
+import { Wallet, Star, Coins, Trophy } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHeader,
+  TableHead,
+  TableRow,
+} from "@/components/ui/table";
+import { format } from "date-fns";
 
 const WellnessBank = () => {
   const { historyData, isLoading } = useWellnessTracking();
@@ -17,6 +26,10 @@ const WellnessBank = () => {
   const totalPoints = historyData.reduce((total, entry) => {
     return total + Math.round(entry.overallScore * 10); // Convert score to points
   }, 0);
+  
+  // Calculate wellness gold (1 gold = 50 points)
+  const goldAmount = Math.floor(totalPoints / 50);
+  const remainingPoints = totalPoints % 50;
 
   return (
     <Layout>
@@ -24,7 +37,7 @@ const WellnessBank = () => {
         <h1 className="text-3xl font-bold mb-2">My Wellness Bank</h1>
         <p className="text-muted-foreground mb-6">Track your wellness journey and achievements</p>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Total Wellness Points</CardTitle>
@@ -33,6 +46,19 @@ const WellnessBank = () => {
               <div className="flex items-center">
                 <Coins className="h-6 w-6 mr-2 text-amber-500" />
                 <span className="text-3xl font-bold">{totalPoints}</span>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Wellness Gold</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center">
+                <Trophy className="h-6 w-6 mr-2 text-amber-500 fill-amber-500" />
+                <span className="text-3xl font-bold">{goldAmount}</span>
+                <span className="text-xs ml-2 text-muted-foreground self-end mb-1">{remainingPoints}/50 pts</span>
               </div>
             </CardContent>
           </Card>
@@ -68,6 +94,7 @@ const WellnessBank = () => {
           <TabsList className="mb-4">
             <TabsTrigger value="progress">Progress Chart</TabsTrigger>
             <TabsTrigger value="goals">Baby Steps History</TabsTrigger>
+            <TabsTrigger value="points">Points History</TabsTrigger>
           </TabsList>
           
           <TabsContent value="progress">
@@ -76,6 +103,58 @@ const WellnessBank = () => {
           
           <TabsContent value="goals">
             <BabyStepsHistory steps={allRatings} />
+          </TabsContent>
+          
+          <TabsContent value="points">
+            <Card>
+              <CardHeader>
+                <CardTitle>Points History</CardTitle>
+                <CardDescription>Track your wellness points over time</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Wellness Score</TableHead>
+                      <TableHead>Points Earned</TableHead>
+                      <TableHead className="text-right">Baby Steps Completed</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {historyData.map((entry, index) => {
+                      const pointsEarned = Math.round(entry.overallScore * 10);
+                      const stepsCompleted = entry.ratings.filter(r => r.completed).length;
+                      const entryDate = new Date(entry.timestamp || entry.date);
+                      
+                      return (
+                        <TableRow key={index}>
+                          <TableCell className="font-medium">
+                            {format(entryDate, "MMM d, yyyy")}
+                            <div className="text-xs text-muted-foreground">
+                              {format(entryDate, "h:mm a")}
+                            </div>
+                          </TableCell>
+                          <TableCell>{entry.overallScore.toFixed(1)}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center">
+                              <Coins className="h-4 w-4 mr-1 text-amber-500" />
+                              <span>{pointsEarned}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end">
+                              <Star className="h-4 w-4 mr-1 text-amber-500 fill-amber-500" />
+                              <span>{stepsCompleted}</span>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
