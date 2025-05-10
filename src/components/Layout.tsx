@@ -23,7 +23,10 @@ const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="min-h-screen bg-background">
       <Sidebar isOpen={effectiveSidebarOpen} />
-      <div className="transition-all duration-300 ease-in-out ml-0">
+      <div className={cn(
+        "transition-all duration-300 ease-in-out",
+        effectiveSidebarOpen ? "ml-64" : "ml-0"
+      )}>
         <Header toggleSidebar={toggleSidebar} />
         <main className="container mx-auto p-4 md:p-6">
           {children}
