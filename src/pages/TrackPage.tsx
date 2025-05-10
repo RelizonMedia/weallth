@@ -4,7 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import WellnessTrackingForm from "@/components/WellnessTrackingForm";
 import WellnessResultsView from "@/components/WellnessResultsView";
 import { useWellnessTracking } from "@/hooks/wellness/useWellnessTracking";
-import WellnessSummary from "@/components/WellnessSummary";
+import WellnessSummary from "@/components/wellness-summary/WellnessSummary";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CalendarPlus, Target } from "lucide-react";
