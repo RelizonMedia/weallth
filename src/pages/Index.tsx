@@ -8,7 +8,7 @@ import WellnessStreak from "@/components/WellnessStreak";
 import { Button } from "@/components/ui/button";
 import { CalendarPlus } from "lucide-react";
 import { demoWellnessData } from "@/data/wellnessMetrics";
-import { DailyWellnessEntry, WellnessRating } from "@/types/wellness";
+import { DailyWellnessEntry, WellnessRating, WellnessScoreCategory } from "@/types/wellness";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -23,9 +23,22 @@ const Index = () => {
     const existingEntry = wellnessData.entries.find(entry => entry.date === today);
     
     if (existingEntry) {
-      setTodayEntry(existingEntry);
+      // Ensure the category is a valid WellnessScoreCategory
+      const validatedEntry = {
+        ...existingEntry,
+        category: validateCategory(existingEntry.category)
+      };
+      setTodayEntry(validatedEntry);
     }
   }, [wellnessData]);
+
+  // Helper function to validate that a string is a valid WellnessScoreCategory
+  const validateCategory = (category: string): WellnessScoreCategory => {
+    const validCategories: WellnessScoreCategory[] = ["Unhealthy", "Healthy", "Great", "Amazing"];
+    return validCategories.includes(category as WellnessScoreCategory) 
+      ? (category as WellnessScoreCategory) 
+      : "Healthy"; // Default fallback
+  };
 
   const handleStepToggle = (metricId: string, completed: boolean) => {
     if (!todayEntry) return;
@@ -59,6 +72,15 @@ const Index = () => {
   const previousEntry = wellnessData.entries.length > 1 
     ? wellnessData.entries[wellnessData.entries.length - 2] 
     : null;
+
+  // Ensure chart data has valid categories
+  const chartData = {
+    ...wellnessData,
+    entries: wellnessData.entries.map(entry => ({
+      ...entry,
+      category: validateCategory(entry.category)
+    }))
+  };
 
   return (
     <Layout>
@@ -101,7 +123,7 @@ const Index = () => {
         )}
         
         <div className="grid grid-cols-1 gap-6">
-          <WellnessChart data={wellnessData.entries} />
+          <WellnessChart data={chartData.entries} />
         </div>
       </div>
     </Layout>

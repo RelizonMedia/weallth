@@ -9,7 +9,104 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      wellness_entries: {
+        Row: {
+          category: string
+          created_at: string
+          date: string
+          id: string
+          overall_score: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          date?: string
+          id?: string
+          overall_score: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          date?: string
+          id?: string
+          overall_score?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wellness_ratings: {
+        Row: {
+          baby_step: string | null
+          completed: boolean | null
+          created_at: string
+          entry_id: string
+          id: string
+          metric_id: string
+          score: number
+          updated_at: string
+        }
+        Insert: {
+          baby_step?: string | null
+          completed?: boolean | null
+          created_at?: string
+          entry_id: string
+          id?: string
+          metric_id: string
+          score: number
+          updated_at?: string
+        }
+        Update: {
+          baby_step?: string | null
+          completed?: boolean | null
+          created_at?: string
+          entry_id?: string
+          id?: string
+          metric_id?: string
+          score?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wellness_ratings_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "wellness_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
