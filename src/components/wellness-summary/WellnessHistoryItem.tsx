@@ -1,5 +1,5 @@
 
-import { Clock, Plus, Pencil } from "lucide-react";
+import { Clock, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { wellnessMetrics } from "@/data/wellnessMetrics";
 import { DailyWellnessEntry, WellnessRating } from "@/types/wellness";
@@ -70,14 +70,14 @@ const WellnessHistoryItem = ({ entry, compact, onUpdateBabyStep }: WellnessHisto
   // Get the appropriate text color for the category
   const categoryColor = getCategoryTextColor(entry.category);
   
-  const handleAddOrUpdateBabyStep = (metricId: string) => {
+  const handleAddBabyStep = (metricId: string) => {
     if (babyStepInput.trim() && onUpdateBabyStep) {
       onUpdateBabyStep(metricId, babyStepInput.trim());
       setEditingMetricId(null);
       setBabyStepInput("");
       toast({
-        title: "Baby step updated",
-        description: "Your baby step has been saved successfully",
+        title: "Baby step added",
+        description: "Your baby step has been added successfully",
       });
     }
   };
@@ -150,7 +150,7 @@ const WellnessHistoryItem = ({ entry, compact, onUpdateBabyStep }: WellnessHisto
                           </Button>
                           <Button 
                             size="sm"
-                            onClick={() => handleAddOrUpdateBabyStep(metric.id)}
+                            onClick={() => handleAddBabyStep(metric.id)}
                           >
                             Save
                           </Button>
@@ -159,20 +159,7 @@ const WellnessHistoryItem = ({ entry, compact, onUpdateBabyStep }: WellnessHisto
                     ) : (
                       <>
                         {hasBabyStep ? (
-                          <div className="flex justify-between items-center">
-                            <p className="text-sm">{metricRating?.babyStep}</p>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              className="ml-2"
-                              onClick={() => {
-                                setEditingMetricId(metric.id);
-                                setBabyStepInput(metricRating?.babyStep || "");
-                              }}
-                            >
-                              <Pencil className="h-3 w-3" />
-                            </Button>
-                          </div>
+                          <p className="text-sm">{metricRating?.babyStep}</p>
                         ) : (
                           <div className="flex items-center">
                             <Button 
