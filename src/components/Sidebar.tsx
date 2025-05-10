@@ -47,7 +47,7 @@ const Sidebar = ({ isOpen }: SidebarProps) => {
             W
           </div>
           <span className="font-display text-xl">
-            Wellness<span className="text-wellness-teal">Companion</span>
+            We<span className="text-wellness-teal">allth</span>
           </span>
         </div>
         

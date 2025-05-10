@@ -74,7 +74,7 @@ const Profile = () => {
         username: profile.username,
         full_name: profile.full_name,
         avatar_url: profile.avatar_url,
-        updated_at: new Date(),
+        updated_at: new Date().toISOString(), // Convert Date to string
       };
 
       const { error } = await supabase

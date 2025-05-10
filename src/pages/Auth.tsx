@@ -92,7 +92,7 @@ const Auth = () => {
       <div className="w-full max-w-md space-y-6">
         <div className="text-center">
           <h1 className="font-display text-3xl text-wellness-purple">
-            Wellness<span className="text-wellness-teal">Companion</span>
+            We<span className="text-wellness-teal">allth</span>
           </h1>
           <p className="mt-2 text-muted-foreground">Track and improve your wellness journey</p>
         </div>

@@ -41,7 +41,7 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
         
         <div className="font-display text-2xl text-wellness-purple mr-auto">
           <Link to="/">
-            Wellness<span className="text-wellness-teal">Companion</span>
+            We<span className="text-wellness-teal">allth</span>
           </Link>
         </div>
 
