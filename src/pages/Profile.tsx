@@ -22,6 +22,7 @@ interface ProfileData {
   bio: string | null;
   interests: string[] | null;
   goals: string[] | null;
+  dreams: string[] | null;
   social_links: SocialLink[] | null;
 }
 
@@ -37,12 +38,14 @@ const Profile = () => {
     bio: null,
     interests: [],
     goals: [],
+    dreams: [],
     social_links: []
   });
   
   // New input states
   const [newInterest, setNewInterest] = useState("");
   const [newGoal, setNewGoal] = useState("");
+  const [newDream, setNewDream] = useState("");
   const [newSocialPlatform, setNewSocialPlatform] = useState("");
   const [newSocialUrl, setNewSocialUrl] = useState("");
 
@@ -54,7 +57,7 @@ const Profile = () => {
 
         const { data, error } = await supabase
           .from('profiles')
-          .select('username, full_name, avatar_url, bio, interests, goals, social_links')
+          .select('username, full_name, avatar_url, bio, interests, goals, dreams, social_links')
           .eq('id', user.id)
           .single();
 
@@ -92,6 +95,7 @@ const Profile = () => {
           bio: data.bio,
           interests: data.interests || [],
           goals: data.goals || [],
+          dreams: data.dreams || [],
           social_links: parsedSocialLinks
         });
       } catch (error) {
@@ -125,6 +129,7 @@ const Profile = () => {
         bio: profile.bio,
         interests: profile.interests,
         goals: profile.goals,
+        dreams: profile.dreams,
         social_links: profile.social_links as unknown as Json, // Type assertion for compatibility
         updated_at: new Date().toISOString(),
       };
@@ -188,6 +193,23 @@ const Profile = () => {
     }));
   };
 
+  const handleAddDream = () => {
+    if (!newDream.trim()) return;
+    
+    setProfile(prev => ({
+      ...prev,
+      dreams: [...(prev.dreams || []), newDream.trim()]
+    }));
+    setNewDream("");
+  };
+
+  const handleRemoveDream = (dream: string) => {
+    setProfile(prev => ({
+      ...prev,
+      dreams: (prev.dreams || []).filter(item => item !== dream)
+    }));
+  };
+
   const handleAddSocialLink = () => {
     if (!newSocialPlatform.trim() || !newSocialUrl.trim()) return;
     
@@ -233,6 +255,7 @@ const Profile = () => {
               <TabsList className="mx-6 mt-2">
                 <TabsTrigger value="basic">Basic Info</TabsTrigger>
                 <TabsTrigger value="interests">Interests & Goals</TabsTrigger>
+                <TabsTrigger value="dreams">Dreams</TabsTrigger>
                 <TabsTrigger value="social">Social Links</TabsTrigger>
               </TabsList>
               
@@ -377,6 +400,51 @@ const Profile = () => {
                 </CardContent>
               </TabsContent>
               
+              <TabsContent value="dreams">
+                <CardContent className="space-y-6">
+                  <div className="space-y-2">
+                    <Label>Personal Dreams</Label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {profile.dreams && profile.dreams.map((dream, index) => (
+                        <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                          {dream}
+                          <button 
+                            type="button" 
+                            onClick={() => handleRemoveDream(dream)}
+                            className="ml-1 rounded-full hover:bg-secondary-foreground/20 p-0.5"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                      {(!profile.dreams || profile.dreams.length === 0) && (
+                        <p className="text-sm text-muted-foreground">Add some personal dreams you'd like to achieve</p>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Add a personal dream..."
+                        value={newDream}
+                        onChange={(e) => setNewDream(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddDream();
+                          }
+                        }}
+                      />
+                      <Button 
+                        type="button" 
+                        onClick={handleAddDream}
+                        disabled={!newDream.trim()}
+                      >
+                        Add
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </TabsContent>
+              
               <TabsContent value="social">
                 <CardContent className="space-y-6">
                   <div className="space-y-2">
@@ -447,9 +515,16 @@ const Profile = () => {
               <Button 
                 type="button"
                 variant="outline" 
-                onClick={() => setActiveTab(activeTab === "basic" ? "interests" : activeTab === "interests" ? "social" : "basic")}
+                onClick={() => {
+                  const tabs = ["basic", "interests", "dreams", "social"];
+                  const currentIndex = tabs.indexOf(activeTab);
+                  const nextIndex = (currentIndex + 1) % tabs.length;
+                  setActiveTab(tabs[nextIndex]);
+                }}
               >
-                {activeTab === "basic" ? "Next: Interests" : activeTab === "interests" ? "Next: Social" : "Back to Basics"}
+                {activeTab === "basic" ? "Next: Interests" : 
+                 activeTab === "interests" ? "Next: Dreams" : 
+                 activeTab === "dreams" ? "Next: Social" : "Back to Basics"}
               </Button>
               <Button type="submit" disabled={loading}>
                 {loading ? "Saving..." : "Save Profile"}
