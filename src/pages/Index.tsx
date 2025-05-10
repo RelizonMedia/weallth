@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { demoWellnessData } from "@/data/wellnessMetrics";
-import { DailyWellnessEntry } from "@/types/wellness";
+import { DailyWellnessEntry, WellnessScoreCategory } from "@/types/wellness";
 import { useToast } from "@/hooks/use-toast";
 import { marketplaceProducts } from "@/data/marketplaceData";
 import { useAuth } from "@/contexts/AuthContext";
@@ -50,9 +50,11 @@ const Index = () => {
   }, [wellnessData, historyData]);
 
   // Helper function to validate that a string is a valid WellnessScoreCategory
-  const validateCategory = (category: string) => {
-    const validCategories = ["Unhealthy", "Healthy", "Great", "Amazing"];
-    return validCategories.includes(category) ? category : "Healthy"; // Default fallback
+  const validateCategory = (category: string): WellnessScoreCategory => {
+    const validCategories: WellnessScoreCategory[] = ["Unhealthy", "Healthy", "Great", "Amazing"];
+    return validCategories.includes(category as WellnessScoreCategory) 
+      ? (category as WellnessScoreCategory) 
+      : "Healthy"; // Default fallback
   };
   
   const handleStepToggle = (metricId: string, completed: boolean) => {
