@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { DailyWellnessEntry } from "@/types/wellness";
 import WellnessChart from "@/components/WellnessChart";
@@ -147,7 +146,7 @@ const OverviewTabContent = ({ data }: OverviewTabContentProps) => {
                 <WellnessHistoryItem 
                   key={index} 
                   entry={entry} 
-                  compact={false} 
+                  compact={true} 
                   onUpdateBabyStep={handleUpdateBabyStep}
                 />
               ))}
