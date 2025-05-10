@@ -154,9 +154,9 @@ const OverviewTabContent = ({ data }: OverviewTabContentProps) => {
 
   return (
     <div className="grid gap-6">
-      {data.length > 0 ? <WellnessChart data={data} /> : noDataMessage}
+      {localData.length > 0 ? <WellnessChart data={localData} /> : noDataMessage}
 
-      {data.length > 0 && (
+      {localData.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Recent Wellness Trends</CardTitle>
