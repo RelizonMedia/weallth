@@ -39,8 +39,8 @@ const Sidebar = ({ isOpen }: SidebarProps) => {
   const isMobile = useIsMobile();
   
   // Determine if sidebar should be shown (based on isOpen prop and hover state)
-  // On mobile, we want the sidebar to always be hidden unless explicitly opened
-  const showSidebar = isOpen && (isHovering || isMobile);
+  // For better clarity, we're making the logic more explicit
+  const showSidebar = isMobile ? isOpen : (isOpen || isHovering);
   
   return (
     <>

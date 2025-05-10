@@ -17,7 +17,7 @@ const Layout = ({ children }: LayoutProps) => {
   const effectiveSidebarOpen = isMobile ? false : sidebarOpen;
   
   const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
+    setSidebarOpen(prevState => !prevState);
   };
 
   return (
