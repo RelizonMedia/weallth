@@ -71,6 +71,11 @@ const WellnessScoreDisplay = ({
   const formattedDateTime = timestamp 
     ? format(new Date(timestamp), "MMM d, yyyy 'at' h:mm a")
     : "No date recorded";
+
+  // Add proper null check for score before calling toFixed
+  const formattedScore = score !== undefined && score !== null
+    ? score.toFixed(1)
+    : "N/A";
   
   return (
     <Card>
@@ -86,7 +91,7 @@ const WellnessScoreDisplay = ({
             </div>
             <div>
               <div className="flex items-baseline">
-                <span className="text-3xl font-bold mr-1">{score.toFixed(1)}</span>
+                <span className="text-3xl font-bold mr-1">{formattedScore}</span>
                 <span className="text-sm text-muted-foreground">/ 5.0</span>
               </div>
               <p className="text-sm font-medium">{category}</p>
