@@ -1,45 +1,20 @@
+
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
 import Layout from "@/components/Layout";
 import { SendMessageModal } from "@/components/SendMessageModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { MessageData, MessageConversation, ConversationResult, MessageResult } from "@/types/message";
 import { supabase } from "@/integrations/supabase/client";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Send, 
-  MessageSquare, 
-  User, 
-  ChevronLeft, 
-  ChevronRight 
-} from "lucide-react";
+import { Card } from "@/components/ui/card";
+import ConversationList from "@/components/messaging/ConversationList";
+import MessageContent from "@/components/messaging/MessageContent";
+import EmptyConversation from "@/components/messaging/EmptyConversation";
 
 const Messages = () => {
-  const [activeTab, setActiveTab] = useState("inbox");
   const [conversations, setConversations] = useState<MessageConversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [messages, setMessages] = useState<MessageData[]>([]);
-  const [messageText, setMessageText] = useState("");
   const [loading, setLoading] = useState(false);
   const [sendModalOpen, setSendModalOpen] = useState(false);
   const [recipientId, setRecipientId] = useState("");
@@ -47,7 +22,6 @@ const Messages = () => {
   
   const { user } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
   
   useEffect(() => {
     if (!user) return;
@@ -200,8 +174,8 @@ const Messages = () => {
     // fetchMessages();
   }, [selectedConversation, user]);
   
-  const handleSendMessage = async () => {
-    if (!user || !selectedConversation || !messageText.trim()) return;
+  const handleSendMessage = async (messageText: string) => {
+    if (!user || !selectedConversation) return;
     
     try {
       const newMessage = {
@@ -227,7 +201,6 @@ const Messages = () => {
       };
       
       setMessages([...messages, sentMessage]);
-      setMessageText("");
       
       // Update the conversation list
       const updatedConversations = conversations.map(conv => {
@@ -261,22 +234,6 @@ const Messages = () => {
     setRecipientName(userName);
   };
   
-  const formatMessageTime = (timestamp: string) => {
-    try {
-      return format(new Date(timestamp), "p"); // Format as time (e.g., 3:30 PM)
-    } catch (error) {
-      return "";
-    }
-  };
-  
-  const formatConversationTime = (timestamp: string) => {
-    try {
-      return format(new Date(timestamp), "MMM d");
-    } catch (error) {
-      return "";
-    }
-  };
-  
   return (
     <Layout>
       <div className="container max-w-6xl">
@@ -285,163 +242,25 @@ const Messages = () => {
         <Card className="border rounded-lg overflow-hidden">
           <div className="grid md:grid-cols-[300px_1fr]">
             {/* Left sidebar - conversations list */}
-            <div className="border-r">
-              <div className="p-4 border-b flex justify-between items-center">
-                <h2 className="font-semibold">Conversations</h2>
-                <Button onClick={handleNewMessage} size="sm" variant="outline" className="h-8 w-8 p-0">
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-              
-              <div className="overflow-auto h-[calc(80vh-9rem)]">
-                {conversations.length === 0 ? (
-                  <div className="p-6 text-center text-muted-foreground">
-                    <MessageSquare className="mx-auto h-8 w-8 opacity-50" />
-                    <p className="mt-2">No messages yet</p>
-                    <Button 
-                      onClick={handleNewMessage} 
-                      variant="link" 
-                      className="mt-1"
-                    >
-                      Start a conversation
-                    </Button>
-                  </div>
-                ) : (
-                  <div>
-                    {conversations.map((conv) => (
-                      <div 
-                        key={conv.userId}
-                        onClick={() => handleSelectConversation(conv.userId, conv.userName)}
-                        className={`p-4 border-b cursor-pointer hover:bg-muted/50 transition-colors ${
-                          selectedConversation === conv.userId ? "bg-muted" : ""
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <Avatar>
-                            <AvatarImage src={`https://avatar.vercel.sh/${conv.userId}`} />
-                            <AvatarFallback>
-                              <User className="h-5 w-5" />
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-center">
-                              <h3 className="font-medium truncate">{conv.userName}</h3>
-                              <span className="text-xs text-muted-foreground">
-                                {formatConversationTime(conv.timestamp)}
-                              </span>
-                            </div>
-                            <p className="text-sm text-muted-foreground truncate">
-                              {conv.lastMessage}
-                            </p>
-                          </div>
-                          {conv.unreadCount > 0 && (
-                            <Badge variant="destructive" className="rounded-full px-[0.4rem] py-[0.15rem]">
-                              {conv.unreadCount}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
+            <ConversationList 
+              conversations={conversations}
+              selectedConversation={selectedConversation}
+              onSelectConversation={handleSelectConversation}
+              onNewMessage={handleNewMessage}
+            />
             
             {/* Right side - message content */}
-            <div className="flex flex-col h-[80vh]">
-              {selectedConversation ? (
-                <>
-                  <div className="border-b p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage src={`https://avatar.vercel.sh/${selectedConversation}`} />
-                        <AvatarFallback>
-                          <User className="h-5 w-5" />
-                        </AvatarFallback>
-                      </Avatar>
-                      <h3 className="font-semibold">{
-                        conversations.find(c => c.userId === selectedConversation)?.userName || "Chat"
-                      }</h3>
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => {
-                        navigate(`/user/${selectedConversation}`);
-                      }}
-                    >
-                      View Profile
-                    </Button>
-                  </div>
-                  
-                  {/* Messages container */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                    {messages.map((msg) => (
-                      <div 
-                        key={msg.id}
-                        className={`flex ${msg.sender_id === user?.id ? "justify-end" : "justify-start"}`}
-                      >
-                        <div 
-                          className={`max-w-[75%] rounded-lg p-3 ${
-                            msg.sender_id === user?.id 
-                              ? "bg-primary text-primary-foreground" 
-                              : "bg-muted"
-                          }`}
-                        >
-                          <p>{msg.content}</p>
-                          <p className={`text-xs mt-1 ${
-                            msg.sender_id === user?.id ? "text-primary-foreground/70" : "text-muted-foreground"
-                          }`}>
-                            {formatMessageTime(msg.created_at)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {/* Message input */}
-                  <div className="border-t p-4">
-                    <div className="flex gap-2">
-                      <Textarea 
-                        placeholder="Write a message..." 
-                        className="resize-none"
-                        value={messageText}
-                        onChange={(e) => setMessageText(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && !e.shiftKey) {
-                            e.preventDefault();
-                            handleSendMessage();
-                          }
-                        }}
-                      />
-                      <Button 
-                        className="h-full"
-                        onClick={handleSendMessage}
-                        disabled={!messageText.trim()}
-                      >
-                        <Send className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="flex items-center justify-center h-full text-center p-8">
-                  <div>
-                    <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground/60" />
-                    <h3 className="text-xl font-medium mt-4">Select a conversation</h3>
-                    <p className="text-muted-foreground mt-1 max-w-sm">
-                      Choose a conversation from the list or start a new one
-                    </p>
-                    <Button 
-                      onClick={handleNewMessage} 
-                      className="mt-4"
-                    >
-                      New Message
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
+            {selectedConversation ? (
+              <MessageContent
+                selectedConversation={selectedConversation}
+                recipientName={recipientName}
+                messages={messages}
+                onSendMessage={handleSendMessage}
+                currentUserId={user?.id || ""}
+              />
+            ) : (
+              <EmptyConversation onNewMessage={handleNewMessage} />
+            )}
           </div>
         </Card>
       </div>
