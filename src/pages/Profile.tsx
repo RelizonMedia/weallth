@@ -1,157 +1,135 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/Layout";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "lucide-react";
 import { X } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Json } from "@/integrations/supabase/types";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { SocialLink } from "@/types/message";
 
-interface ProfileData {
-  username: string | null;
-  full_name: string | null;
-  avatar_url: string | null;
-  bio: string | null;
-  interests: string[] | null;
-  goals: string[] | null;
-  dreams: string[] | null;
-  social_links: SocialLink[] | null;
-}
+// Profile form schema
+const profileFormSchema = z.object({
+  username: z.string().min(3).max(50).optional().nullable(),
+  full_name: z.string().max(100).optional().nullable(),
+  avatar_url: z.string().url().optional().nullable().or(z.literal('')),
+  bio: z.string().max(500).optional().nullable(),
+  interests: z.array(z.string()).optional().default([]),
+  goals: z.array(z.string()).optional().default([]),
+  social_links: z.array(
+    z.object({
+      platform: z.string(),
+      url: z.string().url()
+    })
+  ).optional().default([])
+});
+
+type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 const Profile = () => {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("basic");
-  const [profile, setProfile] = useState<ProfileData>({
-    username: null,
-    full_name: null,
-    avatar_url: null,
-    bio: null,
-    interests: [],
-    goals: [],
-    dreams: [],
-    social_links: []
-  });
-  
-  // New input states
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [newInterest, setNewInterest] = useState("");
   const [newGoal, setNewGoal] = useState("");
-  const [newDream, setNewDream] = useState("");
   const [newSocialPlatform, setNewSocialPlatform] = useState("");
   const [newSocialUrl, setNewSocialUrl] = useState("");
+  const { user, ensureProfile } = useAuth();
+  const { toast } = useToast();
+
+  // Initialize form with default empty values
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileFormSchema),
+    defaultValues: {
+      username: "",
+      full_name: "",
+      avatar_url: "",
+      bio: "",
+      interests: [],
+      goals: [],
+      social_links: []
+    }
+  });
 
   useEffect(() => {
-    async function loadProfile() {
-      try {
-        setLoading(true);
-        if (!user) return;
+    loadProfile();
+  }, [user]);
 
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('username, full_name, avatar_url, bio, interests, goals, dreams, social_links')
-          .eq('id', user.id)
-          .single();
-
-        if (error) {
-          throw error;
-        }
-
-        // Parse social_links from JSON to the expected format
-        let parsedSocialLinks: SocialLink[] = [];
-        
-        if (data.social_links) {
-          // Handle either a string or an array
-          if (typeof data.social_links === 'string') {
-            try {
-              parsedSocialLinks = JSON.parse(data.social_links);
-            } catch (e) {
-              parsedSocialLinks = [];
-            }
-          } else if (Array.isArray(data.social_links)) {
-            // It's already an array, ensure each element has platform and url
-            parsedSocialLinks = data.social_links
-              .filter((link: any) => 
-                typeof link === 'object' && 
-                link !== null && 
-                'platform' in link && 
-                'url' in link
-              ) as SocialLink[];
-          }
-        }
-
-        setProfile({
-          username: data.username,
-          full_name: data.full_name,
-          avatar_url: data.avatar_url,
-          bio: data.bio,
-          interests: data.interests || [],
-          goals: data.goals || [],
-          dreams: data.dreams || [],
-          social_links: parsedSocialLinks
-        });
-      } catch (error) {
-        console.error('Error loading profile:', error);
+  const loadProfile = async () => {
+    if (!user) return;
+    
+    try {
+      setLoading(true);
+      
+      // First ensure profile exists
+      await ensureProfile();
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('username, full_name, avatar_url, bio, interests, goals, dreams, social_links')
+        .eq('id', user.id)
+        .maybeSingle();
+      
+      if (error) {
+        console.error("Error loading profile:", error);
         toast({
           title: "Error loading profile",
           description: "Please try again later",
           variant: "destructive",
         });
-      } finally {
-        setLoading(false);
+        return;
       }
-    }
-
-    loadProfile();
-  }, [user, toast]);
-
-  const updateProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      setLoading(true);
-      if (!user) return;
-
-      // Convert SocialLinks array to a JSON structure for storage
-      const updates = {
-        id: user.id,
-        username: profile.username,
-        full_name: profile.full_name,
-        avatar_url: profile.avatar_url,
-        bio: profile.bio,
-        interests: profile.interests,
-        goals: profile.goals,
-        dreams: profile.dreams,
-        social_links: profile.social_links as unknown as Json, // Type assertion for compatibility
-        updated_at: new Date().toISOString(),
-      };
-
-      const { error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', user.id);
-
-      if (error) {
-        throw error;
+      
+      if (data) {
+        // Parse social_links from JSON if necessary
+        let socialLinks: SocialLink[] = [];
+        
+        if (data.social_links) {
+          if (typeof data.social_links === 'string') {
+            try {
+              socialLinks = JSON.parse(data.social_links as string);
+            } catch (e) {
+              socialLinks = [];
+            }
+          } else if (Array.isArray(data.social_links)) {
+            socialLinks = data.social_links as SocialLink[];
+          }
+        }
+        
+        // Reset form with the loaded data
+        form.reset({
+          username: data.username || "",
+          full_name: data.full_name || "",
+          avatar_url: data.avatar_url || "",
+          bio: data.bio || "",
+          interests: data.interests || [],
+          goals: data.goals || [],
+          social_links: socialLinks || []
+        });
+      } else {
+        // If no profile data found, use default values
+        form.reset({
+          username: user.email?.split('@')[0] || "",
+          full_name: "",
+          avatar_url: "",
+          bio: "",
+          interests: [],
+          goals: [],
+          social_links: []
+        });
       }
-
-      toast({
-        title: "Profile updated successfully",
-        duration: 3000,
-      });
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error("Error in loadProfile:", error);
       toast({
-        title: "Error updating profile",
-        description: "Please try again later",
+        title: "Error loading profile",
+        description: "Please try refreshing the page",
         variant: "destructive",
       });
     } finally {
@@ -159,379 +137,341 @@ const Profile = () => {
     }
   };
 
-  const handleAddInterest = () => {
-    if (!newInterest.trim()) return;
+  // Save profile data
+  const onSubmit = async (data: ProfileFormValues) => {
+    if (!user) return;
     
-    setProfile(prev => ({
-      ...prev,
-      interests: [...(prev.interests || []), newInterest.trim()]
-    }));
+    try {
+      setSaving(true);
+      
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          username: data.username,
+          full_name: data.full_name,
+          avatar_url: data.avatar_url,
+          bio: data.bio,
+          interests: data.interests,
+          goals: data.goals,
+          social_links: data.social_links
+        });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been saved successfully",
+      });
+    } catch (error: any) {
+      console.error("Error updating profile:", error);
+      toast({
+        title: "Error updating profile",
+        description: error.message || "Please try again later",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Helper functions for managing arrays
+  const addInterest = () => {
+    if (!newInterest.trim()) return;
+    const currentInterests = form.getValues("interests") || [];
+    form.setValue("interests", [...currentInterests, newInterest.trim()]);
     setNewInterest("");
   };
 
-  const handleRemoveInterest = (interest: string) => {
-    setProfile(prev => ({
-      ...prev,
-      interests: (prev.interests || []).filter(item => item !== interest)
-    }));
+  const removeInterest = (interest: string) => {
+    const currentInterests = form.getValues("interests") || [];
+    form.setValue(
+      "interests",
+      currentInterests.filter((i) => i !== interest)
+    );
   };
 
-  const handleAddGoal = () => {
+  const addGoal = () => {
     if (!newGoal.trim()) return;
-    
-    setProfile(prev => ({
-      ...prev,
-      goals: [...(prev.goals || []), newGoal.trim()]
-    }));
+    const currentGoals = form.getValues("goals") || [];
+    form.setValue("goals", [...currentGoals, newGoal.trim()]);
     setNewGoal("");
   };
 
-  const handleRemoveGoal = (goal: string) => {
-    setProfile(prev => ({
-      ...prev,
-      goals: (prev.goals || []).filter(item => item !== goal)
-    }));
+  const removeGoal = (goal: string) => {
+    const currentGoals = form.getValues("goals") || [];
+    form.setValue(
+      "goals",
+      currentGoals.filter((g) => g !== goal)
+    );
   };
 
-  const handleAddDream = () => {
-    if (!newDream.trim()) return;
-    
-    setProfile(prev => ({
-      ...prev,
-      dreams: [...(prev.dreams || []), newDream.trim()]
-    }));
-    setNewDream("");
-  };
-
-  const handleRemoveDream = (dream: string) => {
-    setProfile(prev => ({
-      ...prev,
-      dreams: (prev.dreams || []).filter(item => item !== dream)
-    }));
-  };
-
-  const handleAddSocialLink = () => {
+  const addSocialLink = () => {
     if (!newSocialPlatform.trim() || !newSocialUrl.trim()) return;
-    
-    // Ensure URL has protocol
-    let url = newSocialUrl.trim();
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      url = 'https://' + url;
-    }
-    
-    setProfile(prev => ({
-      ...prev,
-      social_links: [...(prev.social_links || []), {
+    const currentLinks = form.getValues("social_links") || [];
+    form.setValue("social_links", [
+      ...currentLinks,
+      {
         platform: newSocialPlatform.trim(),
-        url
-      }]
-    }));
+        url: newSocialUrl.trim()
+      }
+    ]);
     setNewSocialPlatform("");
     setNewSocialUrl("");
   };
 
-  const handleRemoveSocialLink = (index: number) => {
-    setProfile(prev => ({
-      ...prev,
-      social_links: (prev.social_links || []).filter((_, i) => i !== index)
-    }));
+  const removeSocialLink = (index: number) => {
+    const currentLinks = form.getValues("social_links") || [];
+    form.setValue(
+      "social_links",
+      currentLinks.filter((_, i) => i !== index)
+    );
   };
 
+  
   return (
     <Layout>
       <div className="container max-w-3xl py-8">
-        <h1 className="text-3xl font-bold mb-6">Your Profile</h1>
+        <h1 className="text-3xl font-bold mb-6">Edit Profile</h1>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>Profile Information</CardTitle>
-            <CardDescription>
-              Complete your profile to help others connect with you
-            </CardDescription>
-          </CardHeader>
-          
-          <form onSubmit={updateProfile}>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="mx-6 mt-2">
-                <TabsTrigger value="basic">Basic Info</TabsTrigger>
-                <TabsTrigger value="interests">Interests & Goals</TabsTrigger>
-                <TabsTrigger value="dreams">Dreams</TabsTrigger>
-                <TabsTrigger value="social">Social Links</TabsTrigger>
-              </TabsList>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            {/* Basic Info */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Basic Information</CardTitle>
+              </CardHeader>
               
-              <TabsContent value="basic">
-                <CardContent className="space-y-6">
-                  <div className="flex justify-center mb-6">
-                    <Avatar className="w-24 h-24">
-                      <AvatarImage src={profile.avatar_url || undefined} />
-                      <AvatarFallback>
-                        {profile.username?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input 
-                        id="email" 
-                        value={user?.email || ''} 
-                        disabled 
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="username">Username</Label>
-                      <Input 
-                        id="username" 
-                        value={profile.username || ''} 
-                        onChange={(e) => setProfile({...profile, username: e.target.value})}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="fullName">Full Name</Label>
-                      <Input 
-                        id="fullName" 
-                        value={profile.full_name || ''} 
-                        onChange={(e) => setProfile({...profile, full_name: e.target.value})}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="bio">Bio</Label>
-                      <Textarea 
-                        id="bio" 
-                        placeholder="Tell others about yourself..."
-                        value={profile.bio || ''} 
-                        onChange={(e) => setProfile({...profile, bio: e.target.value})}
-                        className="min-h-[120px]"
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </TabsContent>
-              
-              <TabsContent value="interests">
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Interests</Label>
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        {profile.interests && profile.interests.map((interest, index) => (
-                          <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                            {interest}
-                            <button 
-                              type="button" 
-                              onClick={() => handleRemoveInterest(interest)}
-                              className="ml-1 rounded-full hover:bg-secondary-foreground/20 p-0.5"
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </Badge>
-                        ))}
-                        {(!profile.interests || profile.interests.length === 0) && (
-                          <p className="text-sm text-muted-foreground">Add some interests to help connect with like-minded individuals</p>
-                        )}
+              <CardContent className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="avatar_url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Profile Picture URL</FormLabel>
+                      <div className="flex items-center gap-4 mb-2">
+                        <Avatar className="h-16 w-16">
+                          <AvatarImage src={field.value || undefined} />
+                          <AvatarFallback>
+                            {form.getValues("username")?.[0]?.toUpperCase() || 
+                             form.getValues("full_name")?.[0]?.toUpperCase() || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
                       </div>
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="Add an interest..."
-                          value={newInterest}
-                          onChange={(e) => setNewInterest(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              handleAddInterest();
-                            }
-                          }}
+                      <FormControl>
+                        <Input placeholder="https://example.com/avatar.jpg" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Enter a URL for your profile picture
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="full_name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Full Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Your full name" {...field} value={field.value || ""} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Username</FormLabel>
+                      <FormControl>
+                        <Input placeholder="username" {...field} value={field.value || ""} />
+                      </FormControl>
+                      <FormDescription>
+                        This is your public display name
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="bio"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Bio</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Tell us about yourself"
+                          className="min-h-[120px]"
+                          {...field}
+                          value={field.value || ""}
                         />
-                        <Button 
-                          type="button" 
-                          onClick={handleAddInterest}
-                          disabled={!newInterest.trim()}
-                        >
-                          Add
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label>Wellness Goals</Label>
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        {profile.goals && profile.goals.map((goal, index) => (
-                          <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                            {goal}
-                            <button 
-                              type="button" 
-                              onClick={() => handleRemoveGoal(goal)}
-                              className="ml-1 rounded-full hover:bg-secondary-foreground/20 p-0.5"
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </Badge>
-                        ))}
-                        {(!profile.goals || profile.goals.length === 0) && (
-                          <p className="text-sm text-muted-foreground">Add some wellness goals to share your journey</p>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="Add a wellness goal..."
-                          value={newGoal}
-                          onChange={(e) => setNewGoal(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              handleAddGoal();
-                            }
-                          }}
-                        />
-                        <Button 
-                          type="button" 
-                          onClick={handleAddGoal}
-                          disabled={!newGoal.trim()}
-                        >
-                          Add
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </TabsContent>
+                      </FormControl>
+                      <FormDescription>
+                        A brief description about yourself
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Interests */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Interests</CardTitle>
+              </CardHeader>
               
-              <TabsContent value="dreams">
-                <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label>Personal Dreams</Label>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {profile.dreams && profile.dreams.map((dream, index) => (
-                        <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                          {dream}
-                          <button 
-                            type="button" 
-                            onClick={() => handleRemoveDream(dream)}
-                            className="ml-1 rounded-full hover:bg-secondary-foreground/20 p-0.5"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </Badge>
-                      ))}
-                      {(!profile.dreams || profile.dreams.length === 0) && (
-                        <p className="text-sm text-muted-foreground">Add some personal dreams you'd like to achieve</p>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Add a personal dream..."
-                        value={newDream}
-                        onChange={(e) => setNewDream(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleAddDream();
-                          }
-                        }}
-                      />
-                      <Button 
-                        type="button" 
-                        onClick={handleAddDream}
-                        disabled={!newDream.trim()}
+              <CardContent className="space-y-4">
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {form.watch("interests")?.map((interest, index) => (
+                    <Badge key={index} className="flex items-center gap-1 px-3 py-1">
+                      {interest}
+                      <button 
+                        type="button"
+                        onClick={() => removeInterest(interest)}
+                        className="text-muted-foreground hover:text-destructive"
                       >
-                        Add
+                        <X size={14} />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+                
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Add an interest"
+                    value={newInterest}
+                    onChange={(e) => setNewInterest(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addInterest();
+                      }
+                    }}
+                  />
+                  <Button 
+                    type="button" 
+                    variant="secondary"
+                    onClick={addInterest}
+                  >
+                    Add
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Goals */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Goals</CardTitle>
+              </CardHeader>
+              
+              <CardContent className="space-y-4">
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {form.watch("goals")?.map((goal, index) => (
+                    <Badge key={index} className="flex items-center gap-1 px-3 py-1">
+                      {goal}
+                      <button 
+                        type="button"
+                        onClick={() => removeGoal(goal)}
+                        className="text-muted-foreground hover:text-destructive"
+                      >
+                        <X size={14} />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+                
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Add a goal"
+                    value={newGoal}
+                    onChange={(e) => setNewGoal(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addGoal();
+                      }
+                    }}
+                  />
+                  <Button 
+                    type="button" 
+                    variant="secondary"
+                    onClick={addGoal}
+                  >
+                    Add
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Social Links */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Social Links</CardTitle>
+              </CardHeader>
+              
+              <CardContent className="space-y-4">
+                <div className="space-y-3 mb-4">
+                  {form.watch("social_links")?.map((link, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <div className="flex-1">
+                        <div className="font-medium">{link.platform}</div>
+                        <div className="text-sm text-muted-foreground">{link.url}</div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeSocialLink(index)}
+                      >
+                        <X size={16} />
                       </Button>
                     </div>
-                  </div>
-                </CardContent>
-              </TabsContent>
-              
-              <TabsContent value="social">
-                <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label>Social Media Links</Label>
-                    <div className="space-y-2 mb-4">
-                      {profile.social_links && profile.social_links.map((link, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 border rounded-md">
-                          <div>
-                            <p className="font-medium">{link.platform}</p>
-                            <a 
-                              href={link.url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-sm text-primary hover:underline"
-                            >
-                              {link.url}
-                            </a>
-                          </div>
-                          <Button 
-                            type="button" 
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleRemoveSocialLink(index)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                      {(!profile.social_links || profile.social_links.length === 0) && (
-                        <p className="text-sm text-muted-foreground">Add your social media profiles to connect with others</p>
-                      )}
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="platform">Platform</Label>
-                        <Input
-                          id="platform"
-                          placeholder="e.g. Instagram, Twitter, LinkedIn"
-                          value={newSocialPlatform}
-                          onChange={(e) => setNewSocialPlatform(e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="url">URL</Label>
-                        <Input
-                          id="url"
-                          placeholder="e.g. https://instagram.com/username"
-                          value={newSocialUrl}
-                          onChange={(e) => setNewSocialUrl(e.target.value)}
-                        />
-                      </div>
-                    </div>
-                    <Button 
-                      type="button" 
-                      onClick={handleAddSocialLink}
-                      disabled={!newSocialPlatform.trim() || !newSocialUrl.trim()}
-                      className="w-full md:w-auto"
-                    >
-                      Add Social Link
-                    </Button>
-                  </div>
-                </CardContent>
-              </TabsContent>
-            </Tabs>
-            
-            <CardFooter className="flex justify-between border-t p-6">
-              <Button 
-                type="button"
-                variant="outline" 
-                onClick={() => {
-                  const tabs = ["basic", "interests", "dreams", "social"];
-                  const currentIndex = tabs.indexOf(activeTab);
-                  const nextIndex = (currentIndex + 1) % tabs.length;
-                  setActiveTab(tabs[nextIndex]);
-                }}
-              >
-                {activeTab === "basic" ? "Next: Interests" : 
-                 activeTab === "interests" ? "Next: Dreams" : 
-                 activeTab === "dreams" ? "Next: Social" : "Back to Basics"}
+                  ))}
+                </div>
+                
+                <div className="grid grid-cols-3 gap-2">
+                  <Input
+                    placeholder="Platform"
+                    value={newSocialPlatform}
+                    onChange={(e) => setNewSocialPlatform(e.target.value)}
+                    className="col-span-1"
+                  />
+                  <Input
+                    placeholder="URL"
+                    value={newSocialUrl}
+                    onChange={(e) => setNewSocialUrl(e.target.value)}
+                    className="col-span-1"
+                  />
+                  <Button 
+                    type="button" 
+                    variant="secondary"
+                    onClick={addSocialLink}
+                    className="col-span-1"
+                  >
+                    Add
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="flex justify-end gap-4">
+              <Button type="submit" disabled={saving}>
+                {saving ? "Saving..." : "Save Profile"}
               </Button>
-              <Button type="submit" disabled={loading}>
-                {loading ? "Saving..." : "Save Profile"}
-              </Button>
-            </CardFooter>
+            </div>
           </form>
-        </Card>
+        </Form>
       </div>
     </Layout>
   );
