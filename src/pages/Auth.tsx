@@ -25,14 +25,18 @@ const Auth = () => {
   useEffect(() => {
     console.log(`Auth page mounted on domain: ${currentDomain}`);
     console.log(`Is production domain: ${isProdDomain}`);
+    console.log(`Current URL path: ${window.location.pathname}`);
+    console.log(`Current URL search params: ${window.location.search}`);
     
     // Check if user is already logged in
     const checkSession = async () => {
       try {
+        console.log("Auth page - Checking session...");
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error("Error checking session in Auth page:", error);
+          setInitialLoading(false);
           return;
         }
         
@@ -68,12 +72,17 @@ const Auth = () => {
     try {
       setLoading(true);
       console.log("Attempting signup with email:", email);
+      console.log("Current domain during signup:", currentDomain);
       
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: window.location.origin,
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: email.split('@')[0],
+            username: email.split('@')[0],
+          }
         }
       });
 
@@ -81,6 +90,8 @@ const Auth = () => {
 
       if (data && data.user) {
         console.log("Signup successful:", data.user.id);
+        console.log("Session available:", !!data.session);
+        
         toast({
           title: "Account created successfully",
           description: data.session ? "You are now logged in!" : "Please check your email for confirmation",
@@ -89,6 +100,7 @@ const Auth = () => {
         
         if (data.session) {
           // If session is available immediately (email confirmation disabled in Supabase)
+          console.log("Session available, redirecting to home");
           navigate("/");
         }
       }
@@ -96,7 +108,7 @@ const Auth = () => {
       console.error("Signup error:", error);
       toast({
         title: "Error signing up",
-        description: error.message || "An error occurred during sign up",
+        description: error.error_description || error.message || "An error occurred during sign up",
         variant: "destructive",
         duration: 5000,
       });
@@ -120,6 +132,7 @@ const Auth = () => {
     try {
       setLoading(true);
       console.log("Attempting signin with email:", email);
+      console.log("Current domain during signin:", currentDomain);
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -129,7 +142,10 @@ const Auth = () => {
       if (error) throw error;
 
       if (data.session) {
-        console.log("Signin successful, redirecting to home");
+        console.log("Signin successful, session established");
+        console.log("User ID:", data.user?.id);
+        console.log("Redirecting to home");
+        
         toast({
           title: "Signed in successfully",
           duration: 3000,
@@ -140,7 +156,7 @@ const Auth = () => {
       console.error("Signin error:", error);
       toast({
         title: "Error signing in",
-        description: error.message || "Check your credentials and try again",
+        description: error.error_description || error.message || "Check your credentials and try again",
         variant: "destructive",
         duration: 5000,
       });
@@ -267,11 +283,9 @@ const Auth = () => {
             </CardContent>
             <CardFooter className="flex flex-col space-y-2 text-center text-sm text-muted-foreground">
               <p>By continuing, you agree to our Terms of Service and Privacy Policy.</p>
-              {isProdDomain && (
-                <p className="text-xs">
-                  Secure sign-in powered by Supabase Auth on {currentDomain}
-                </p>
-              )}
+              <p className="text-xs">
+                Secure sign-in powered by Supabase Auth on {currentDomain}
+              </p>
             </CardFooter>
           </Tabs>
         </Card>

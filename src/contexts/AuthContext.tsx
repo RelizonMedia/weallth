@@ -24,12 +24,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { toast } = useToast();
   const [authInitialized, setAuthInitialized] = useState(false);
 
+  // Capture current hostname for logging
+  const hostname = window.location.hostname;
+  const isProductionDomain = hostname === 'weallth.ai';
+  
+  // Debug function to log auth state in a consistent format
+  const logAuthState = (message: string, data?: any) => {
+    const logPrefix = `[AuthContext] [${hostname}]`;
+    if (data) {
+      console.log(`${logPrefix} ${message}`, data);
+    } else {
+      console.log(`${logPrefix} ${message}`);
+    }
+  };
+
   // Function to ensure user profile exists
   const ensureProfile = async () => {
-    if (!user) return;
+    if (!user) {
+      logAuthState("ensureProfile called but no user is set");
+      return;
+    }
     
     try {
-      console.log("Ensuring profile exists for user:", user.id);
+      logAuthState(`Ensuring profile exists for user:`, user.id);
       // Check if profile exists
       const { data: existingProfile, error: fetchError } = await supabase
         .from('profiles')
@@ -39,13 +56,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // If profile doesn't exist, create it
       if (!existingProfile && !fetchError) {
-        console.log("Profile doesn't exist, creating new profile");
+        logAuthState("Profile doesn't exist, creating new profile");
         const { error: insertError } = await supabase
           .from('profiles')
           .insert({
             id: user.id,
             username: user.email?.split('@')[0] || null,
-            full_name: user.user_metadata?.full_name || null,
+            full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || null,
             avatar_url: user.user_metadata?.avatar_url || null,
             bio: null
           });
@@ -53,12 +70,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (insertError) {
           console.error('Error creating profile:', insertError);
         } else {
-          console.log('Profile created successfully');
+          logAuthState('Profile created successfully');
         }
       } else if (fetchError) {
         console.error("Error checking for existing profile:", fetchError);
       } else {
-        console.log("Profile exists:", existingProfile);
+        logAuthState("Profile exists:", existingProfile);
       }
     } catch (error) {
       console.error('Error in ensureProfile:', error);
@@ -66,35 +83,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // Capture current hostname for logging
-    const hostname = window.location.hostname;
-    console.log(`Initializing auth context on ${hostname}`);
+    logAuthState(`Initializing auth context on ${hostname}`);
     
     try {
       // Set up auth state listener first
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
-          console.log("Auth state changed:", event);
-          setSession(session);
-          setUser(session?.user ?? null);
+        (event, sessionData) => {
+          logAuthState("Auth state changed:", event);
           
-          if (event === 'SIGNED_IN' && session?.user) {
-            console.log("User signed in, ensuring profile exists");
-            // Ensure profile exists when user signs in
-            setTimeout(async () => {
-              await ensureProfile();
-            }, 0);
-          }
-          
-          if (event === 'SIGNED_OUT') {
-            console.log("User signed out, redirecting to auth");
-            navigate('/auth');
-          }
+          // Using setTimeout to avoid potential deadlock with supabase auth state management
+          setTimeout(() => {
+            setSession(sessionData);
+            setUser(sessionData?.user ?? null);
+            
+            if (event === 'SIGNED_IN' && sessionData?.user) {
+              logAuthState("User signed in, ensuring profile exists");
+              // Ensure profile exists when user signs in
+              setTimeout(async () => {
+                await ensureProfile();
+              }, 0);
+            }
+            
+            if (event === 'SIGNED_OUT') {
+              logAuthState("User signed out, redirecting to auth");
+              navigate('/auth');
+            }
+          }, 0);
         }
       );
 
       // Then check for existing session
-      console.log("Checking for existing session");
+      logAuthState("Checking for existing session");
       const checkSession = async () => {
         try {
           const { data: { session }, error } = await supabase.auth.getSession();
@@ -106,27 +125,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             return;
           }
           
-          console.log("Existing session check result:", session ? "Found session" : "No session");
-          setSession(session);
-          setUser(session?.user ?? null);
+          logAuthState("Existing session check result:", session ? "Found session" : "No session");
           
-          if (session?.user) {
-            console.log("Found existing user session, ensuring profile exists");
-            // Ensure profile exists for existing session
-            setTimeout(async () => {
-              await ensureProfile();
-            }, 0);
-          } else {
-            // If on production domain and no session, redirect to auth immediately
-            const isProductionDomain = window.location.hostname === 'weallth.ai';
-            if (isProductionDomain && window.location.pathname !== '/auth') {
-              console.log("No session on production domain - redirecting to auth page");
-              navigate('/auth');
+          // Set state after a short timeout to avoid potential state update conflicts
+          setTimeout(() => {
+            setSession(session);
+            setUser(session?.user ?? null);
+            
+            if (session?.user) {
+              logAuthState("Found existing user session, ensuring profile exists");
+              // Ensure profile exists for existing session
+              setTimeout(async () => {
+                await ensureProfile();
+              }, 0);
+            } else {
+              // If on production domain and no session, redirect to auth immediately
+              if (isProductionDomain && window.location.pathname !== '/auth') {
+                logAuthState("No session on production domain - redirecting to auth page");
+                navigate('/auth');
+              }
             }
-          }
-          
-          setLoading(false);
-          setAuthInitialized(true);
+            
+            setLoading(false);
+            setAuthInitialized(true);
+          }, 0);
         } catch (err) {
           console.error("Critical error checking session:", err);
           setLoading(false);
@@ -138,6 +160,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       return () => {
         try {
+          logAuthState("Cleaning up auth subscription");
           subscription.unsubscribe();
         } catch (error) {
           console.error("Error unsubscribing from auth:", error);
@@ -148,10 +171,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
       setAuthInitialized(true);
     }
-  }, [navigate]);
+  }, [navigate, hostname, isProductionDomain]);
 
   const signOut = async () => {
     try {
+      logAuthState("Signing out user");
       await supabase.auth.signOut();
       toast({
         title: "Signed out successfully",
@@ -171,6 +195,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshSession = async () => {
     try {
+      logAuthState("Refreshing session");
       const { data, error } = await supabase.auth.getSession();
       if (error) {
         throw error;
@@ -186,7 +211,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (!authInitialized) {
-        console.log("Auth initialization timeout - forcing completion");
+        logAuthState("Auth initialization timeout - forcing completion");
         setLoading(false);
         setAuthInitialized(true);
       }

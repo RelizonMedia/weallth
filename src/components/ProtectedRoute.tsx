@@ -12,11 +12,20 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const [authTimeout, setAuthTimeout] = useState(false);
   const [showingError, setShowingError] = useState(false);
   
+  // Debug - log hostname and pathname
+  const hostname = window.location.hostname;
+  const pathname = window.location.pathname;
+  
+  useEffect(() => {
+    console.log(`[ProtectedRoute] Rendering on ${hostname}, path: ${pathname}`);
+    console.log(`[ProtectedRoute] Auth state: loading=${loading}, hasUser=${!!user}, authTimeout=${authTimeout}`);
+  }, [loading, user, authTimeout, hostname, pathname]);
+  
   // Add a timeout to prevent infinite loading state
   useEffect(() => {
     const timer = setTimeout(() => {
       if (loading) {
-        console.log("Auth loading timeout reached - showing fallback");
+        console.log("[ProtectedRoute] Auth loading timeout reached - showing fallback");
         setAuthTimeout(true);
       }
     }, 3000); // 3 seconds for faster fallback
@@ -28,6 +37,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   useEffect(() => {
     if (authTimeout && !user) {
       const errorTimer = setTimeout(() => {
+        console.log("[ProtectedRoute] Auth error timeout reached - showing error");
         setShowingError(true);
       }, 2000);
       
@@ -41,17 +51,23 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       <div className="flex flex-col items-center justify-center min-h-screen bg-background">
         <div className="animate-spin h-8 w-8 border-4 border-primary rounded-full border-t-transparent mb-4"></div>
         <p className="text-muted-foreground">Loading your wellness data...</p>
+        <p className="text-xs text-muted-foreground mt-2">Domain: {hostname}</p>
       </div>
     );
   }
   
   // If loading timed out or no user, redirect to auth
   if (!user) {
-    console.log("Redirecting to auth page", { authTimeout, hasUser: !!user });
+    console.log(`[ProtectedRoute] Redirecting to auth page from ${pathname}`, { 
+      authTimeout, 
+      hasUser: !!user, 
+      hostname 
+    });
     return <Navigate to="/auth" replace />;
   }
   
   // User is authenticated, render children
+  console.log(`[ProtectedRoute] User authenticated, rendering protected content on ${pathname}`);
   return <>{children}</>;
 };
 
