@@ -41,18 +41,3 @@ export interface SocialLink {
   platform: string;
   url: string;
 }
-
-// Add the WellnessSpaceData type
-export interface WellnessSpaceData {
-  id: string;
-  name: string;
-  description: string;
-  isPrivate: boolean;
-  members: number;
-  createdAt: string;
-  isCreator: boolean;
-  mediaUrl: string | null;
-  mediaType: "none" | "image" | "video";
-  ownerId: string;
-  allowInvites: boolean;
-}
