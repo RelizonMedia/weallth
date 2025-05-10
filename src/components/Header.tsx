@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
 
 interface HeaderProps {
   toggleSidebar: () => void;
@@ -18,6 +20,12 @@ interface HeaderProps {
 
 const Header = ({ toggleSidebar }: HeaderProps) => {
   const [notifications] = useState(3);
+  const { signOut, user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleProfileClick = () => {
+    navigate('/profile');
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
@@ -32,7 +40,9 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
         </Button>
         
         <div className="font-display text-2xl text-wellness-purple mr-auto">
-          Wellness<span className="text-wellness-teal">Companion</span>
+          <Link to="/">
+            Wellness<span className="text-wellness-teal">Companion</span>
+          </Link>
         </div>
 
         <div className="ml-auto flex items-center space-x-4">
@@ -73,10 +83,10 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer">Profile</DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer" onClick={handleProfileClick}>Profile</DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer">Settings</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer">Log out</DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer" onClick={signOut}>Log out</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
