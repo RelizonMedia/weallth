@@ -13,17 +13,17 @@ interface WellnessHistoryViewProps {
 
 const WellnessHistoryView = ({ data }: WellnessHistoryViewProps) => {
   return (
-    <Card>
+    <Card className="overflow-hidden">
       <CardHeader>
         <CardTitle>Complete Wellness History</CardTitle>
         <CardDescription>All your tracked entries with detailed timestamps</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="overflow-x-auto">
         <div className="space-y-4">
           {data.map((entry, index) => {
             return (
               <div key={index} className="p-4 border rounded-lg">
-                <div className="flex justify-between items-center mb-2">
+                <div className="flex justify-between items-center mb-2 flex-wrap gap-2">
                   <span className="font-medium">
                     {entry.formattedDate}
                   </span>
@@ -35,19 +35,19 @@ const WellnessHistoryView = ({ data }: WellnessHistoryViewProps) => {
                   </div>
                 </div>
                 
-                <div className="flex items-center space-x-4">
-                  <div className="h-12 w-12 bg-wellness-teal/20 rounded-full flex items-center justify-center text-wellness-teal">
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="h-12 w-12 bg-wellness-teal/20 rounded-full flex items-center justify-center text-wellness-teal flex-shrink-0">
                     <span className="text-xl font-bold">{entry.overallScore.toFixed(1)}</span>
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <span className="text-lg font-medium">{entry.category}</span>
                     {entry.ratings && Array.isArray(entry.ratings) && entry.ratings.length > 0 ? (
-                      <div className="grid grid-cols-5 gap-1 mt-2">
+                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-1 mt-2">
                         {entry.ratings.slice(0, 5).map(rating => {
                           const metric = wellnessMetrics.find(m => m.id === rating?.metricId);
                           return (
                             <div key={rating?.metricId} className="text-center" title={metric?.name}>
-                              <span className="text-xs text-muted-foreground">{metric?.name?.substring(0, 3)}.</span>
+                              <span className="text-xs text-muted-foreground truncate block">{metric?.name?.substring(0, 3)}.</span>
                               <div className="font-semibold">{rating?.score}</div>
                             </div>
                           );
@@ -61,13 +61,13 @@ const WellnessHistoryView = ({ data }: WellnessHistoryViewProps) => {
                 
                 {entry.ratings && Array.isArray(entry.ratings) && entry.ratings.length > 0 && (
                   <div className="mt-3 pt-3 border-t">
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                    <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-5 gap-2">
                       {entry.ratings.map(rating => {
                         if (!rating) return null;
                         const metric = wellnessMetrics.find(m => m.id === rating.metricId);
                         return (
                           <div key={rating.metricId} className="p-2 bg-slate-50 rounded">
-                            <div className="text-xs font-medium">{metric?.name || 'Unknown'}</div>
+                            <div className="text-xs font-medium truncate">{metric?.name || 'Unknown'}</div>
                             <div className="flex justify-between items-center">
                               <span className="text-lg font-bold">{rating.score}</span>
                               {rating.completed && (

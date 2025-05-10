@@ -69,7 +69,7 @@ const WellnessSummary = ({ data, onClose }: WellnessSummaryProps) => {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-hidden">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <WellnessScoreDisplay
           score={latestEntry.overallScore}

@@ -30,7 +30,7 @@ const WellnessHistorySection = ({ data, onUpdateBabyStep }: WellnessHistorySecti
   });
 
   return (
-    <div className="space-y-4 w-full max-w-full">
+    <div className="space-y-4 w-full overflow-hidden">
       {sortedData.length > 0 ? (
         <WellnessHistoryItem 
           key={0} 

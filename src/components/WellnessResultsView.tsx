@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { WellnessRating, DailyWellnessEntry } from "@/types/wellness";
-import WellnessSummary from "@/components/WellnessSummary";
+import WellnessSummary from "@/components/wellness-summary/WellnessSummary";
 import BabyStepsTracker from "@/components/BabyStepsTracker";
 import { Switch } from "@/components/ui/switch";
 import { useState } from "react";
@@ -26,7 +26,7 @@ const WellnessResultsView = ({
   };
 
   return (
-    <div className="py-4 space-y-8 w-full max-w-full overflow-hidden">
+    <div className="py-4 space-y-8 w-full overflow-hidden">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold">Wellness Tracking</h1>
@@ -54,7 +54,7 @@ const WellnessResultsView = ({
       </div>
       
       {/* Conditional rendering based on toggle state */}
-      <div className="w-full max-w-full overflow-x-hidden">
+      <div className="w-full overflow-hidden">
         {showSummary ? (
           <WellnessSummary 
             data={historyData} 

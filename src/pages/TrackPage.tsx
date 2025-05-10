@@ -54,25 +54,25 @@ const TrackPage = () => {
   
   return (
     <Layout>
-      <div className="flex flex-col space-y-6 w-full max-w-full">
+      <div className="flex flex-col space-y-6 w-full overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="w-full">
-            <h1 className="text-2xl md:text-3xl font-bold">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold truncate">
               {showingHistory ? "My Wellness Tracking" : "Track Today's Wellness"}
             </h1>
-            <p className="text-muted-foreground text-sm md:text-base">
+            <p className="text-muted-foreground text-sm md:text-base line-clamp-2">
               {showingHistory 
-                ? "View your complete wellness journey with detailed metrics and trends"
+                ? "View your wellness journey with detailed metrics and trends"
                 : "Rate each of your 10 core wellness metrics and set baby steps for improvement"
               }
             </p>
           </div>
           
-          <div className="flex gap-2 w-full md:w-auto">
+          <div className="flex flex-shrink-0 gap-2">
             {showingHistory && (
               <Button 
                 variant="outline" 
-                className="flex items-center gap-2 text-xs md:text-sm"
+                className="flex items-center gap-2 text-xs md:text-sm whitespace-nowrap"
                 asChild
                 size="sm"
               >
@@ -93,7 +93,7 @@ const TrackPage = () => {
                 }
               }} 
               variant="outline"
-              className="flex items-center gap-2 text-xs md:text-sm flex-grow md:flex-grow-0"
+              className="flex items-center gap-2 text-xs md:text-sm whitespace-nowrap"
               size="sm"
             >
               <CalendarPlus className="h-4 w-4" />

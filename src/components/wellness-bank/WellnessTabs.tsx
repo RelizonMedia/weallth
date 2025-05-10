@@ -20,8 +20,8 @@ const WellnessTabs = ({ historyData, allRatings }: WellnessTabsProps) => {
   const [selectedMetric, setSelectedMetric] = useState(wellnessMetrics[0]?.id || "");
 
   return (
-    <Tabs defaultValue="progress" className="w-full mb-6">
-      <TabsList className="mb-4">
+    <Tabs defaultValue="progress" className="w-full mb-6 overflow-hidden">
+      <TabsList className="mb-4 overflow-x-auto flex whitespace-nowrap w-full max-w-full">
         <TabsTrigger value="progress">Progress Chart</TabsTrigger>
         <TabsTrigger value="goals">Baby Steps History</TabsTrigger>
         <TabsTrigger value="points">Points History</TabsTrigger>
@@ -34,7 +34,7 @@ const WellnessTabs = ({ historyData, allRatings }: WellnessTabsProps) => {
             <CardTitle>Wellness Progress Over Time</CardTitle>
             <CardDescription>Track your wellness journey with detailed timestamps</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-hidden">
             <WellnessChart data={historyData} />
           </CardContent>
         </Card>
@@ -54,9 +54,9 @@ const WellnessTabs = ({ historyData, allRatings }: WellnessTabsProps) => {
             <CardTitle>Detailed Metric History</CardTitle>
             <CardDescription>See how each wellness metric has changed over time</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-hidden">
             {/* Metric selector */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col md:flex-row flex-wrap items-start md:items-center justify-between gap-4 mb-6">
               <div className="flex items-center space-x-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
@@ -65,7 +65,7 @@ const WellnessTabs = ({ historyData, allRatings }: WellnessTabsProps) => {
               </div>
               <div className="flex items-center space-x-2">
                 <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-muted-foreground truncate max-w-[200px]">
                   Last updated: {historyData.length > 0 ? format(new Date(historyData[0].timestamp || historyData[0].date), "MMM d, yyyy h:mm a") : "No data"}
                 </span>
               </div>
@@ -87,7 +87,7 @@ const WellnessTabs = ({ historyData, allRatings }: WellnessTabsProps) => {
             </div>
             
             {/* Metric chart */}
-            <div className="mt-6">
+            <div className="mt-6 overflow-hidden">
               {selectedMetric && (
                 <MetricHistoryChart 
                   data={historyData} 
