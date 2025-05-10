@@ -4,7 +4,7 @@
 // Function to get the color based on the wellness score
 export const getScoreColor = (score: number): string => {
   if (score < 3.0) return "bg-red-100 text-red-600 border-red-200"; // Unhealthy
-  if (score < 4.0) return "bg-yellow-100 text-yellow-600 border-yellow-200"; // Needs Attention
+  if (score < 4.0) return "bg-amber-100 text-amber-600 border-amber-200"; // Needs Attention
   if (score < 4.5) return "bg-green-100 text-green-600 border-green-200"; // Healthy
   if (score < 4.7) return "bg-blue-100 text-blue-600 border-blue-200"; // Great
   return "bg-purple-100 text-purple-600 border-purple-200"; // Amazing
@@ -23,7 +23,7 @@ export const getScoreCategory = (score: number): string => {
 export const getCategoryTextColor = (category: string): string => {
   switch (category) {
     case "Unhealthy": return "text-red-600";
-    case "Needs Attention": return "text-yellow-600";
+    case "Needs Attention": return "text-amber-600";
     case "Healthy": return "text-green-600";
     case "Great": return "text-blue-600";
     case "Amazing": return "text-purple-600";

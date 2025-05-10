@@ -12,7 +12,14 @@ interface OverviewTabContentProps {
 }
 
 const OverviewTabContent = ({ data }: OverviewTabContentProps) => {
-  const { localData, handleUpdateBabyStep } = useBabyStepsMutation(data);
+  // Ensure data is sorted by date (newest first)
+  const sortedData = [...data].sort((a, b) => {
+    const dateA = new Date(a.timestamp || a.date);
+    const dateB = new Date(b.timestamp || b.date);
+    return dateB.getTime() - dateA.getTime();
+  });
+  
+  const { localData, handleUpdateBabyStep } = useBabyStepsMutation(sortedData);
   
   // Extract baby steps from the most recent entry
   const getBabyStepsToFocus = () => {

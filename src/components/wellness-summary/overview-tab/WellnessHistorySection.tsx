@@ -22,12 +22,19 @@ const WellnessHistorySection = ({ data, onUpdateBabyStep }: WellnessHistorySecti
     };
   });
 
+  // Sort data by date (newest first) to ensure we're showing the most recent entry
+  const sortedData = [...formattedData].sort((a, b) => {
+    const dateA = new Date(a.timestamp || a.date);
+    const dateB = new Date(b.timestamp || b.date);
+    return dateB.getTime() - dateA.getTime();
+  });
+
   return (
     <div className="space-y-4">
-      {formattedData.length > 0 ? (
+      {sortedData.length > 0 ? (
         <WellnessHistoryItem 
           key={0} 
-          entry={formattedData[0]} 
+          entry={sortedData[0]} 
           compact={false} 
           onUpdateBabyStep={onUpdateBabyStep}
         />
