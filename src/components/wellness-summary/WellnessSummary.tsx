@@ -4,11 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DailyWellnessEntry } from "@/types/wellness";
 import WellnessScoreDisplay from "@/components/WellnessScoreDisplay";
-import { Calendar, ChartBar, ChartLine } from "lucide-react";
+import { ChartBar, ChartLine } from "lucide-react";
 import { format } from "date-fns";
 import OverviewTabContent from "./OverviewTabContent";
 import MetricsTabContent from "./MetricsTabContent";
-import WellnessHistoryView from "./WellnessHistoryView";
 import DateRangeSelector, { DateRange } from "./DateRangeSelector";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -83,7 +82,7 @@ const WellnessSummary = ({ data, onClose }: WellnessSummaryProps) => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="overview" className="flex items-center gap-1 text-xs md:text-sm">
               <ChartLine className="h-3 w-3 md:h-4 md:w-4" />
               <span className="truncate">Overview</span>
@@ -91,10 +90,6 @@ const WellnessSummary = ({ data, onClose }: WellnessSummaryProps) => {
             <TabsTrigger value="metrics" className="flex items-center gap-1 text-xs md:text-sm">
               <ChartBar className="h-3 w-3 md:h-4 md:w-4" />
               <span className="truncate">Metrics</span>
-            </TabsTrigger>
-            <TabsTrigger value="history" className="flex items-center gap-1 text-xs md:text-sm">
-              <Calendar className="h-3 w-3 md:h-4 md:w-4" />
-              <span className="truncate">History</span>
             </TabsTrigger>
           </TabsList>
 
@@ -104,10 +99,6 @@ const WellnessSummary = ({ data, onClose }: WellnessSummaryProps) => {
           
           <TabsContent value="metrics" className="mt-3">
             <MetricsTabContent data={filteredData} />
-          </TabsContent>
-          
-          <TabsContent value="history" className="mt-3">
-            <WellnessHistoryView data={dataWithFormattedDates} />
           </TabsContent>
         </Tabs>
       </div>
