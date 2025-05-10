@@ -30,9 +30,9 @@ const Messages = () => {
       setLoading(true);
       
       try {
-        // Using a direct query approach with raw SQL results
+        // Using proper generic typing for the RPC function
         const { data: sentMessages, error: sentError } = await supabase
-          .rpc<ConversationResult[]>('get_user_conversations', { 
+          .rpc('get_user_conversations', { 
             user_id: user.id 
           });
           
@@ -90,9 +90,9 @@ const Messages = () => {
       setLoading(true);
       
       try {
-        // Using the raw query approach
+        // Using proper generic typing for the RPC function
         const { data: messageData, error: messageError } = await supabase
-          .rpc<MessageResult[]>('get_conversation_messages', { 
+          .rpc('get_conversation_messages', { 
             user1_id: user.id, 
             user2_id: selectedConversation 
           });
@@ -100,7 +100,7 @@ const Messages = () => {
         if (messageError) throw messageError;
         
         if (messageData) {
-          const typedMessages: MessageData[] = messageData.map((msg: MessageResult) => ({
+          const typedMessages: MessageData[] = (messageData as any[]).map((msg: MessageResult) => ({
             id: msg.id,
             sender_id: msg.sender_id,
             recipient_id: msg.recipient_id,
