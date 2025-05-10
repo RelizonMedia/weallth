@@ -42,6 +42,15 @@ const TrackPage = () => {
   };
   
   const handleSubmit = () => {
+    if (ratings.length < wellnessMetrics.length) {
+      toast({
+        title: "All metrics required",
+        description: "Please rate all 10 wellness metrics before submitting.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     // Calculate overall wellness score (average of all ratings)
     const totalScore = ratings.reduce((sum, rating) => sum + rating.score, 0);
     const calculatedOverallScore = totalScore / ratings.length;
