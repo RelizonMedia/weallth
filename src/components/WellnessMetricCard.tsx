@@ -106,7 +106,7 @@ const WellnessMetricCard = ({ metric, initialRating, onSave }: WellnessMetricCar
         
         <div className="space-y-4">
           <div>
-            <p className="text-sm font-medium mb-1">How would you rate yourself today?</p>
+            <p className="text-sm font-medium mb-1">How would you rate yourself today? (1-5 stars, precise to 0.1)</p>
             <StarRating value={score} onChange={handleScoreChange} />
           </div>
           

@@ -1,7 +1,8 @@
 
 import { Star } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { Slider } from "@/components/ui/slider";
 
 interface StarRatingProps {
   value: number;
@@ -17,6 +18,7 @@ const StarRating = ({
   size = "md" 
 }: StarRatingProps) => {
   const [hoverValue, setHoverValue] = useState<number | null>(null);
+  const [showSlider, setShowSlider] = useState(false);
   
   const sizes = {
     sm: "w-4 h-4",
@@ -25,18 +27,60 @@ const StarRating = ({
   };
   
   const starClass = sizes[size];
+
+  // Reset state when value changes externally
+  useEffect(() => {
+    setShowSlider(false);
+  }, [value]);
   
-  return (
-    <div className="flex items-center">
-      {[1, 2, 3, 4, 5].map((star) => (
+  const handleSliderChange = (newValue: number[]) => {
+    if (!readOnly) {
+      onChange(Number(newValue[0].toFixed(1)));
+    }
+  };
+
+  // Display stars based on precise rating value
+  const renderStars = () => {
+    return [1, 2, 3, 4, 5].map((star) => {
+      // Calculate fill percentage for this star
+      let fillPercentage = 0;
+      
+      if (hoverValue !== null) {
+        // When hovering
+        if (star <= Math.floor(hoverValue)) {
+          fillPercentage = 100;
+        } else if (star === Math.ceil(hoverValue)) {
+          fillPercentage = (hoverValue % 1) * 100;
+        }
+      } else {
+        // Normal state (not hovering)
+        if (star <= Math.floor(value)) {
+          fillPercentage = 100;
+        } else if (star === Math.ceil(value)) {
+          fillPercentage = (value % 1) * 100;
+        }
+      }
+      
+      return (
         <button
           key={star}
           type="button"
           className={cn(
-            "p-0.5 focus:outline-none transition-all",
+            "p-0.5 focus:outline-none transition-all relative",
             readOnly ? "cursor-default" : "cursor-pointer"
           )}
-          onClick={() => !readOnly && onChange(star)}
+          onClick={() => {
+            if (!readOnly) {
+              if (star === Math.floor(value) && value === star) {
+                // If clicking on the same full star, toggle slider
+                setShowSlider(!showSlider);
+              } else {
+                // Set to exactly this star value
+                onChange(star);
+                setShowSlider(false);
+              }
+            }
+          }}
           onMouseEnter={() => !readOnly && setHoverValue(star)}
           onMouseLeave={() => !readOnly && setHoverValue(null)}
           disabled={readOnly}
@@ -44,14 +88,48 @@ const StarRating = ({
           <Star 
             className={cn(
               starClass,
-              "transition-all",
-              (hoverValue !== null ? star <= hoverValue : star <= value)
-                ? "text-yellow-400 fill-yellow-400"
-                : "text-gray-300"
+              "transition-all text-gray-300"
             )} 
           />
+          {fillPercentage > 0 && (
+            <div 
+              className="absolute inset-0 overflow-hidden flex"
+              style={{ width: `${fillPercentage}%` }}
+            >
+              <Star 
+                className={cn(
+                  starClass,
+                  "transition-all text-yellow-400 fill-yellow-400"
+                )} 
+              />
+            </div>
+          )}
         </button>
-      ))}
+      );
+    });
+  };
+  
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center">
+        {renderStars()}
+        <span className="ml-2 text-sm font-medium">
+          {value.toFixed(1)}
+        </span>
+      </div>
+      
+      {showSlider && !readOnly && (
+        <div className="pt-2 pb-1 px-1">
+          <Slider
+            value={[value]}
+            min={0.1}
+            max={5}
+            step={0.1}
+            onValueChange={handleSliderChange}
+            className="w-full max-w-[240px]"
+          />
+        </div>
+      )}
     </div>
   );
 };
