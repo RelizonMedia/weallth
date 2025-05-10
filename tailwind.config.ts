@@ -101,6 +101,16 @@ export default {
 					'0%, 100%': { opacity: '1' },
 					'50%': { opacity: '0.8' }
 				},
+				'peaceful-pulse': {
+					'0%, 100%': { 
+						opacity: '1',
+						boxShadow: '0 0 15px rgba(155, 135, 245, 0.7)'
+					},
+					'50%': { 
+						opacity: '0.85',
+						boxShadow: '0 0 25px rgba(78, 205, 196, 0.9)'
+					}
+				},
 				'float': {
 					'0%, 100%': { transform: 'translateY(0)' },
 					'50%': { transform: 'translateY(-10px)' }
@@ -110,6 +120,7 @@ export default {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'pulse-gentle': 'pulse-gentle 4s ease-in-out infinite',
+				'peaceful-pulse': 'peaceful-pulse 6s ease-in-out infinite',
 				'float': 'float 6s ease-in-out infinite'
 			},
 			fontFamily: {
