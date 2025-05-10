@@ -96,8 +96,8 @@ const WellnessHistoryItem = ({ entry, compact, onUpdateBabyStep }: WellnessHisto
         </div>
       </div>
       
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        {wellnessMetrics.slice(0, compact ? 6 : wellnessMetrics.length).map(metric => {
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        {wellnessMetrics.slice(0, compact ? wellnessMetrics.length : wellnessMetrics.length).map(metric => {
           // Add null check to ensure entry.ratings exists
           const metricRating = entry.ratings && Array.isArray(entry.ratings) ? 
             entry.ratings.find(r => r && r.metricId === metric.id) : 

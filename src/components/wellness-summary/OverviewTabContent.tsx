@@ -147,7 +147,7 @@ const OverviewTabContent = ({ data }: OverviewTabContentProps) => {
                 <WellnessHistoryItem 
                   key={index} 
                   entry={entry} 
-                  compact={true} 
+                  compact={false} 
                   onUpdateBabyStep={handleUpdateBabyStep}
                 />
               ))}
