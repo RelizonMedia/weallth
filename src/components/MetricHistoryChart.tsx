@@ -9,17 +9,64 @@ interface MetricHistoryChartProps {
   metric: WellnessMetric;
 }
 
+// Function to get the color based on the wellness score
+const getScoreColor = (score: number): string => {
+  if (score < 4.0) return "#F97316"; // Unhealthy - Orange
+  if (score < 4.5) return "#4ECDC4"; // Healthy - Teal
+  if (score < 4.7) return "#6C5DD3"; // Great - Purple
+  return "#8B5CF6"; // Amazing - Vivid Purple
+};
+
+// Custom dot component to render different colors based on score
+const CustomDot = (props: any) => {
+  const { cx, cy, payload } = props;
+  const color = getScoreColor(payload.score);
+  
+  return (
+    <circle 
+      cx={cx} 
+      cy={cy} 
+      r={4} 
+      fill={color} 
+      stroke="#fff" 
+      strokeWidth={2} 
+    />
+  );
+};
+
+// Custom active dot component with larger size
+const CustomActiveDot = (props: any) => {
+  const { cx, cy, payload } = props;
+  const color = getScoreColor(payload.score);
+  
+  return (
+    <circle 
+      cx={cx} 
+      cy={cy} 
+      r={6} 
+      fill={color} 
+      stroke="#fff" 
+      strokeWidth={2} 
+    />
+  );
+};
+
 const MetricHistoryChart = ({ data, metric }: MetricHistoryChartProps) => {
   // Extract date and score for the specific metric
   const chartData = data.map(entry => {
     const metricRating = entry.ratings.find(r => r.metricId === metric.id);
     const date = new Date(entry.timestamp || entry.date);
+    const score = metricRating?.score || 0;
+    
     return {
       date: entry.date,
-      score: metricRating?.score || 0,
+      score: score,
       timestamp: entry.timestamp || entry.date,
       formattedDate: format(date, "MMM d"),
-      formattedTime: format(date, "h:mm a")
+      formattedTime: format(date, "h:mm a"),
+      category: score < 4.0 ? "Unhealthy" : 
+               score < 4.5 ? "Healthy" : 
+               score < 4.7 ? "Great" : "Amazing"
     };
   }).filter(item => item.score > 0); // Only include days with ratings
 
@@ -74,7 +121,12 @@ const MetricHistoryChart = ({ data, metric }: MetricHistoryChartProps) => {
                   if (data && data.length > 0) {
                     const item = data[0].payload;
                     const date = new Date(item.timestamp);
-                    return `${format(date, "MMMM d, yyyy")} at ${format(date, "h:mm a")}`;
+                    const category = item.category;
+                    const scoreValue = item.score;
+                    
+                    // Return formatted date and score category
+                    return `${format(date, "MMMM d, yyyy")} at ${format(date, "h:mm a")}
+Score Category: ${category} (${scoreValue.toFixed(1)})`;
                   }
                   return "";
                 }}
@@ -83,13 +135,43 @@ const MetricHistoryChart = ({ data, metric }: MetricHistoryChartProps) => {
                 type="monotone"
                 dataKey="score"
                 name={`${metric.name} Score`}
-                stroke="#6C5DD3"
+                stroke="url(#colorScore)" // Use gradient reference
                 strokeWidth={3}
-                dot={{ r: 4, strokeWidth: 2 }}
-                activeDot={{ r: 6, strokeWidth: 2 }}
+                dot={CustomDot}
+                activeDot={CustomActiveDot}
+                connectNulls
               />
+              {/* Define color gradient based on score ranges */}
+              <defs>
+                <linearGradient id="colorScore" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#F97316" />
+                  <stop offset="40%" stopColor="#4ECDC4" />
+                  <stop offset="70%" stopColor="#6C5DD3" />
+                  <stop offset="100%" stopColor="#8B5CF6" />
+                </linearGradient>
+              </defs>
             </LineChart>
           </ResponsiveContainer>
+        </div>
+        
+        {/* Small legend for categories */}
+        <div className="flex flex-wrap justify-center gap-3 mt-2 text-xs">
+          <div className="flex items-center">
+            <div className="w-2 h-2 rounded-full mr-1" style={{ backgroundColor: "#F97316" }}></div>
+            <span>&lt;4.0: Unhealthy</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-2 h-2 rounded-full mr-1" style={{ backgroundColor: "#4ECDC4" }}></div>
+            <span>4.0-4.5: Healthy</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-2 h-2 rounded-full mr-1" style={{ backgroundColor: "#6C5DD3" }}></div>
+            <span>4.5-4.7: Great</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-2 h-2 rounded-full mr-1" style={{ backgroundColor: "#8B5CF6" }}></div>
+            <span>4.7-5.0: Amazing</span>
+          </div>
         </div>
       </CardContent>
     </Card>
