@@ -28,9 +28,20 @@ const Layout = ({ children }: LayoutProps) => {
       meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
     }
     
-    // Add overflow control to prevent unwanted scrolling
+    // Handle document overflow on all domains including preview
     document.body.style.overflow = '';
     document.documentElement.style.overflow = '';
+    
+    // Check if we're on a preview domain
+    const isPreviewDomain = window.location.hostname.includes('preview--') || 
+                           window.location.hostname.includes('lovable.app');
+    
+    if (isPreviewDomain) {
+      console.log("Preview domain detected, ensuring proper rendering");
+      // Force a style update to ensure rendering
+      document.documentElement.style.height = '100%';
+      document.body.style.minHeight = '100%';
+    }
     
     return () => {
       // Clean up when component unmounts

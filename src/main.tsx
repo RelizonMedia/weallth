@@ -9,10 +9,12 @@ localStorage.setItem("darkMode", "false");
 
 // Get the current hostname for domain-specific logging
 const currentHostname = window.location.hostname;
+const isPreviewDomain = currentHostname.includes('preview--') || currentHostname.includes('lovable.app');
 
 // Log application startup with domain information
 console.log(`Initializing Weallth application on ${currentHostname}...`);
 console.log(`Current theme: ${localStorage.getItem("theme") || "light"}`);
+console.log(`Is preview domain: ${isPreviewDomain}`);
 
 // Improved root element detection and error handling
 const root = document.getElementById("root");

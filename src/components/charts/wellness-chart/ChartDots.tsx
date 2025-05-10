@@ -5,14 +5,16 @@ interface DotProps {
   cx: number;
   cy: number;
   payload: any;
+  index?: number;
 }
 
 export const CustomDot = (props: DotProps) => {
-  const { cx, cy, payload } = props;
+  const { cx, cy, payload, index = 0 } = props;
   const color = getScoreColor(payload.score);
   
   return (
     <circle 
+      key={`dot-${index}`}
       cx={cx} 
       cy={cy} 
       r={5} 
@@ -24,11 +26,12 @@ export const CustomDot = (props: DotProps) => {
 };
 
 export const CustomActiveDot = (props: DotProps) => {
-  const { cx, cy, payload } = props;
+  const { cx, cy, payload, index = 0 } = props;
   const color = getScoreColor(payload.score);
   
   return (
     <circle 
+      key={`active-dot-${index}`}
       cx={cx} 
       cy={cy} 
       r={7} 
