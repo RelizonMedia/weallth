@@ -21,11 +21,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 const TrackPage = () => {
   const [ratings, setRatings] = useState<WellnessRating[]>([]);
   const [submitted, setSubmitted] = useState(false);
-  const [showBabySteps, setShowBabySteps] = useState(false);
-  const [showSummary, setShowSummary] = useState(false);
+  const [historyData, setHistoryData] = useState<DailyWellnessEntry[]>(demoWellnessData.entries as DailyWellnessEntry[]);
   const [overallScore, setOverallScore] = useState(0);
   const [category, setCategory] = useState<WellnessScoreCategory>("Healthy");
-  const [historyData, setHistoryData] = useState<DailyWellnessEntry[]>(demoWellnessData.entries as DailyWellnessEntry[]);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -59,7 +57,8 @@ const TrackPage = () => {
           score: rating.score,
           babyStep: rating.baby_step || '',
           completed: rating.completed || false,
-          date: entry.created_at
+          date: entry.created_at,
+          id: rating.id
         })),
         overallScore: entry.overall_score,
         category: entry.category as WellnessScoreCategory
@@ -237,27 +236,19 @@ const TrackPage = () => {
       const rating = latestEntry.ratings.find(r => r.metricId === metricId);
       
       // If the rating exists and has a database ID, update it
-      if (rating && 'id' in rating) {
+      if (rating && rating.id) {
         updateBabyStepMutation.mutate({
-          ratingId: rating.id as string,
+          ratingId: rating.id,
           completed
         });
       }
     }
   };
   
-  const handleViewBabySteps = () => {
-    setShowBabySteps(true);
-  };
-  
   const handleGoToDashboard = () => {
     navigate('/');
   };
   
-  const handleToggleSummary = () => {
-    setShowSummary(prev => !prev);
-  };
-
   // Use real data when available, fall back to demo data
   useEffect(() => {
     if (userWellnessEntries && userWellnessEntries.length > 0) {
@@ -267,11 +258,6 @@ const TrackPage = () => {
   
   // Calculate completion percentage based on scored metrics only
   const completionPercentage = (ratedMetricsCount / wellnessMetrics.length) * 100;
-  
-  // Debug to check ratings state
-  useEffect(() => {
-    console.log("Current ratings:", ratedMetricsCount, "of", wellnessMetrics.length);
-  }, [ratings, ratedMetricsCount]);
   
   // Check if we're still loading data
   if (isLoading) {
@@ -290,12 +276,7 @@ const TrackPage = () => {
   return (
     <Layout>
       <div className="flex flex-col space-y-6">
-        {showSummary ? (
-          <WellnessSummary 
-            data={historyData} 
-            onClose={() => setShowSummary(false)} 
-          />
-        ) : !submitted ? (
+        {!submitted ? (
           <>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
@@ -304,14 +285,6 @@ const TrackPage = () => {
                   Rate each of your 10 core wellness metrics and set baby steps for improvement
                 </p>
               </div>
-              <Button 
-                onClick={handleToggleSummary} 
-                variant="outline" 
-                className="flex items-center gap-2"
-              >
-                <ChartPie className="h-5 w-5" />
-                Summary
-              </Button>
             </div>
             
             <Alert className="bg-wellness-mint border-wellness-teal">
@@ -367,55 +340,27 @@ const TrackPage = () => {
               </Button>
             </div>
           </>
-        ) : !showBabySteps ? (
-          <div className="flex flex-col items-center space-y-6 py-8">
-            <div className="w-full max-w-md">
-              <WellnessScoreDisplay
-                score={overallScore}
-                category={category}
-                previousScore={undefined}
-              />
-            </div>
-            <div className="text-center space-y-4">
-              <p className="text-lg">
-                Thank you for tracking your wellness today! Your data has been saved.
-              </p>
-              <div className="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-4 justify-center">
-                <Button onClick={handleViewBabySteps} size="lg" className="bg-wellness-purple hover:bg-wellness-purple/90">
-                  View Baby Steps Tracker
-                </Button>
-                <Button onClick={handleToggleSummary} size="lg" className="bg-wellness-teal hover:bg-wellness-teal/90">
-                  View Wellness Summary
-                </Button>
-                <Button onClick={handleGoToDashboard} size="lg" variant="outline">
-                  Go to Dashboard
-                </Button>
-              </div>
-            </div>
-          </div>
         ) : (
-          <div className="py-4">
-            <div className="mb-6 flex justify-between items-center">
+          <div className="py-4 space-y-8">
+            <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-3xl font-bold">Your Baby Steps</h1>
+                <h1 className="text-3xl font-bold">Wellness Summary</h1>
                 <p className="text-muted-foreground">
-                  Track your daily progress on the baby steps you've set
+                  Your wellness tracking results and historical data
                 </p>
               </div>
-              <Button onClick={handleToggleSummary} variant="outline" className="flex items-center gap-2">
-                <ChartPie className="h-5 w-5" />
-                View Summary
+              <Button onClick={() => navigate('/')} variant="outline" className="flex items-center gap-2">
+                Back to Dashboard
               </Button>
             </div>
             
-            <div className="mb-6">
-              <WellnessScoreDisplay
-                score={overallScore}
-                category={category}
-                previousScore={undefined}
-              />
-            </div>
+            {/* Full wellness summary displayed directly on the track page */}
+            <WellnessSummary 
+              data={historyData} 
+              onClose={() => {}} // Empty function since we're not using the close functionality here
+            />
             
+            {/* Baby Steps Tracker */}
             <BabyStepsTracker 
               ratings={ratings} 
               onComplete={handleGoToDashboard}

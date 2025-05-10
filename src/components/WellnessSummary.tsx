@@ -26,22 +26,12 @@ const WellnessSummary = ({ data, onClose }: WellnessSummaryProps) => {
     return (
       <div className="p-6 text-center">
         <p>No wellness data available. Start tracking to see your progress!</p>
-        <Button onClick={onClose} className="mt-4">
-          Close
-        </Button>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Your Wellness Summary</h2>
-        <Button onClick={onClose} variant="outline">
-          Close Summary
-        </Button>
-      </div>
-
       <WellnessScoreDisplay
         score={latestEntry.overallScore}
         category={latestEntry.category}
