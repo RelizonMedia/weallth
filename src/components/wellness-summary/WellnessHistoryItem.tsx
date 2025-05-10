@@ -14,10 +14,10 @@ interface WellnessHistoryItemProps {
 
 // Function to get the color based on the wellness score
 const getScoreColor = (score: number): string => {
-  if (score < 4.0) return "bg-orange-100 text-orange-600 border-orange-200"; // Unhealthy
-  if (score < 4.5) return "bg-teal-100 text-teal-600 border-teal-200"; // Healthy
-  if (score < 4.7) return "bg-purple-100 text-purple-600 border-purple-200"; // Great
-  return "bg-violet-100 text-violet-600 border-violet-200"; // Amazing
+  if (score < 4.0) return "bg-red-100 text-red-600 border-red-200"; // Unhealthy
+  if (score < 4.5) return "bg-green-100 text-green-600 border-green-200"; // Healthy
+  if (score < 4.7) return "bg-orange-100 text-orange-600 border-orange-200"; // Great
+  return "bg-purple-100 text-purple-600 border-purple-200"; // Amazing
 };
 
 // Function to get the category name based on score
