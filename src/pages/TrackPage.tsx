@@ -42,16 +42,6 @@ const TrackPage = () => {
   };
   
   const handleSubmit = () => {
-    // Check if all metrics have been rated
-    if (ratings.length < wellnessMetrics.length) {
-      toast({
-        title: "Incomplete ratings",
-        description: "Please rate all 10 wellness metrics before submitting.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     // Calculate overall wellness score (average of all ratings)
     const totalScore = ratings.reduce((sum, rating) => sum + rating.score, 0);
     const calculatedOverallScore = totalScore / ratings.length;
@@ -60,8 +50,6 @@ const TrackPage = () => {
     // Set the calculated values to state
     setOverallScore(calculatedOverallScore);
     setCategory(wellnessCategory);
-    
-    // Explicitly set the submitted state to true to trigger UI update
     setSubmitted(true);
     
     console.log("Submitting wellness entry:", {
@@ -123,26 +111,9 @@ const TrackPage = () => {
           </div>
         ) : (
           <>
-            <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-              <div className="flex items-center space-x-2">
-                <span className="font-medium">{ratings.length} of {wellnessMetrics.length} metrics rated</span>
-                <Progress value={completionPercentage} className="w-32 h-2" />
-              </div>
-              
-              <Button 
-                onClick={handleSubmit} 
-                size="lg" 
-                disabled={ratings.length < wellnessMetrics.length}
-              >
-                {ratings.length < wellnessMetrics.length ? (
-                  <>Submit Today's Wellness Tracking</>
-                ) : (
-                  <>
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Complete Tracking
-                  </>
-                )}
-              </Button>
+            <div className="flex items-center space-x-2">
+              <span className="font-medium">{ratings.length} of {wellnessMetrics.length} metrics rated</span>
+              <Progress value={completionPercentage} className="w-32 h-2" />
             </div>
             
             {ratings.length < wellnessMetrics.length && (
@@ -164,6 +135,24 @@ const TrackPage = () => {
                   onSave={handleSaveRating}
                 />
               ))}
+            </div>
+
+            <div className="flex justify-center mt-6 mb-10">
+              <Button 
+                onClick={handleSubmit} 
+                size="lg" 
+                disabled={ratings.length < wellnessMetrics.length}
+                className="px-8"
+              >
+                {ratings.length < wellnessMetrics.length ? (
+                  <>Submit Today's Wellness Tracking ({ratings.length}/{wellnessMetrics.length})</>
+                ) : (
+                  <>
+                    <CheckCircle className="h-5 w-5 mr-2" />
+                    Complete Tracking
+                  </>
+                )}
+              </Button>
             </div>
           </>
         )}

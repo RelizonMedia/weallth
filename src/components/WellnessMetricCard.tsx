@@ -47,21 +47,34 @@ const WellnessMetricCard = ({ metric, initialRating, onSave }: WellnessMetricCar
       saveRating(score, babyStep);
     }
   };
+
+  // Handle input change and save if both fields are complete
+  const handleBabyStepChange = (value: string) => {
+    setBabyStep(value);
+    if (score > 0 && value.trim()) {
+      // Small timeout to ensure the value is set before saving
+      setTimeout(() => saveRating(score, value), 10);
+    }
+  };
   
   const saveRating = (currentScore: number, currentBabyStep: string) => {
     onSave({
       metricId: metric.id,
       score: currentScore,
       babyStep: currentBabyStep,
-      completed: false,
+      completed: true,
       date: new Date().toISOString()
     });
     setIsSaved(true);
   };
   
-  // If initial rating changes (e.g. when added from parent), update the saved state
+  // If initial rating changes (e.g. when added from parent), update local state
   useEffect(() => {
-    setIsSaved(!!initialRating);
+    if (initialRating) {
+      setScore(initialRating.score);
+      setBabyStep(initialRating.babyStep);
+      setIsSaved(true);
+    }
   }, [initialRating]);
   
   const isComplete = score > 0 && babyStep.trim().length > 0;
@@ -96,7 +109,7 @@ const WellnessMetricCard = ({ metric, initialRating, onSave }: WellnessMetricCar
             <p className="text-sm font-medium mb-1">One baby step to improve:</p>
             <Input
               value={babyStep}
-              onChange={(e) => setBabyStep(e.target.value)}
+              onChange={(e) => handleBabyStepChange(e.target.value)}
               onBlur={handleInputBlur}
               placeholder={`One small way to improve my ${metric.name.toLowerCase()}`}
               className={`flex-1 ${isSaved ? "border-wellness-teal/50" : ""}`}
