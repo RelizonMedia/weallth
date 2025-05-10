@@ -21,41 +21,57 @@ const Auth = () => {
   // Debug values specific to the domain
   const currentDomain = window.location.hostname;
   const isProdDomain = currentDomain === 'weallth.ai';
+  const currentPath = window.location.pathname;
+  const sessionCheckCount = React.useRef(0);
+  
+  // Add debug timestamp to track rendering
+  const mountTime = React.useRef(new Date().toISOString());
+  console.log(`Auth page mounted at ${mountTime.current} on domain: ${currentDomain}`);
+  console.log(`Is production domain: ${isProdDomain}`);
+  console.log(`Current URL path: ${currentPath}`);
+  console.log(`Current URL search params: ${window.location.search}`);
   
   useEffect(() => {
-    console.log(`Auth page mounted on domain: ${currentDomain}`);
-    console.log(`Is production domain: ${isProdDomain}`);
-    console.log(`Current URL path: ${window.location.pathname}`);
-    console.log(`Current URL search params: ${window.location.search}`);
-    
     // Check if user is already logged in
     const checkSession = async () => {
       try {
-        console.log("Auth page - Checking session...");
+        const checkNumber = ++sessionCheckCount.current;
+        console.log(`[Auth Page] Checking session... (attempt #${checkNumber})`);
+        
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error("Error checking session in Auth page:", error);
+          console.error("[Auth Page] Error checking session:", error);
           setInitialLoading(false);
           return;
         }
         
-        console.log("Auth page session check result:", session ? "User already logged in" : "No session found");
+        console.log("[Auth Page] Session check result:", session ? "User already logged in" : "No session found");
+        console.log("[Auth Page] Session details:", session ? {
+          userId: session.user?.id,
+          expiresAt: session.expires_at,
+          hasUser: !!session.user
+        } : "null");
         
         if (session) {
-          console.log("Redirecting to home page from auth page");
+          console.log(`[Auth Page] Redirecting to home page from auth page (attempt #${checkNumber})`);
           navigate("/");
           return;
         }
       } catch (err) {
-        console.error("Exception during session check:", err);
+        console.error("[Auth Page] Exception during session check:", err);
       } finally {
         setInitialLoading(false);
       }
     };
     
     checkSession();
-  }, [navigate, isProdDomain]);
+    
+    // Additional debug: Log when auth page unmounts
+    return () => {
+      console.log(`[Auth Page] Unmounting auth page after ${(new Date().getTime() - new Date(mountTime.current).getTime()) / 1000}s`);
+    }
+  }, [navigate, isProdDomain, mountTime]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,8 +87,8 @@ const Auth = () => {
     
     try {
       setLoading(true);
-      console.log("Attempting signup with email:", email);
-      console.log("Current domain during signup:", currentDomain);
+      console.log("[Auth Page] Attempting signup with email:", email);
+      console.log("[Auth Page] Current domain during signup:", currentDomain);
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -89,8 +105,8 @@ const Auth = () => {
       if (error) throw error;
 
       if (data && data.user) {
-        console.log("Signup successful:", data.user.id);
-        console.log("Session available:", !!data.session);
+        console.log("[Auth Page] Signup successful:", data.user.id);
+        console.log("[Auth Page] Session available:", !!data.session);
         
         toast({
           title: "Account created successfully",
@@ -100,12 +116,12 @@ const Auth = () => {
         
         if (data.session) {
           // If session is available immediately (email confirmation disabled in Supabase)
-          console.log("Session available, redirecting to home");
+          console.log("[Auth Page] Session available, redirecting to home");
           navigate("/");
         }
       }
     } catch (error: any) {
-      console.error("Signup error:", error);
+      console.error("[Auth Page] Signup error:", error);
       toast({
         title: "Error signing up",
         description: error.error_description || error.message || "An error occurred during sign up",
@@ -131,8 +147,8 @@ const Auth = () => {
     
     try {
       setLoading(true);
-      console.log("Attempting signin with email:", email);
-      console.log("Current domain during signin:", currentDomain);
+      console.log("[Auth Page] Attempting signin with email:", email);
+      console.log("[Auth Page] Current domain during signin:", currentDomain);
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -142,9 +158,10 @@ const Auth = () => {
       if (error) throw error;
 
       if (data.session) {
-        console.log("Signin successful, session established");
-        console.log("User ID:", data.user?.id);
-        console.log("Redirecting to home");
+        console.log("[Auth Page] Signin successful, session established");
+        console.log("[Auth Page] User ID:", data.user?.id);
+        console.log("[Auth Page] Session expiry:", new Date(data.session.expires_at! * 1000).toISOString());
+        console.log("[Auth Page] Redirecting to home");
         
         toast({
           title: "Signed in successfully",
@@ -153,7 +170,7 @@ const Auth = () => {
         navigate("/");
       }
     } catch (error: any) {
-      console.error("Signin error:", error);
+      console.error("[Auth Page] Signin error:", error);
       toast({
         title: "Error signing in",
         description: error.error_description || error.message || "Check your credentials and try again",
@@ -171,6 +188,8 @@ const Auth = () => {
         <div className="text-center">
           <div className="animate-spin h-8 w-8 border-4 border-primary rounded-full border-t-transparent mb-4 mx-auto"></div>
           <p className="text-muted-foreground">Loading authentication...</p>
+          <p className="text-xs text-muted-foreground mt-2">Domain: {currentDomain}</p>
+          <p className="text-xs text-muted-foreground">Mount time: {mountTime.current}</p>
         </div>
       </div>
     );
@@ -285,6 +304,9 @@ const Auth = () => {
               <p>By continuing, you agree to our Terms of Service and Privacy Policy.</p>
               <p className="text-xs">
                 Secure sign-in powered by Supabase Auth on {currentDomain}
+              </p>
+              <p className="text-xs italic">
+                Debug info: Page mounted at {mountTime.current}
               </p>
             </CardFooter>
           </Tabs>

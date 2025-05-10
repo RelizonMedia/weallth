@@ -28,9 +28,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const hostname = window.location.hostname;
   const isProductionDomain = hostname === 'weallth.ai';
   
+  // Add timestamps for debugging
+  const mountTimestamp = new Date().toISOString();
+  const initId = Math.random().toString(36).substring(2, 8); // Unique ID for this instance
+  
   // Debug function to log auth state in a consistent format
   const logAuthState = (message: string, data?: any) => {
-    const logPrefix = `[AuthContext] [${hostname}]`;
+    const logPrefix = `[AuthContext-${initId}] [${hostname}]`;
     if (data) {
       console.log(`${logPrefix} ${message}`, data);
     } else {
@@ -83,13 +87,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    logAuthState(`Initializing auth context on ${hostname}`);
+    logAuthState(`Initializing auth context on ${hostname} at ${mountTimestamp}`);
+    logAuthState(`IsProductionDomain: ${isProductionDomain}, Current path: ${window.location.pathname}`);
     
     try {
       // Set up auth state listener first
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         (event, sessionData) => {
-          logAuthState("Auth state changed:", event);
+          logAuthState(`Auth state changed: ${event} at ${new Date().toISOString()}`, {
+            hasSession: !!sessionData,
+            userId: sessionData?.user?.id,
+            event
+          });
           
           // Using setTimeout to avoid potential deadlock with supabase auth state management
           setTimeout(() => {
@@ -125,7 +134,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             return;
           }
           
-          logAuthState("Existing session check result:", session ? "Found session" : "No session");
+          logAuthState("Existing session check result:", session ? 
+            { userId: session.user?.id, expiresAt: new Date(session.expires_at! * 1000).toISOString() } : 
+            "No session"
+          );
           
           // Set state after a short timeout to avoid potential state update conflicts
           setTimeout(() => {
@@ -181,6 +193,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: "Signed out successfully",
         duration: 3000,
       });
+      logAuthState("Signed out successfully, redirecting to auth page");
       navigate('/auth');
     } catch (error) {
       console.error("Error signing out:", error);
@@ -219,6 +232,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => clearTimeout(timeout);
   }, [authInitialized]);
+  
+  // Additional debug effect to detect stuck states
+  useEffect(() => {
+    const stuckTimer = setTimeout(() => {
+      if (loading && !authInitialized) {
+        logAuthState("WARNING: Auth has been loading for 10+ seconds - potential stuck state", {
+          loading,
+          authInitialized,
+          user: user?.id || null,
+          currentTime: new Date().toISOString(),
+          timeSinceMount: `${(new Date().getTime() - new Date(mountTimestamp).getTime()) / 1000}s`
+        });
+      }
+    }, 10000);
+    
+    return () => clearTimeout(stuckTimer);
+  }, [loading, authInitialized, user]);
 
   return (
     <AuthContext.Provider value={{ session, user, loading, signOut, refreshSession, ensureProfile }}>

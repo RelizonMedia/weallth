@@ -24,11 +24,15 @@ export const supabase = createClient<Database>(
 
 // Add debugging to track auth state
 try {
+  console.log("[Supabase Client] Initializing with URL:", SUPABASE_URL);
+  console.log("[Supabase Client] Auth storage location:", typeof localStorage !== 'undefined' ? 'localStorage available' : 'localStorage NOT available');
+  
   supabase.auth.onAuthStateChange((event, session) => {
     console.log(`[Supabase Client] Auth state changed: ${event}`, {
       hasSession: !!session,
       userId: session?.user?.id,
-      domain: window.location.hostname
+      domain: window.location.hostname,
+      timestamp: new Date().toISOString()
     });
   });
   console.log("[Supabase Client] Auth listener initialized");
