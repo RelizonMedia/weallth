@@ -114,7 +114,7 @@ const WellnessHistoryItem = ({ entry, compact, onUpdateBabyStep }: WellnessHisto
               <HoverCardTrigger asChild>
                 <div className={`flex flex-col items-center p-3 rounded-lg border cursor-pointer hover:shadow-md transition-shadow ${colorClasses}`}>
                   <span className="text-xs font-medium">{metric.name}</span>
-                  <span className="text-2xl font-bold">{score}</span>
+                  <span className="text-2xl font-bold">{score.toFixed(1)}</span>
                   <span className="text-xs mt-1">{category}</span>
                 </div>
               </HoverCardTrigger>
