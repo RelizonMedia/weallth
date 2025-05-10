@@ -139,15 +139,19 @@ const Index = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <WellnessScoreDisplay 
-                score={todayEntry.overallScore} 
-                category={todayEntry.category}
-                previousScore={previousEntry?.overallScore}
-              />
-              <BabyStepsList 
-                ratings={todayEntry.ratings} 
-                onStepToggle={handleStepToggle} 
-              />
+              {todayEntry && (
+                <WellnessScoreDisplay 
+                  score={todayEntry.overallScore} 
+                  category={todayEntry.category}
+                  previousScore={previousEntry?.overallScore}
+                />
+              )}
+              {todayEntry && todayEntry.ratings && (
+                <BabyStepsList 
+                  ratings={todayEntry.ratings} 
+                  onStepToggle={handleStepToggle} 
+                />
+              )}
               <WellnessStreak days={wellnessData.streakDays} />
             </div>
           </div>

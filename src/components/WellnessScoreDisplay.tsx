@@ -58,8 +58,12 @@ const WellnessScoreDisplay = ({
   
   const categoryConfig = getCategoryConfig(category);
   const Icon = categoryConfig.icon;
+  
+  // Add null check for score calculation
   const hasImproved = previousScore !== undefined && score > previousScore;
-  const percentChange = previousScore 
+  
+  // Safely calculate percentage change only if previousScore exists and is not zero
+  const percentChange = previousScore && previousScore !== 0
     ? Math.abs(((score - previousScore) / previousScore) * 100).toFixed(1)
     : null;
   
@@ -89,7 +93,8 @@ const WellnessScoreDisplay = ({
             </div>
           </div>
           
-          {previousScore && (
+          {/* Only render this div if percentChange exists */}
+          {percentChange && (
             <div className={`px-2 py-1 rounded text-sm ${
               hasImproved ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
             }`}>
