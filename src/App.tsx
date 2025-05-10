@@ -1,131 +1,55 @@
-
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useState, useEffect } from "react";
-import Index from "./pages/Index";
-import TrackPage from "./pages/TrackPage";
-import NotFound from "./pages/NotFound";
-import Auth from "./pages/Auth";
-import Profile from "./pages/Profile";
-import WellnessBank from "./pages/WellnessBank";
-import GoalTrackerPage from "./pages/GoalTrackerPage";
-import { AuthProvider } from "./contexts/AuthContext";
-import ProtectedRoute from "./components/ProtectedRoute";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { Toaster } from "@/components/ui/toaster";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import Index from "@/pages/Index";
+import TrackPage from "@/pages/TrackPage";
+import GoalTrackerPage from "@/pages/GoalTrackerPage";
+import WellnessBank from "@/pages/WellnessBank";
+import Profile from "@/pages/Profile";
+import Auth from "@/pages/Auth";
+import NotFound from "@/pages/NotFound";
+import AICompanionPage from "@/pages/AICompanionPage";
 
-// Create a new QueryClient with better error handling
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 2,
       refetchOnWindowFocus: false,
-      // Using meta.onError instead of onError directly as per latest Tanstack React Query
-      meta: {
-        onError: (error: any) => {
-          console.error("Query error:", error);
-        }
-      }
+      retry: 1,
     },
   },
 });
 
-const App = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [initError, setInitError] = useState<string | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
+function App() {
+  // Check if the user is logged in
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-  // Enhanced initialization with better error handling
-  useEffect(() => {
-    try {
-      console.log(`Weallth application initializing on ${window.location.hostname}...`);
-      
-      // Check if critical DOM elements are available
-      if (!document.getElementById("root")) {
-        throw new Error("Root element not found");
-      }
-      
-      // Safely handle domain for cross-origin purposes - only attempt if there are multiple parts
-      try {
-        const hostParts = window.location.hostname.split('.');
-        if (hostParts.length > 2 && !['localhost', '127.0.0.1'].includes(window.location.hostname)) {
-          // Only set document.domain for subdomains, not for top-level domains
-          document.domain = hostParts.slice(-2).join('.');
-        }
-      } catch (domainError) {
-        console.warn("Domain setup skipped:", domainError);
-        // Non-critical error, continue initialization
-      }
-      
-      // Simulate initialization process
-      const initApp = setTimeout(() => {
-        console.log("Application initialized successfully");
-        setIsLoading(false);
-        setIsMounted(true);
-      }, 800);
-      
-      return () => clearTimeout(initApp);
-    } catch (error) {
-      console.error("Initialization error:", error);
-      setInitError(error instanceof Error ? error.message : "Unknown initialization error");
-      setIsLoading(false);
-    }
-  }, []);
+  // Check dark mode preference
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
-  // Show loading state
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen bg-background">
-        <div className="h-12 w-12 rounded-full gradient-bg flex items-center justify-center text-white text-2xl font-bold animate-pulse-gentle mb-4">
-          W
-        </div>
-        <div className="text-xl font-medium">Loading Weallth...</div>
-      </div>
-    );
-  }
-
-  // Show initialization error if any
-  if (initError) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen bg-background">
-        <div className="max-w-md p-6 bg-white rounded-lg shadow-lg border-2 border-red-300">
-          <h1 className="text-xl font-bold text-red-600 mb-4">Application Error</h1>
-          <p className="mb-4">{initError}</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
-          >
-            Refresh Application
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Render main application
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AuthProvider>
+      <Router>
+        <AuthProvider>
+          <ThemeProvider>
             <Routes>
-              <Route path="/auth" element={<Auth />} />
               <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/track" element={<ProtectedRoute><TrackPage /></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path="/wellness-bank" element={<ProtectedRoute><WellnessBank /></ProtectedRoute>} />
               <Route path="/goal-tracker" element={<ProtectedRoute><GoalTrackerPage /></ProtectedRoute>} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="/wellness-bank" element={<ProtectedRoute><WellnessBank /></ProtectedRoute>} />
+              <Route path="/ai-companion" element={<ProtectedRoute><AICompanionPage /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/auth" element={<Auth />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
+            <Toaster />
+          </ThemeProvider>
+        </AuthProvider>
+      </Router>
     </QueryClientProvider>
   );
-};
+}
 
 export default App;
