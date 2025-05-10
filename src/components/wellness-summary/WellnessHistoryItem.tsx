@@ -1,5 +1,5 @@
 
-import { Clock, Plus } from "lucide-react";
+import { Clock, Plus, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import { wellnessMetrics } from "@/data/wellnessMetrics";
 import { DailyWellnessEntry, WellnessRating } from "@/types/wellness";
@@ -70,14 +70,14 @@ const WellnessHistoryItem = ({ entry, compact, onUpdateBabyStep }: WellnessHisto
   // Get the appropriate text color for the category
   const categoryColor = getCategoryTextColor(entry.category);
   
-  const handleAddBabyStep = (metricId: string) => {
+  const handleAddOrUpdateBabyStep = (metricId: string) => {
     if (babyStepInput.trim() && onUpdateBabyStep) {
       onUpdateBabyStep(metricId, babyStepInput.trim());
       setEditingMetricId(null);
       setBabyStepInput("");
       toast({
-        title: "Baby step added",
-        description: "Your baby step has been added successfully",
+        title: "Baby step updated",
+        description: "Your baby step has been saved successfully",
       });
     }
   };
@@ -96,8 +96,8 @@ const WellnessHistoryItem = ({ entry, compact, onUpdateBabyStep }: WellnessHisto
         </div>
       </div>
       
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        {wellnessMetrics.slice(0, compact ? 6 : wellnessMetrics.length).map(metric => {
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        {wellnessMetrics.slice(0, compact ? wellnessMetrics.length : wellnessMetrics.length).map(metric => {
           // Add null check to ensure entry.ratings exists
           const metricRating = entry.ratings && Array.isArray(entry.ratings) ? 
             entry.ratings.find(r => r && r.metricId === metric.id) : 
@@ -150,7 +150,7 @@ const WellnessHistoryItem = ({ entry, compact, onUpdateBabyStep }: WellnessHisto
                           </Button>
                           <Button 
                             size="sm"
-                            onClick={() => handleAddBabyStep(metric.id)}
+                            onClick={() => handleAddOrUpdateBabyStep(metric.id)}
                           >
                             Save
                           </Button>
@@ -159,7 +159,20 @@ const WellnessHistoryItem = ({ entry, compact, onUpdateBabyStep }: WellnessHisto
                     ) : (
                       <>
                         {hasBabyStep ? (
-                          <p className="text-sm">{metricRating?.babyStep}</p>
+                          <div className="flex justify-between items-center">
+                            <p className="text-sm">{metricRating?.babyStep}</p>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              className="ml-2"
+                              onClick={() => {
+                                setEditingMetricId(metric.id);
+                                setBabyStepInput(metricRating?.babyStep || "");
+                              }}
+                            >
+                              <Pencil className="h-3 w-3" />
+                            </Button>
+                          </div>
                         ) : (
                           <div className="flex items-center">
                             <Button 

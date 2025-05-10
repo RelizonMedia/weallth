@@ -138,7 +138,7 @@ const OverviewTabContent = ({ data }: OverviewTabContentProps) => {
           <CardHeader>
             <CardTitle>Recent Wellness Trends</CardTitle>
             <CardDescription>
-              Hover over metrics to see recommendations and add baby steps
+              Hover over metrics to see recommendations and add or edit baby steps
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -147,7 +147,7 @@ const OverviewTabContent = ({ data }: OverviewTabContentProps) => {
                 <WellnessHistoryItem 
                   key={index} 
                   entry={entry} 
-                  compact={true} 
+                  compact={false} 
                   onUpdateBabyStep={handleUpdateBabyStep}
                 />
               ))}
