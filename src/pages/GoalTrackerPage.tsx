@@ -73,7 +73,7 @@ const GoalTrackerPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-1 gap-4 lg:w-1/3">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-medium">Total Baby Steps Completed</CardTitle>
+                <CardTitle className="text-lg font-medium">Total Baby Step Wins</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center">
