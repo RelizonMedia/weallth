@@ -109,14 +109,14 @@ const UserProfile = () => {
               parsedSocialLinks = [];
             }
           } else if (Array.isArray(profileData.social_links)) {
-            // It's already an array, make sure each element has platform and url
-            parsedSocialLinks = profileData.social_links
+            // Properly cast Json[] to SocialLink[] with type safety
+            parsedSocialLinks = (profileData.social_links as unknown as SocialLink[])
               .filter((link: any) => 
                 typeof link === 'object' && 
                 link !== null && 
                 'platform' in link && 
                 'url' in link
-              ) as SocialLink[];
+              );
           }
         }
         

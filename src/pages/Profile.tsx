@@ -99,7 +99,13 @@ const Profile = () => {
               socialLinks = [];
             }
           } else if (Array.isArray(data.social_links)) {
-            socialLinks = data.social_links as SocialLink[];
+            // Properly cast Json[] to SocialLink[]
+            socialLinks = (data.social_links as unknown as SocialLink[]).filter(link => 
+              typeof link === 'object' && 
+              link !== null && 
+              'platform' in link && 
+              'url' in link
+            );
           }
         }
         
