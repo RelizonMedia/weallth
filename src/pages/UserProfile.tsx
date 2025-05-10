@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -13,6 +12,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, MessageSquare, UserPlus, UserCheck, Mail, Share2 } from "lucide-react";
 import { SendMessageModal } from "@/components/SendMessageModal";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Json } from "@/integrations/supabase/types";
+
+interface SocialLink {
+  platform: string;
+  url: string;
+}
 
 interface UserProfileData {
   id: string;
@@ -22,10 +27,7 @@ interface UserProfileData {
   bio: string | null;
   goals: string[] | null;
   interests: string[] | null;
-  social_links: {
-    platform: string;
-    url: string;
-  }[] | null;
+  social_links: SocialLink[] | null;
   is_friend?: boolean;
   friend_request_status?: 'pending' | 'sent' | null;
 }
@@ -99,8 +101,32 @@ const UserProfile = () => {
           }
         }
         
+        // Parse social_links from JSON to ensure it's the right type
+        let parsedSocialLinks: SocialLink[] = [];
+        
+        if (profileData?.social_links) {
+          // Handle either a string or an array
+          if (typeof profileData.social_links === 'string') {
+            try {
+              parsedSocialLinks = JSON.parse(profileData.social_links);
+            } catch (e) {
+              parsedSocialLinks = [];
+            }
+          } else if (Array.isArray(profileData.social_links)) {
+            // It's already an array, make sure each element has platform and url
+            parsedSocialLinks = profileData.social_links
+              .filter((link): link is SocialLink => 
+                typeof link === 'object' && 
+                link !== null && 
+                'platform' in link && 
+                'url' in link
+              );
+          }
+        }
+        
         setProfile({
           ...profileData,
+          social_links: parsedSocialLinks,
           is_friend: isFriend,
           friend_request_status: friendStatus
         });

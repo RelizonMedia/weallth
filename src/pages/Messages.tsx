@@ -6,7 +6,7 @@ import Layout from "@/components/Layout";
 import { SendMessageModal } from "@/components/SendMessageModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { MessageData, MessageConversation } from "@/types/message";
+import { MessageData, MessageConversation, ConversationResult, MessageResult } from "@/types/message";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Card, 
@@ -59,12 +59,15 @@ const Messages = () => {
       try {
         // Using a direct query approach with raw SQL results
         const { data: sentMessages, error: sentError } = await supabase
-          .rpc('get_user_conversations', { user_id: user.id }) as any;
+          .rpc('get_user_conversations', { user_id: user.id }) as { 
+            data: ConversationResult[] | null; 
+            error: any;
+          };
           
         if (sentError) throw sentError;
         
         // Process the conversations
-        const processedConversations = (sentMessages || []).map((conv: any) => ({
+        const processedConversations = (sentMessages || []).map((conv: ConversationResult) => ({
           userId: conv.other_user_id,
           userName: conv.other_user_name || 'Unknown User',
           lastMessage: conv.last_message || '',
@@ -120,12 +123,15 @@ const Messages = () => {
           .rpc('get_conversation_messages', { 
             user1_id: user.id, 
             user2_id: selectedConversation 
-          }) as any;
+          }) as {
+            data: MessageResult[] | null;
+            error: any;
+          };
           
         if (messageError) throw messageError;
         
         if (messageData) {
-          const typedMessages = messageData.map((msg: any) => ({
+          const typedMessages = messageData.map((msg: MessageResult) => ({
             id: msg.id,
             sender_id: msg.sender_id,
             recipient_id: msg.recipient_id,
@@ -144,7 +150,10 @@ const Messages = () => {
               .rpc('mark_messages_as_read', {
                 reader_id: user.id,
                 sender_id: selectedConversation
-              }) as any;
+              }) as {
+                data: any;
+                error: any;
+              };
           }
         }
       } catch (error) {

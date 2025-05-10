@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +12,12 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Json } from "@/integrations/supabase/types";
+
+interface SocialLink {
+  platform: string;
+  url: string;
+}
 
 interface ProfileData {
   username: string | null;
@@ -21,7 +26,7 @@ interface ProfileData {
   bio: string | null;
   interests: string[] | null;
   goals: string[] | null;
-  social_links: { platform: string; url: string }[] | null;
+  social_links: SocialLink[] | null;
 }
 
 const Profile = () => {
@@ -61,6 +66,29 @@ const Profile = () => {
           throw error;
         }
 
+        // Parse social_links from JSON to the expected format
+        let parsedSocialLinks: SocialLink[] = [];
+        
+        if (data.social_links) {
+          // Handle either a string or an array
+          if (typeof data.social_links === 'string') {
+            try {
+              parsedSocialLinks = JSON.parse(data.social_links);
+            } catch (e) {
+              parsedSocialLinks = [];
+            }
+          } else if (Array.isArray(data.social_links)) {
+            // It's already an array, ensure each element has platform and url
+            parsedSocialLinks = data.social_links
+              .filter((link): link is SocialLink => 
+                typeof link === 'object' && 
+                link !== null && 
+                'platform' in link && 
+                'url' in link
+              );
+          }
+        }
+
         setProfile({
           username: data.username,
           full_name: data.full_name,
@@ -68,7 +96,7 @@ const Profile = () => {
           bio: data.bio,
           interests: data.interests || [],
           goals: data.goals || [],
-          social_links: data.social_links || []
+          social_links: parsedSocialLinks
         });
       } catch (error) {
         console.error('Error loading profile:', error);
