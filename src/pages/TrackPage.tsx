@@ -7,9 +7,10 @@ import { wellnessMetrics, getWellnessCategory } from "@/data/wellnessMetrics";
 import { WellnessRating } from "@/types/wellness";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, CheckCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import WellnessScoreDisplay from "@/components/WellnessScoreDisplay";
+import { Progress } from "@/components/ui/progress";
 
 const TrackPage = () => {
   const [ratings, setRatings] = useState<WellnessRating[]>([]);
@@ -36,7 +37,7 @@ const TrackPage = () => {
     toast({
       title: "Rating saved",
       description: `Your rating for ${wellnessMetrics.find(m => m.id === rating.metricId)?.name} has been saved.`,
-      duration: 3000,
+      duration: 1500,
     });
   };
   
@@ -80,7 +81,8 @@ const TrackPage = () => {
     navigate('/');
   };
   
-  console.log("Current submission state:", { submitted, ratings: ratings.length, overallScore, category });
+  // Calculate completion percentage
+  const completionPercentage = (ratings.length / wellnessMetrics.length) * 100;
   
   return (
     <Layout>
@@ -121,6 +123,38 @@ const TrackPage = () => {
           </div>
         ) : (
           <>
+            <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+              <div className="flex items-center space-x-2">
+                <span className="font-medium">{ratings.length} of {wellnessMetrics.length} metrics rated</span>
+                <Progress value={completionPercentage} className="w-32 h-2" />
+              </div>
+              
+              <Button 
+                onClick={handleSubmit} 
+                size="lg" 
+                disabled={ratings.length < wellnessMetrics.length}
+              >
+                {ratings.length < wellnessMetrics.length ? (
+                  <>Submit Today's Wellness Tracking</>
+                ) : (
+                  <>
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Complete Tracking
+                  </>
+                )}
+              </Button>
+            </div>
+            
+            {ratings.length < wellnessMetrics.length && (
+              <Alert variant="default" className="bg-muted/50">
+                <AlertTitle>Rate all 10 metrics to continue</AlertTitle>
+                <AlertDescription>
+                  Set a score (1-5 stars) and add one baby step for improvement for each metric.
+                  Your ratings will automatically be saved once both are complete.
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {wellnessMetrics.map(metric => (
                 <WellnessMetricCard
@@ -130,16 +164,6 @@ const TrackPage = () => {
                   onSave={handleSaveRating}
                 />
               ))}
-            </div>
-            
-            <div className="flex justify-end pt-4">
-              <Button 
-                onClick={handleSubmit} 
-                size="lg" 
-                disabled={ratings.length < wellnessMetrics.length}
-              >
-                Submit Today's Wellness Tracking
-              </Button>
             </div>
           </>
         )}
