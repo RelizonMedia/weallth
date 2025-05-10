@@ -9,9 +9,13 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import WellnessScoreDisplay from "@/components/WellnessScoreDisplay";
 
 const TrackPage = () => {
   const [ratings, setRatings] = useState<WellnessRating[]>([]);
+  const [submitted, setSubmitted] = useState(false);
+  const [overallScore, setOverallScore] = useState(0);
+  const [category, setCategory] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -49,22 +53,28 @@ const TrackPage = () => {
     
     // Calculate overall wellness score (average of all ratings)
     const totalScore = ratings.reduce((sum, rating) => sum + rating.score, 0);
-    const overallScore = totalScore / ratings.length;
-    const category = getWellnessCategory(overallScore);
+    const calculatedOverallScore = totalScore / ratings.length;
+    const wellnessCategory = getWellnessCategory(calculatedOverallScore);
+    
+    // Set the calculated values to state
+    setOverallScore(calculatedOverallScore);
+    setCategory(wellnessCategory);
+    setSubmitted(true);
     
     console.log("Submitting wellness entry:", {
       date: new Date().toISOString().split('T')[0],
       ratings,
-      overallScore,
-      category
+      overallScore: calculatedOverallScore,
+      category: wellnessCategory
     });
     
     toast({
       title: "Wellness tracked successfully!",
-      description: `Your overall wellness score today is ${overallScore.toFixed(1)} - ${category}`,
+      description: `Your overall wellness score today is ${calculatedOverallScore.toFixed(1)} - ${wellnessCategory}`,
     });
-    
-    // Navigate back to dashboard
+  };
+  
+  const handleGoToDashboard = () => {
     navigate('/');
   };
   
@@ -87,26 +97,48 @@ const TrackPage = () => {
           </AlertDescription>
         </Alert>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {wellnessMetrics.map(metric => (
-            <WellnessMetricCard
-              key={metric.id}
-              metric={metric}
-              initialRating={ratings.find(r => r.metricId === metric.id)}
-              onSave={handleSaveRating}
-            />
-          ))}
-        </div>
-        
-        <div className="flex justify-end pt-4">
-          <Button 
-            onClick={handleSubmit} 
-            size="lg" 
-            disabled={ratings.length < wellnessMetrics.length}
-          >
-            Submit Today's Wellness Tracking
-          </Button>
-        </div>
+        {submitted ? (
+          <div className="flex flex-col items-center space-y-6 py-8">
+            <div className="w-full max-w-md">
+              <WellnessScoreDisplay
+                score={overallScore}
+                category={category as any}
+                previousScore={undefined}
+              />
+            </div>
+            <div className="text-center space-y-4">
+              <p className="text-lg">
+                Thank you for tracking your wellness today! Your data has been saved.
+              </p>
+              <Button onClick={handleGoToDashboard} size="lg">
+                Go to Dashboard
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {wellnessMetrics.map(metric => (
+                <WellnessMetricCard
+                  key={metric.id}
+                  metric={metric}
+                  initialRating={ratings.find(r => r.metricId === metric.id)}
+                  onSave={handleSaveRating}
+                />
+              ))}
+            </div>
+            
+            <div className="flex justify-end pt-4">
+              <Button 
+                onClick={handleSubmit} 
+                size="lg" 
+                disabled={ratings.length < wellnessMetrics.length}
+              >
+                Submit Today's Wellness Tracking
+              </Button>
+            </div>
+          </>
+        )}
       </div>
     </Layout>
   );
