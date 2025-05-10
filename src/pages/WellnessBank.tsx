@@ -1,6 +1,7 @@
+
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useWellnessTracking } from "@/hooks/useWellnessTracking";
+import { useWellnessTracking } from "@/hooks/wellness/useWellnessTracking";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BabyStepsHistory from "@/components/BabyStepsHistory";
 import WellnessChart from "@/components/WellnessChart";
