@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, ReferenceLine } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, ReferenceLine } from 'recharts';
 import { DailyWellnessEntry, WellnessMetric } from "@/types/wellness";
 import { format } from "date-fns";
 
@@ -189,6 +189,7 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
                 dot={CustomDot}
                 activeDot={CustomActiveDot}
                 connectNulls
+                isAnimationActive={false}
               />
             </LineChart>
           </ResponsiveContainer>
