@@ -24,10 +24,11 @@ const WellnessTrackingForm = ({ onSubmit }: WellnessTrackingFormProps) => {
   const completionPercentage = (ratedMetricsCount / wellnessMetrics.length) * 100;
   
   const handleSaveRating = (rating: WellnessRating) => {
-    // Add timestamp to the rating when saved
+    // Add precise timestamp to the rating when saved
+    const exactTimestamp = new Date().toISOString();
     const ratingWithTimestamp = {
       ...rating,
-      timestamp: new Date().toISOString()
+      timestamp: exactTimestamp
     };
     
     // Check if we already have a rating for this metric
@@ -63,11 +64,11 @@ const WellnessTrackingForm = ({ onSubmit }: WellnessTrackingFormProps) => {
       return;
     }
     
-    // Add timestamp to all ratings before submitting
+    // Add precise timestamp to all ratings before submitting
     const currentTime = new Date().toISOString();
     const ratingsWithTimestamp = ratings.map(rating => ({
       ...rating,
-      timestamp: rating.timestamp || currentTime
+      timestamp: currentTime // Ensure all ratings have the same exact timestamp for consistency
     }));
     
     // Pass the ratings to the parent component

@@ -1,4 +1,3 @@
-
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWellnessTracking } from "@/hooks/useWellnessTracking";
@@ -34,6 +33,22 @@ const WellnessBank = () => {
   // Community engagement metrics (simulated data - would be replaced with actual data)
   const tipsShared = 12;
   const celebrationsGiven = 8;
+
+  // Helper function to ensure we have a valid date object for formatting
+  const formatDateTime = (dateStr: string | undefined) => {
+    if (!dateStr) return { date: "No date", time: "No time" };
+    
+    try {
+      const date = new Date(dateStr);
+      return {
+        date: format(date, "MMM d, yyyy"),
+        time: format(date, "h:mm a")
+      };
+    } catch (error) {
+      console.error("Date formatting error:", error);
+      return { date: "Invalid date", time: "Invalid time" };
+    }
+  };
 
   return (
     <Layout>
@@ -139,14 +154,14 @@ const WellnessBank = () => {
                     {historyData.map((entry, index) => {
                       const pointsEarned = Math.round(entry.overallScore * 10);
                       const stepsCompleted = entry.ratings.filter(r => r.completed).length;
-                      const entryDate = new Date(entry.timestamp || entry.date);
+                      const entryDatetime = formatDateTime(entry.timestamp || entry.date);
                       
                       return (
                         <TableRow key={index}>
                           <TableCell className="font-medium">
-                            {format(entryDate, "MMM d, yyyy")}
+                            {entryDatetime.date}
                             <div className="text-xs text-muted-foreground">
-                              {format(entryDate, "h:mm a")}
+                              {entryDatetime.time}
                             </div>
                           </TableCell>
                           <TableCell>{entry.overallScore.toFixed(1)}</TableCell>
@@ -231,7 +246,7 @@ const WellnessBank = () => {
           <CardContent>
             <div className="space-y-6">
               {historyData.map((entry, index) => {
-                const entryDate = new Date(entry.timestamp || entry.date);
+                const entryDatetime = formatDateTime(entry.timestamp || entry.date);
                 
                 return (
                   <div key={index} className="border rounded-lg p-4 space-y-4">
@@ -239,11 +254,11 @@ const WellnessBank = () => {
                       <div className="flex items-center space-x-2">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium">
-                          {format(entryDate, "MMMM d, yyyy")}
+                          {entryDatetime.date}
                         </span>
                         <Clock className="h-4 w-4 text-muted-foreground ml-2" />
                         <span className="text-sm text-muted-foreground">
-                          {format(entryDate, "h:mm a")}
+                          {entryDatetime.time}
                         </span>
                       </div>
                       <div className="bg-slate-100 text-slate-800 px-3 py-1 rounded-full text-sm font-medium">

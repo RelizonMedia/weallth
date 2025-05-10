@@ -39,13 +39,14 @@ export const useWellnessSubmission = () => {
       }
       
       if (existingEntry) {
-        // Update existing entry
+        // Update existing entry with current timestamp to reflect the latest update
         const { error: updateError } = await supabase
           .from('wellness_entries')
           .update({
             overall_score: newEntry.overallScore,
             category: newEntry.category,
-            updated_at: timestamp
+            updated_at: timestamp,
+            created_at: timestamp // Also update created_at to reflect the latest entry time
           })
           .eq('id', existingEntry.id);
         
@@ -59,7 +60,7 @@ export const useWellnessSubmission = () => {
         
         if (deleteError) throw deleteError;
         
-        // Insert new ratings
+        // Insert new ratings with the current timestamp
         const ratingsToInsert = newEntry.ratings.map(rating => ({
           entry_id: existingEntry.id,
           metric_id: rating.metricId,
@@ -77,7 +78,7 @@ export const useWellnessSubmission = () => {
         
         return existingEntry.id;
       } else {
-        // Create new entry
+        // Create new entry with current timestamp
         const { data: entryData, error: entryError } = await supabase
           .from('wellness_entries')
           .insert({
@@ -92,7 +93,7 @@ export const useWellnessSubmission = () => {
   
         if (entryError) throw entryError;
   
-        // Create wellness ratings
+        // Create wellness ratings with the current timestamp
         const ratingsToInsert = newEntry.ratings.map(rating => ({
           entry_id: entryData.id,
           metric_id: rating.metricId,

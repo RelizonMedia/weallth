@@ -27,14 +27,15 @@ export const useWellnessTracking = () => {
   
   // Handle form submission
   const handleSubmit = (submittedRatings: WellnessRating[]) => {
-    // Add creation date to each rating
-    const today = new Date().toISOString().split('T')[0];
-    const timestamp = new Date().toISOString();
+    // Create exact timestamp at submission time
+    const submissionTime = new Date();
+    const today = submissionTime.toISOString().split('T')[0];
+    const timestamp = submissionTime.toISOString();
     
     const ratingsWithDate = submittedRatings.map(rating => ({
       ...rating,
       date: today,
-      timestamp: timestamp // Add timestamp to each rating
+      timestamp: timestamp // Ensure all ratings have the exact same timestamp
     }));
     
     setRatings(ratingsWithDate);
@@ -73,13 +74,13 @@ export const useWellnessTracking = () => {
       });
     }
     
-    // Create a new daily wellness entry for local state
+    // Create a new daily wellness entry for local state with the exact submission timestamp
     const newEntry: DailyWellnessEntry = {
       date: today,
       ratings: ratingsWithDate,
       overallScore: calculatedOverallScore,
       category: wellnessCategory,
-      timestamp: timestamp // Add timestamp to the entry
+      timestamp: timestamp // Ensure the timestamp is accurately recorded
     };
     
     // Add the new entry to the history
