@@ -33,15 +33,17 @@ const Layout = ({ children }: LayoutProps) => {
     document.body.style.overflow = '';
     document.documentElement.style.overflow = '';
     
-    // Check if we're on a preview domain
-    const isPreviewDomain = window.location.hostname.includes('preview--') || 
-                           window.location.hostname.includes('lovable.app');
+    // Check if we're on a preview domain or production domain
+    const isPreviewOrProdDomain = window.location.hostname.includes('preview--') || 
+                                 window.location.hostname.includes('lovable.app') ||
+                                 window.location.hostname === 'weallth.ai';
     
-    if (isPreviewDomain) {
-      console.log("Preview domain detected, ensuring proper rendering");
+    if (isPreviewOrProdDomain) {
+      console.log("Preview or production domain detected, ensuring proper rendering");
       // Force a style update to ensure rendering
       document.documentElement.style.height = '100%';
       document.body.style.minHeight = '100%';
+      document.body.style.margin = '0';
     }
     
     return () => {
