@@ -39,6 +39,29 @@ const StarRating = ({
     }
   };
 
+  // Handle star click with half-star precision
+  const handleStarClick = (starIndex: number, event: React.MouseEvent) => {
+    if (readOnly) return;
+    
+    const starElement = event.currentTarget;
+    const rect = starElement.getBoundingClientRect();
+    const starWidth = rect.width;
+    const clickX = event.clientX - rect.left;
+    
+    // If click is on left half of star, select half star
+    // If click is on right half, select full star
+    const isHalfStar = clickX < starWidth / 2;
+    const newValue = isHalfStar ? starIndex - 0.5 : starIndex;
+    
+    // If clicking exactly on current value, toggle slider for fine adjustments
+    if (Math.abs(newValue - value) < 0.1) {
+      setShowSlider(!showSlider);
+    } else {
+      onChange(newValue);
+      setShowSlider(false);
+    }
+  };
+
   // Display stars based on precise rating value
   const renderStars = () => {
     return [1, 2, 3, 4, 5].map((star) => {
@@ -69,19 +92,16 @@ const StarRating = ({
             "p-0.5 focus:outline-none transition-all relative",
             readOnly ? "cursor-default" : "cursor-pointer"
           )}
-          onClick={() => {
-            if (!readOnly) {
-              if (star === Math.floor(value) && value === star) {
-                // If clicking on the same full star, toggle slider
-                setShowSlider(!showSlider);
-              } else {
-                // Set to exactly this star value
-                onChange(star);
-                setShowSlider(false);
-              }
-            }
-          }}
+          onClick={(e) => handleStarClick(star, e)}
           onMouseEnter={() => !readOnly && setHoverValue(star)}
+          onMouseMove={(e) => {
+            if (readOnly) return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            const starWidth = rect.width;
+            const mouseX = e.clientX - rect.left;
+            const isLeftHalf = mouseX < starWidth / 2;
+            setHoverValue(isLeftHalf ? star - 0.5 : star);
+          }}
           onMouseLeave={() => !readOnly && setHoverValue(null)}
           disabled={readOnly}
         >
