@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
+import ChatButton from "./ChatButton";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -62,6 +63,7 @@ const Layout = ({ children }: LayoutProps) => {
           {children}
         </main>
       </div>
+      <ChatButton />
     </div>
   );
 };
