@@ -78,7 +78,7 @@ const Profile = () => {
             }
           } else if (Array.isArray(data.social_links)) {
             // It's already an array, ensure each element has platform and url
-            parsedSocialLinks = data.social_links
+            parsedSocialLinks = (data.social_links as any[])
               .filter((link: any) => 
                 typeof link === 'object' && 
                 link !== null && 
