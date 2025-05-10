@@ -45,34 +45,52 @@ const OverviewTabContent = ({ data }: OverviewTabContentProps) => {
     }) => {
       if (!user) throw new Error("User not authenticated");
       
-      // First get the entry and rating ids
+      // First get the entry id
       const { data: entryData, error: entryError } = await supabase
         .from('wellness_entries')
-        .select('id, wellness_ratings(id, metric_id)')
+        .select('id')
         .eq('user_id', user.id)
         .eq('date', entryDate)
-        .single();
+        .maybeSingle();
       
       if (entryError) throw entryError;
+      if (!entryData) throw new Error("Entry not found");
       
       // Find the rating for this metric
-      const rating = entryData.wellness_ratings.find((r: any) => r.metric_id === metricId);
-      
-      if (!rating) {
-        // If no rating exists for this metric, we can't update the baby step
-        throw new Error("Rating not found for this metric");
-      }
-      
-      // Update the baby step
-      const { error } = await supabase
+      const { data: ratingData, error: ratingError } = await supabase
         .from('wellness_ratings')
-        .update({ 
-          baby_step: babyStep,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', rating.id);
+        .select('id')
+        .eq('entry_id', entryData.id)
+        .eq('metric_id', metricId)
+        .maybeSingle();
       
-      if (error) throw error;
+      if (ratingError) throw ratingError;
+      
+      if (ratingData) {
+        // Update existing rating
+        const { error } = await supabase
+          .from('wellness_ratings')
+          .update({ 
+            baby_step: babyStep,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', ratingData.id);
+        
+        if (error) throw error;
+      } else {
+        // Create a new rating if none exists
+        const { error } = await supabase
+          .from('wellness_ratings')
+          .insert({
+            entry_id: entryData.id,
+            metric_id: metricId,
+            score: 3.0, // Default score
+            baby_step: babyStep,
+            created_at: new Date().toISOString()
+          });
+        
+        if (error) throw error;
+      }
       
       return { entryDate, metricId, babyStep };
     },
@@ -94,8 +112,22 @@ const OverviewTabContent = ({ data }: OverviewTabContentProps) => {
         })
       );
       
+      // Show success message
+      toast({
+        title: "Success!",
+        description: "Baby step updated successfully",
+      });
+      
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['wellnessEntries'] as unknown as never });
+    },
+    onError: (error) => {
+      console.error('Error updating baby step:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update baby step. Please try again.",
+        variant: "destructive"
+      });
     }
   });
   
@@ -109,15 +141,6 @@ const OverviewTabContent = ({ data }: OverviewTabContentProps) => {
       entryDate,
       metricId,
       babyStep
-    }, {
-      onError: (error) => {
-        console.error('Error updating baby step:', error);
-        toast({
-          title: "Error",
-          description: "Failed to update baby step. Please try again.",
-          variant: "destructive"
-        });
-      }
     });
   };
 
