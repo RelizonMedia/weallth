@@ -23,6 +23,25 @@ if (currentHostname === 'weallth.ai' && window.location.protocol !== 'https:') {
   window.location.href = 'https://weallth.ai' + window.location.pathname + window.location.search;
 }
 
+// Create app fallback content in case of critical render failure
+const createFallbackContent = (error: any) => {
+  return `
+    <div style="padding: 20px; margin: 20px; font-family: system-ui, -apple-system, sans-serif;">
+      <h1>Weallth</h1>
+      <p>We're sorry, but there was a problem loading the application.</p>
+      <p>Please try:</p>
+      <ul>
+        <li>Refreshing the page</li>
+        <li>Clearing your browser cache</li>
+        <li>Trying a different browser</li>
+      </ul>
+      <p>If the problem persists, please contact support.</p>
+      <p>Error details: ${error instanceof Error ? error.message : String(error)}</p>
+      <p>Domain: ${currentHostname}</p>
+    </div>
+  `;
+};
+
 // Improved root element detection and error handling
 const root = document.getElementById("root");
 
@@ -60,19 +79,29 @@ if (!root) {
     document.body.style.margin = '0';
     
     console.log(`Mounting Weallth application with light theme on ${currentHostname}...`);
-    const reactRoot = createRoot(root);
-    reactRoot.render(<App />);
-    console.log("Weallth application mounted successfully");
+    
+    // Try to render using React
+    try {
+      const reactRoot = createRoot(root);
+      reactRoot.render(<App />);
+      console.log("Weallth application mounted successfully");
+    } catch (reactError) {
+      console.error(`React render error on ${currentHostname}:`, reactError);
+      
+      // Create a more detailed fallback UI in case of React failure
+      root.innerHTML = createFallbackContent(reactError);
+      
+      // Try to report the error (can be expanded with analytics)
+      try {
+        console.error("React render error:", reactError);
+      } catch (e) {
+        // Silent catch for any reporting errors
+      }
+    }
   } catch (error) {
-    console.error(`Failed to render application on ${currentHostname}:`, error);
-    root.innerHTML = `
-      <div style="padding: 20px; margin: 20px; border: 1px solid red;">
-        <h1>Application Error</h1>
-        <p>The application could not initialize properly.</p>
-        <p>Please try refreshing the page or contact support.</p>
-        <p>Domain: ${currentHostname}</p>
-        <p>Error details: ${error instanceof Error ? error.message : String(error)}</p>
-      </div>
-    `;
+    console.error(`Critical initialization error on ${currentHostname}:`, error);
+    if (root) {
+      root.innerHTML = createFallbackContent(error);
+    }
   }
 }

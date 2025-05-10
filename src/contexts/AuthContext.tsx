@@ -22,12 +22,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [authInitialized, setAuthInitialized] = useState(false);
 
   // Function to ensure user profile exists
   const ensureProfile = async () => {
     if (!user) return;
     
     try {
+      console.log("Ensuring profile exists for user:", user.id);
       // Check if profile exists
       const { data: existingProfile, error: fetchError } = await supabase
         .from('profiles')
@@ -37,6 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // If profile doesn't exist, create it
       if (!existingProfile && !fetchError) {
+        console.log("Profile doesn't exist, creating new profile");
         const { error: insertError } = await supabase
           .from('profiles')
           .insert({
@@ -56,6 +59,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else {
           console.log('Profile created successfully');
         }
+      } else if (fetchError) {
+        console.error("Error checking for existing profile:", fetchError);
+      } else {
+        console.log("Profile exists:", existingProfile);
       }
     } catch (error) {
       console.error('Error in ensureProfile:', error);
@@ -63,39 +70,64 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // Set up auth state listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+    // Capture current hostname for logging
+    const hostname = window.location.hostname;
+    console.log(`Initializing auth context on ${hostname}`);
+    
+    try {
+      // Set up auth state listener first
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          console.log("Auth state changed:", event);
+          setSession(session);
+          setUser(session?.user ?? null);
+          
+          if (event === 'SIGNED_IN' && session?.user) {
+            console.log("User signed in, ensuring profile exists");
+            // Ensure profile exists when user signs in
+            await ensureProfile();
+          }
+          
+          if (event === 'SIGNED_OUT') {
+            console.log("User signed out, redirecting to auth");
+            navigate('/auth');
+          }
+        }
+      );
+
+      // Then check for existing session
+      console.log("Checking for existing session");
+      supabase.auth.getSession().then(async ({ data: { session } }) => {
+        console.log("Existing session check result:", session ? "Found session" : "No session");
         setSession(session);
         setUser(session?.user ?? null);
         
-        if (event === 'SIGNED_IN' && session?.user) {
-          // Ensure profile exists when user signs in
+        if (session?.user) {
+          console.log("Found existing user session, ensuring profile exists");
+          // Ensure profile exists for existing session
           await ensureProfile();
         }
         
-        if (event === 'SIGNED_OUT') {
-          navigate('/auth');
+        setLoading(false);
+        setAuthInitialized(true);
+      }).catch(err => {
+        console.error("Error getting session:", err);
+        setLoading(false);
+        setAuthInitialized(true);
+      });
+
+      return () => {
+        try {
+          subscription.unsubscribe();
+        } catch (error) {
+          console.error("Error unsubscribing from auth:", error);
         }
-      }
-    );
-
-    // Then check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        // Ensure profile exists for existing session
-        await ensureProfile();
-      }
-      
+      };
+    } catch (error) {
+      console.error("Critical error in auth initialization:", error);
       setLoading(false);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
+      setAuthInitialized(true);
+    }
   }, [navigate]);
 
   const signOut = async () => {
@@ -118,10 +150,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const refreshSession = async () => {
-    const { data } = await supabase.auth.getSession();
-    setSession(data.session);
-    setUser(data.session?.user ?? null);
+    try {
+      const { data } = await supabase.auth.getSession();
+      setSession(data.session);
+      setUser(data.session?.user ?? null);
+    } catch (error) {
+      console.error("Error refreshing session:", error);
+    }
   };
+
+  // If auth fails to initialize after a timeout, show app anyway
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (!authInitialized) {
+        console.log("Auth initialization timeout - forcing completion");
+        setLoading(false);
+        setAuthInitialized(true);
+      }
+    }, 5000); // 5 second timeout
+
+    return () => clearTimeout(timeout);
+  }, [authInitialized]);
 
   return (
     <AuthContext.Provider value={{ session, user, loading, signOut, refreshSession, ensureProfile }}>
