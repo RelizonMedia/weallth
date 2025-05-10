@@ -33,7 +33,7 @@ const WellnessMetricCard = ({ metric, initialRating, onSave }: WellnessMetricCar
   
   const IconComponent = iconMap[metric.icon] || Activity;
   
-  // Auto-save when score changes - this is the key change
+  // Auto-save when score changes
   const handleScoreChange = (newScore: number) => {
     setScore(newScore);
     // Save even without baby step text
@@ -62,7 +62,7 @@ const WellnessMetricCard = ({ metric, initialRating, onSave }: WellnessMetricCar
       metricId: metric.id,
       score: currentScore,
       babyStep: currentBabyStep, // Can be empty string
-      completed: currentScore > 0, // Only require a score to be "complete"
+      completed: false, // Baby steps start as not completed
       date: new Date().toISOString()
     };
     

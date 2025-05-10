@@ -11,10 +11,12 @@ import { AlertCircle, CheckCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import WellnessScoreDisplay from "@/components/WellnessScoreDisplay";
 import { Progress } from "@/components/ui/progress";
+import BabyStepsTracker from "@/components/BabyStepsTracker";
 
 const TrackPage = () => {
   const [ratings, setRatings] = useState<WellnessRating[]>([]);
   const [submitted, setSubmitted] = useState(false);
+  const [showBabySteps, setShowBabySteps] = useState(false);
   const [overallScore, setOverallScore] = useState(0);
   const [category, setCategory] = useState("");
   const { toast } = useToast();
@@ -80,6 +82,21 @@ const TrackPage = () => {
     });
   };
   
+  const handleToggleBabyStep = (metricId: string, completed: boolean) => {
+    // Update the ratings state with the new completed status
+    setRatings(prev => 
+      prev.map(rating => 
+        rating.metricId === metricId 
+          ? { ...rating, completed } 
+          : rating
+      )
+    );
+  };
+  
+  const handleViewBabySteps = () => {
+    setShowBabySteps(true);
+  };
+  
   const handleGoToDashboard = () => {
     navigate('/');
   };
@@ -95,42 +112,24 @@ const TrackPage = () => {
   return (
     <Layout>
       <div className="flex flex-col space-y-6">
-        <div className="flex flex-col space-y-2">
-          <h1 className="text-3xl font-bold">Track Today's Wellness</h1>
-          <p className="text-muted-foreground">
-            Rate each of your 10 core wellness metrics and set baby steps for improvement
-          </p>
-        </div>
-        
-        <Alert className="bg-wellness-mint border-wellness-teal">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Track Your Wellness Daily</AlertTitle>
-          <AlertDescription>
-            For best results, track your wellness metrics at the same time each day.
-            Rate each area honestly - adding baby steps for improvement is optional.
-          </AlertDescription>
-        </Alert>
-        
-        {submitted ? (
-          <div className="flex flex-col items-center space-y-6 py-8">
-            <div className="w-full max-w-md">
-              <WellnessScoreDisplay
-                score={overallScore}
-                category={category as any}
-                previousScore={undefined}
-              />
-            </div>
-            <div className="text-center space-y-4">
-              <p className="text-lg">
-                Thank you for tracking your wellness today! Your data has been saved.
-              </p>
-              <Button onClick={handleGoToDashboard} size="lg">
-                Go to Dashboard
-              </Button>
-            </div>
-          </div>
-        ) : (
+        {!submitted && (
           <>
+            <div className="flex flex-col space-y-2">
+              <h1 className="text-3xl font-bold">Track Today's Wellness</h1>
+              <p className="text-muted-foreground">
+                Rate each of your 10 core wellness metrics and set baby steps for improvement
+              </p>
+            </div>
+            
+            <Alert className="bg-wellness-mint border-wellness-teal">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Track Your Wellness Daily</AlertTitle>
+              <AlertDescription>
+                For best results, track your wellness metrics at the same time each day.
+                Rate each area honestly - adding baby steps for improvement is optional.
+              </AlertDescription>
+            </Alert>
+            
             <div className="flex items-center space-x-2">
               <span className="font-medium">{ratedMetricsCount} of {wellnessMetrics.length} metrics rated</span>
               <Progress value={completionPercentage} className="w-32 h-2" />
@@ -175,6 +174,56 @@ const TrackPage = () => {
               </Button>
             </div>
           </>
+        )}
+
+        {submitted && !showBabySteps && (
+          <div className="flex flex-col items-center space-y-6 py-8">
+            <div className="w-full max-w-md">
+              <WellnessScoreDisplay
+                score={overallScore}
+                category={category as any}
+                previousScore={undefined}
+              />
+            </div>
+            <div className="text-center space-y-4">
+              <p className="text-lg">
+                Thank you for tracking your wellness today! Your data has been saved.
+              </p>
+              <div className="flex space-x-4 justify-center">
+                <Button onClick={handleViewBabySteps} size="lg" className="bg-wellness-purple hover:bg-wellness-purple/90">
+                  View Baby Steps Tracker
+                </Button>
+                <Button onClick={handleGoToDashboard} size="lg" variant="outline">
+                  Go to Dashboard
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {submitted && showBabySteps && (
+          <div className="py-4">
+            <div className="mb-6">
+              <h1 className="text-3xl font-bold">Your Baby Steps</h1>
+              <p className="text-muted-foreground">
+                Track your daily progress on the baby steps you've set
+              </p>
+            </div>
+            
+            <div className="mb-6">
+              <WellnessScoreDisplay
+                score={overallScore}
+                category={category as any}
+                previousScore={undefined}
+              />
+            </div>
+            
+            <BabyStepsTracker 
+              ratings={ratings} 
+              onComplete={handleGoToDashboard}
+              onToggleStep={handleToggleBabyStep}
+            />
+          </div>
         )}
       </div>
     </Layout>
