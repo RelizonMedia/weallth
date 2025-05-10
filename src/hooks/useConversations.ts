@@ -9,7 +9,10 @@ export const useConversations = () => {
   const { user } = useAuth();
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
 
-  const { data: conversations = [], isLoading: conversationsLoading } = useQuery({
+  const { 
+    data: conversations = [], 
+    isLoading: conversationsLoading 
+  } = useQuery({
     queryKey: ['conversations', user?.id],
     queryFn: async () => {
       if (!user) return [];

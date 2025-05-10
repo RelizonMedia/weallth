@@ -36,7 +36,7 @@ export const useMessages = (conversationId: string | null) => {
   });
 
   // Send a message
-  const sendMessage = useMutation({
+  const { mutateAsync: sendMessageMutation } = useMutation({
     mutationFn: async (content: string) => {
       if (!conversationId) throw new Error("No conversation selected");
       
@@ -64,7 +64,7 @@ export const useMessages = (conversationId: string | null) => {
     if (!messageText.trim()) return;
     
     try {
-      await sendMessage.mutateAsync(messageText);
+      await sendMessageMutation(messageText);
     } catch (error) {
       console.error("Failed to send message:", error);
     }

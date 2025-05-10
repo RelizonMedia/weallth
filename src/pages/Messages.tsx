@@ -8,6 +8,7 @@ import ConversationList from "@/components/messaging/ConversationList";
 import MessagePanel from "@/components/messaging/MessagePanel";
 import { useConversations } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
+import { MessageConversation, MessageData } from "@/types/message";
 
 const Messages = () => {
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
@@ -16,28 +17,22 @@ const Messages = () => {
   const [recipientName, setRecipientName] = useState("");
   
   const { user } = useAuth();
-  const { conversations, setConversations } = useConversations(user?.id);
-  const { messages, sendMessage } = useMessages(user?.id, selectedConversation);
+  const { conversations, conversationsLoading } = useConversations();
+  const { messages, messageText, setMessageText, handleSendMessage } = useMessages(selectedConversation);
   
-  const handleSendMessage = async (messageText: string) => {
-    if (!user || !selectedConversation) return;
-    
-    const sentMessage = await sendMessage(messageText, selectedConversation, user.id);
-    if (!sentMessage) return;
-    
-    // Update the conversation list with the new message
-    const updatedConversations = conversations.map(conv => {
-      if (conv.userId === selectedConversation) {
-        return {
-          ...conv,
-          lastMessage: messageText.trim(),
-          timestamp: new Date().toISOString(),
-        };
-      }
-      return conv;
-    });
-    
-    setConversations(updatedConversations);
+  // Convert Conversation[] to MessageConversation[]
+  const formattedConversations: MessageConversation[] = conversations.map(conv => ({
+    userId: conv.user_id,
+    userName: conv.title || "Unknown",
+    lastMessage: conv.last_message || "",
+    timestamp: conv.updated_at || conv.created_at,
+    unreadCount: 0, // Default to 0 for now
+  }));
+  
+  // Handle sending message
+  const handleSendMessageWrapper = (messageText: string) => {
+    if (!messageText.trim() || !selectedConversation) return;
+    handleSendMessage();
   };
   
   const handleNewMessage = () => {
@@ -58,7 +53,7 @@ const Messages = () => {
           <div className="grid md:grid-cols-[300px_1fr]">
             {/* Left sidebar - conversations list */}
             <ConversationList 
-              conversations={conversations}
+              conversations={formattedConversations}
               selectedConversation={selectedConversation}
               onSelectConversation={handleSelectConversation}
               onNewMessage={handleNewMessage}
@@ -68,8 +63,8 @@ const Messages = () => {
             <MessagePanel
               selectedConversation={selectedConversation}
               recipientName={recipientName}
-              messages={messages}
-              onSendMessage={handleSendMessage}
+              messages={messages as MessageData[]} 
+              onSendMessage={handleSendMessageWrapper}
               onNewMessage={handleNewMessage}
             />
           </div>
