@@ -143,14 +143,15 @@ const OverviewTabContent = ({ data }: OverviewTabContentProps) => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {formattedData.slice(0, 3).map((entry, index) => (
+              {/* Only show the most recent entry */}
+              {formattedData.length > 0 && (
                 <WellnessHistoryItem 
-                  key={index} 
-                  entry={entry} 
+                  key={0} 
+                  entry={formattedData[0]} 
                   compact={false} 
                   onUpdateBabyStep={handleUpdateBabyStep}
                 />
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
