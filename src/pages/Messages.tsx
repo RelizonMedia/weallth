@@ -32,7 +32,9 @@ const Messages = () => {
       try {
         // Using a direct query approach with raw SQL results
         const { data: sentMessages, error: sentError } = await supabase
-          .rpc('get_user_conversations', { user_id: user.id }) as { 
+          .rpc('get_user_conversations', { 
+            user_id: user.id 
+          }) as unknown as { 
             data: ConversationResult[] | null; 
             error: any;
           };
@@ -96,7 +98,7 @@ const Messages = () => {
           .rpc('get_conversation_messages', { 
             user1_id: user.id, 
             user2_id: selectedConversation 
-          }) as {
+          }) as unknown as {
             data: MessageResult[] | null;
             error: any;
           };
@@ -184,10 +186,10 @@ const Messages = () => {
         content: messageText.trim(),
       };
       
-      // Using type assertion to bypass TypeScript checking
+      // Using type assertion with unknown first then the target type
       const { error } = await supabase
         .from('messages')
-        .insert(newMessage as any);
+        .insert(newMessage as unknown as Record<string, any>);
         
       if (error) throw error;
       
