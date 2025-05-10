@@ -45,10 +45,15 @@ const MyWellnessSpaces = () => {
         return;
       }
 
-      // For now we're using mock data, but this is where you'd fetch from Supabase
-      // In a real implementation, you would query the database
+      // Load user created spaces from localStorage
+      const savedCreatedSpaces = localStorage.getItem('userCreatedSpaces');
+      let userCreatedSpaces: WellnessSpaceData[] = [];
       
-      // Mock created spaces
+      if (savedCreatedSpaces) {
+        userCreatedSpaces = JSON.parse(savedCreatedSpaces);
+      }
+      
+      // If no saved spaces, use mock data for created spaces
       const createdMockSpaces: WellnessSpaceData[] = [
         {
           id: 'space-1',
@@ -76,6 +81,11 @@ const MyWellnessSpaces = () => {
         }
       ];
       
+      // Combine user-created spaces with mock data if there are no user spaces yet
+      const combinedCreatedSpaces = userCreatedSpaces.length > 0 
+        ? userCreatedSpaces 
+        : createdMockSpaces;
+      
       // Mock joined spaces
       const joinedMockSpaces: WellnessSpaceData[] = [
         {
@@ -102,7 +112,7 @@ const MyWellnessSpaces = () => {
         }
       ];
       
-      setMySpaces(createdMockSpaces);
+      setMySpaces(combinedCreatedSpaces);
       setJoinedSpaces(joinedMockSpaces);
     } catch (error) {
       console.error("Error fetching wellness spaces:", error);
@@ -117,18 +127,16 @@ const MyWellnessSpaces = () => {
   };
 
   const handleCreateSpace = (spaceData: WellnessSpaceData) => {
-    const newSpace = {
-      ...spaceData,
-      isCreator: true
-    };
-    setMySpaces(prev => [newSpace, ...prev]);
+    // Update the state with the new space
+    setMySpaces(prev => [spaceData, ...prev]);
+    
+    // Automatically switch to the "created" tab to show the new space
+    setActiveTab("created");
     
     toast({
       title: "Space Created",
       description: `Your wellness space "${spaceData.name}" has been created successfully.`
     });
-
-    // In a real implementation, you would save to Supabase here
   };
 
   const handleOpenSpace = (spaceId: string) => {
@@ -156,8 +164,6 @@ const MyWellnessSpaces = () => {
       title: "Left Space",
       description: "You have successfully left this wellness space."
     });
-
-    // In a real implementation, you would update Supabase here
   };
 
   return (
@@ -176,7 +182,7 @@ const MyWellnessSpaces = () => {
           </Button>
         </div>
 
-        <Tabs defaultValue="joined" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full max-w-md grid-cols-2">
             <TabsTrigger value="joined">Joined Spaces</TabsTrigger>
             <TabsTrigger value="created">My Created Spaces</TabsTrigger>

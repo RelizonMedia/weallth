@@ -103,8 +103,12 @@ const CreateWellnessSpace = ({ open, onOpenChange, onCreated }: CreateWellnessSp
         mediaUrl = mediaPreview;
       }
       
+      // Create a unique ID for the new space
+      const spaceId = `space-${Date.now()}`;
+
+      // Create the space data object
       const newSpace: WellnessSpaceData = {
-        id: `space-${Date.now()}`,
+        id: spaceId,
         name,
         description,
         isPrivate: privacy === "private",
@@ -114,19 +118,13 @@ const CreateWellnessSpace = ({ open, onOpenChange, onCreated }: CreateWellnessSp
         mediaUrl,
         mediaType: mediaFile ? mediaType : "none",
         ownerId: user.id,
-        allowInvites, // Now included in WellnessSpaceData type
+        allowInvites,
       };
-      
-      // In a real implementation, we would save to Supabase here
-      // await supabase.from('wellness_spaces').insert({
-      //   name,
-      //   description,
-      //   is_private: privacy === "private",
-      //   allow_invites: allowInvites,
-      //   media_url: mediaUrl,
-      //   media_type: mediaFile ? mediaType : "none",
-      //   owner_id: user.id,
-      // });
+
+      // Store the new space in localStorage to persist between sessions
+      const existingSpaces = JSON.parse(localStorage.getItem('userCreatedSpaces') || '[]');
+      const updatedSpaces = [newSpace, ...existingSpaces];
+      localStorage.setItem('userCreatedSpaces', JSON.stringify(updatedSpaces));
       
       toast({
         title: "Wellness space created!",
