@@ -1,20 +1,27 @@
-import { MessageCircle, PartyPopper, Star, Trophy, Check, Users } from "lucide-react";
+
+import { MessageCircle, PartyPopper, Star, Trophy, Check, Users, Share } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { WellnessRating } from "@/types/wellness";
 import { Separator } from "@/components/ui/separator";
+
 interface WellnessStatsCardsProps {
   totalPoints: number;
   tipsShared: number;
   celebrationsGiven: number;
   allRatings: WellnessRating[];
   communityMembers?: number;
+  friendsInvited?: number;
+  winsShared?: number;
 }
+
 const WellnessStatsCards = ({
   totalPoints,
   tipsShared,
   celebrationsGiven,
   allRatings,
-  communityMembers = 0
+  communityMembers = 0,
+  friendsInvited = 0,
+  winsShared = 0
 }: WellnessStatsCardsProps) => {
   // Calculate total completed baby steps
   const totalBabyStepsCompleted = allRatings.filter(rating => rating.completed).length;
@@ -23,8 +30,9 @@ const WellnessStatsCards = ({
   const uniqueDates = new Set(allRatings.map(rating => rating.date));
   const totalDailyEntries = uniqueDates.size;
 
-  // Calculate external stars (tips + celebrations)
-  const externalStars = tipsShared + celebrationsGiven;
+  // Calculate external stars (tips + celebrations + invites + wins shared)
+  const externalStars = tipsShared + celebrationsGiven + friendsInvited + winsShared;
+  
   return <div className="space-y-6 mb-6">
       {/* Internal Stars Section */}
       <div>
@@ -84,7 +92,7 @@ const WellnessStatsCards = ({
             Total: {externalStars}
           </span>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Wellness Tips Shared</CardTitle>
@@ -113,12 +121,26 @@ const WellnessStatsCards = ({
           
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Community Members</CardTitle>
+              <CardTitle className="text-sm font-medium">Friends Invited</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center">
-                <Users className="h-6 w-6 mr-2 text-blue-500" />
-                <span className="text-3xl font-bold">{communityMembers}</span>
+                <Users className="h-6 w-6 mr-2 text-green-500" />
+                <span className="text-3xl font-bold">{friendsInvited}</span>
+                <Star className="h-4 w-4 ml-2 text-amber-500 fill-amber-500" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Wins Shared</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center">
+                <Share className="h-6 w-6 mr-2 text-indigo-500" />
+                <span className="text-3xl font-bold">{winsShared}</span>
+                <Star className="h-4 w-4 ml-2 text-amber-500 fill-amber-500" />
               </div>
             </CardContent>
           </Card>
@@ -126,4 +148,5 @@ const WellnessStatsCards = ({
       </div>
     </div>;
 };
+
 export default WellnessStatsCards;

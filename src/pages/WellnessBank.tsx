@@ -5,7 +5,7 @@ import WellnessStatsCards from "@/components/wellness-bank/WellnessStatsCards";
 import WellnessTabs from "@/components/wellness-bank/WellnessTabs";
 import WellnessHistoryDetail from "@/components/wellness-bank/WellnessHistoryDetail";
 import { useToast } from "@/hooks/use-toast";
-import { Trophy, Star, MessageCircle, PartyPopper } from "lucide-react"; 
+import { Trophy, Star, MessageCircle, PartyPopper, Users, Award, Share } from "lucide-react"; 
 
 const WellnessBank = () => {
   const {
@@ -27,11 +27,13 @@ const WellnessBank = () => {
   // Community engagement metrics (simulated data - would be replaced with actual data)
   const tipsShared = 12;
   const celebrationsGiven = 8;
+  const friendsInvited = 5;
+  const winsShared = 7;
   const communityMembers = 5;
   
   // Calculate combined total stars (personal + community)
   const totalPersonalStars = totalPoints;
-  const totalCommunityStars = tipsShared + celebrationsGiven;
+  const totalCommunityStars = tipsShared + celebrationsGiven + friendsInvited + winsShared;
   const combinedTotalStars = totalPersonalStars + totalCommunityStars;
 
   // Calculate total daily entries
@@ -95,6 +97,20 @@ const WellnessBank = () => {
                 <div>
                   <div className="text-xs font-medium text-gray-600">Celebrations</div>
                   <div className="text-sm font-bold">{celebrationsGiven} stars</div>
+                </div>
+              </div>
+              <div className="flex items-center bg-white/60 rounded p-2">
+                <Users className="h-4 w-4 mr-2 text-green-500" />
+                <div>
+                  <div className="text-xs font-medium text-gray-600">Friends Invited</div>
+                  <div className="text-sm font-bold">{friendsInvited} stars</div>
+                </div>
+              </div>
+              <div className="flex items-center bg-white/60 rounded p-2">
+                <Share className="h-4 w-4 mr-2 text-indigo-500" />
+                <div>
+                  <div className="text-xs font-medium text-gray-600">Wins Shared</div>
+                  <div className="text-sm font-bold">{winsShared} stars</div>
                 </div>
               </div>
             </div>
