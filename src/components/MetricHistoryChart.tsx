@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, ComposedChart } from 'recharts';
 import { DailyWellnessEntry, WellnessMetric } from "@/types/wellness";
 import { format } from "date-fns";
 
@@ -66,7 +66,12 @@ const MetricHistoryChart = ({ data, metric }: MetricHistoryChartProps) => {
       formattedTime: format(date, "h:mm a"),
       category: score < 4.0 ? "Unhealthy" : 
                score < 4.5 ? "Healthy" : 
-               score < 4.7 ? "Great" : "Amazing"
+               score < 4.7 ? "Great" : "Amazing",
+      // Add specific score ranges for area color coding
+      unhealthyScore: score < 4.0 ? score : 0,
+      healthyScore: score >= 4.0 && score < 4.5 ? score : 0,
+      greatScore: score >= 4.5 && score < 4.7 ? score : 0,
+      amazingScore: score >= 4.7 ? score : 0
     };
   }).filter(item => item.score > 0); // Only include days with ratings
 
@@ -93,7 +98,7 @@ const MetricHistoryChart = ({ data, metric }: MetricHistoryChartProps) => {
       <CardContent>
         <div className="h-[200px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart
+            <ComposedChart
               data={chartData}
               margin={{
                 top: 5,
@@ -131,26 +136,57 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
                   return "";
                 }}
               />
+              
+              {/* Color-coded areas based on score categories */}
+              <Area 
+                type="monotone" 
+                dataKey="unhealthyScore" 
+                name="Unhealthy" 
+                fill="#F97316" 
+                stroke="#F97316" 
+                fillOpacity={0.5} 
+                stackId="1" 
+              />
+              <Area 
+                type="monotone" 
+                dataKey="healthyScore" 
+                name="Healthy" 
+                fill="#4ECDC4" 
+                stroke="#4ECDC4" 
+                fillOpacity={0.5} 
+                stackId="1" 
+              />
+              <Area 
+                type="monotone" 
+                dataKey="greatScore" 
+                name="Great" 
+                fill="#6C5DD3" 
+                stroke="#6C5DD3" 
+                fillOpacity={0.5}
+                stackId="1"  
+              />
+              <Area 
+                type="monotone" 
+                dataKey="amazingScore" 
+                name="Amazing" 
+                fill="#8B5CF6" 
+                stroke="#8B5CF6" 
+                fillOpacity={0.5}
+                stackId="1"  
+              />
+              
+              {/* Line to show the actual score trend */}
               <Line
                 type="monotone"
                 dataKey="score"
                 name={`${metric.name} Score`}
-                stroke="url(#colorScore)" // Use gradient reference
-                strokeWidth={3}
+                stroke="#000"
+                strokeWidth={2}
                 dot={CustomDot}
                 activeDot={CustomActiveDot}
                 connectNulls
               />
-              {/* Define color gradient based on score ranges */}
-              <defs>
-                <linearGradient id="colorScore" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#F97316" />
-                  <stop offset="40%" stopColor="#4ECDC4" />
-                  <stop offset="70%" stopColor="#6C5DD3" />
-                  <stop offset="100%" stopColor="#8B5CF6" />
-                </linearGradient>
-              </defs>
-            </LineChart>
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
         
