@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -7,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Star, MessageCircle, Trophy, PartyPopper, Search, Users, Plus, User, Lock, Folder, Globe, FolderPlus, UserPlus } from "lucide-react";
+import { Star, MessageCircle, Trophy, PartyPopper, Search, Users, Plus, User, Lock, Folder, Globe, FolderPlus, UserPlus, Share, Image, Video, Share2, Facebook, Instagram, Twitter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CreateWellnessSpace from "@/components/CreateWellnessSpace";
 import InviteFriendsModal from "@/components/InviteFriendsModal";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 // Mock data for communities and posts
 const mockCommunities = [
@@ -31,7 +31,11 @@ const mockPosts = [
     comments: 7, 
     celebrations: 12,
     date: "2 hours ago",
-    type: "progress"
+    type: "progress",
+    media: {
+      type: "image",
+      url: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158"
+    }
   },
   { 
     id: 2, 
@@ -51,7 +55,11 @@ const mockPosts = [
     comments: 5, 
     celebrations: 21,
     date: "2 days ago",
-    type: "win"
+    type: "win",
+    media: {
+      type: "video",
+      url: "https://player.vimeo.com/progressive_redirect/playback/745859902/rendition/720p/file.mp4?loc=external"
+    }
   }
 ];
 
@@ -72,7 +80,42 @@ const Community = () => {
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [selectedSpace, setSelectedSpace] = useState<string | null>(null);
   const [userSpaces, setUserSpaces] = useState<any[]>([]);
+  const [mediaType, setMediaType] = useState<"none" | "image" | "video">("none");
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Validate file type
+    const fileType = file.type.split('/')[0];
+    if ((mediaType === "image" && fileType !== "image") || 
+        (mediaType === "video" && fileType !== "video")) {
+      toast({
+        title: "Invalid file type",
+        description: `Please select a ${mediaType} file.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setMediaFile(file);
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setMediaPreview(event.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const clearMedia = () => {
+    setMediaFile(null);
+    setMediaPreview(null);
+    setMediaType("none");
+  };
 
   const handlePostSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,7 +132,11 @@ const Community = () => {
       title: "Post shared!",
       description: "Your post has been shared with the community",
     });
+
+    // In a real app, we'd save the post to the database
+    // For now, we'll just clear the form
     setPostContent("");
+    clearMedia();
   };
 
   const handleCelebration = (postId: number) => {
@@ -120,6 +167,52 @@ const Community = () => {
 
   const handleSpaceCreated = (newSpace: any) => {
     setUserSpaces([newSpace, ...userSpaces]);
+  };
+
+  const handleShareToSocial = (platform: string, post: any) => {
+    const shareText = `Check out my wellness update: ${post.content.substring(0, 100)}${post.content.length > 100 ? '...' : ''}`;
+    const shareUrl = window.location.href;
+    
+    let shareLink = '';
+    
+    switch (platform) {
+      case 'facebook':
+        shareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`;
+        break;
+      case 'twitter':
+        shareLink = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+        break;
+      case 'instagram':
+        // Instagram doesn't support direct sharing links, but we can notify the user
+        toast({
+          title: "Instagram Sharing",
+          description: "To share to Instagram, screenshot your achievement and upload it to your Instagram Story or Post.",
+        });
+        return;
+      default:
+        // Generic share dialog (if supported by browser)
+        if (navigator.share) {
+          navigator.share({
+            title: 'My Wellness Journey',
+            text: shareText,
+            url: shareUrl,
+          }).catch((error) => console.log('Error sharing:', error));
+          return;
+        } else {
+          // Fallback if Web Share API is not supported
+          shareLink = `mailto:?subject=Check%20out%20my%20wellness%20journey&body=${encodeURIComponent(`${shareText} ${shareUrl}`)}`;
+        }
+    }
+    
+    // Open sharing link in a new window
+    if (shareLink) {
+      window.open(shareLink, '_blank', 'noopener,noreferrer');
+    }
+    
+    toast({
+      title: "Sharing to " + platform,
+      description: `Your ${post.type === 'win' ? 'achievement' : 'post'} is being shared.`,
+    });
   };
 
   const filteredCommunities = mockCommunities.filter(community => 
@@ -158,6 +251,81 @@ const Community = () => {
                       className="min-h-[100px]"
                     />
                   </div>
+
+                  {/* Media upload controls */}
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap gap-3">
+                      <Button 
+                        type="button" 
+                        variant={mediaType === "image" ? "default" : "outline"}
+                        onClick={() => {
+                          setMediaType(mediaType === "image" ? "none" : "image");
+                          clearMedia();
+                        }}
+                        className="flex items-center"
+                      >
+                        <Image className="mr-2 h-4 w-4" />
+                        Add Image
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant={mediaType === "video" ? "default" : "outline"}
+                        onClick={() => {
+                          setMediaType(mediaType === "video" ? "none" : "video");
+                          clearMedia();
+                        }}
+                        className="flex items-center"
+                      >
+                        <Video className="mr-2 h-4 w-4" />
+                        Add Video
+                      </Button>
+                    </div>
+
+                    {mediaType !== "none" && (
+                      <div className="border border-dashed border-gray-300 rounded-md p-4">
+                        <Input
+                          type="file"
+                          accept={mediaType === "image" ? "image/*" : "video/*"}
+                          onChange={handleFileChange}
+                          className="cursor-pointer"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {mediaType === "image" 
+                            ? "Supported formats: JPG, PNG, GIF (max 5MB)" 
+                            : "Supported formats: MP4, WebM (max 20MB)"}
+                        </p>
+                      </div>
+                    )}
+
+                    {mediaPreview && (
+                      <div className="mt-2 border rounded-md p-2">
+                        {mediaType === "image" && (
+                          <img 
+                            src={mediaPreview} 
+                            alt="Preview" 
+                            className="max-h-40 mx-auto rounded-md" 
+                          />
+                        )}
+                        {mediaType === "video" && (
+                          <video 
+                            src={mediaPreview} 
+                            controls 
+                            className="max-h-40 w-full rounded-md" 
+                          />
+                        )}
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm"
+                          onClick={clearMedia}
+                          className="mt-2"
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
                   <div className="flex flex-wrap gap-3">
                     <Button 
                       type="button" 
@@ -229,10 +397,30 @@ const Community = () => {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="space-y-4">
                     <p>{post.content}</p>
+                    
+                    {/* Display media if available */}
+                    {post.media && (
+                      <div className="rounded-md overflow-hidden border">
+                        {post.media.type === "image" && (
+                          <img 
+                            src={post.media.url}
+                            alt="Post media" 
+                            className="w-full object-cover max-h-80" 
+                          />
+                        )}
+                        {post.media.type === "video" && (
+                          <video 
+                            src={post.media.url}
+                            controls 
+                            className="w-full max-h-80" 
+                          />
+                        )}
+                      </div>
+                    )}
                   </CardContent>
-                  <CardFooter className="border-t pt-3 flex justify-between">
+                  <CardFooter className="border-t pt-3 flex justify-between flex-wrap gap-2">
                     <div className="flex space-x-4">
                       <Button variant="ghost" size="sm" className="flex items-center">
                         <Star className="mr-1 h-4 w-4" />
@@ -242,16 +430,57 @@ const Community = () => {
                         <MessageCircle className="mr-1 h-4 w-4" />
                         <span>{post.comments}</span>
                       </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleCelebration(post.id)}
+                        className="flex items-center"
+                      >
+                        <PartyPopper className="mr-1 h-4 w-4 text-purple-500" />
+                        Celebrate
+                      </Button>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => handleCelebration(post.id)}
-                      className="flex items-center"
-                    >
-                      <PartyPopper className="mr-1 h-4 w-4 text-purple-500" />
-                      Celebrate ({post.celebrations})
-                    </Button>
+                    
+                    {/* Social sharing */}
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" size="sm" className="flex items-center">
+                          <Share2 className="mr-1 h-4 w-4" />
+                          Share
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-2" align="end">
+                        <div className="flex flex-col space-y-1">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="flex items-center justify-start"
+                            onClick={() => handleShareToSocial("facebook", post)}
+                          >
+                            <Facebook className="mr-2 h-4 w-4 text-blue-600" />
+                            Facebook
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="flex items-center justify-start"
+                            onClick={() => handleShareToSocial("twitter", post)}
+                          >
+                            <Twitter className="mr-2 h-4 w-4 text-blue-400" />
+                            Twitter
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="flex items-center justify-start"
+                            onClick={() => handleShareToSocial("instagram", post)}
+                          >
+                            <Instagram className="mr-2 h-4 w-4 text-pink-600" />
+                            Instagram
+                          </Button>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   </CardFooter>
                 </Card>
               ))}

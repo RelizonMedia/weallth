@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
-import { Globe, Lock } from "lucide-react";
+import { Globe, Lock, Image, Video } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface CreateWellnessSpaceProps {
@@ -29,7 +29,41 @@ const CreateWellnessSpace = ({ open, onOpenChange, onCreated }: CreateWellnessSp
   const [privacy, setPrivacy] = useState("public");
   const [allowInvites, setAllowInvites] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mediaType, setMediaType] = useState<"none" | "image" | "video">("none");
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Validate file type
+    const fileType = file.type.split('/')[0];
+    if ((mediaType === "image" && fileType !== "image") || 
+        (mediaType === "video" && fileType !== "video")) {
+      toast({
+        title: "Invalid file type",
+        description: `Please select a ${mediaType} file.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setMediaFile(file);
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setMediaPreview(event.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const clearMedia = () => {
+    setMediaFile(null);
+    setMediaPreview(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +82,9 @@ const CreateWellnessSpace = ({ open, onOpenChange, onCreated }: CreateWellnessSp
         allowInvites,
         members: 1,
         createdAt: new Date().toISOString(),
+        // If we had real file storage, we'd upload the file and get a URL
+        mediaUrl: mediaPreview,
+        mediaType: mediaFile ? mediaType : "none",
       };
       
       toast({
@@ -64,6 +101,9 @@ const CreateWellnessSpace = ({ open, onOpenChange, onCreated }: CreateWellnessSp
       setDescription("");
       setPrivacy("public");
       setAllowInvites(true);
+      setMediaType("none");
+      setMediaFile(null);
+      setMediaPreview(null);
       onOpenChange(false);
     } catch (error) {
       toast({
@@ -143,6 +183,84 @@ const CreateWellnessSpace = ({ open, onOpenChange, onCreated }: CreateWellnessSp
                 onCheckedChange={setAllowInvites} 
               />
               <Label htmlFor="allow-invites">Allow members to invite others</Label>
+            </div>
+
+            {/* Media upload section */}
+            <div className="grid gap-2">
+              <Label>Add Media (Optional)</Label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={mediaType === "image" ? "default" : "outline"}
+                  className="flex items-center"
+                  onClick={() => {
+                    setMediaType("image");
+                    clearMedia();
+                  }}
+                >
+                  <Image className="h-4 w-4 mr-2" />
+                  Image
+                </Button>
+                <Button
+                  type="button"
+                  variant={mediaType === "video" ? "default" : "outline"}
+                  className="flex items-center"
+                  onClick={() => {
+                    setMediaType("video");
+                    clearMedia();
+                  }}
+                >
+                  <Video className="h-4 w-4 mr-2" />
+                  Video
+                </Button>
+                {mediaType !== "none" && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setMediaType("none");
+                      clearMedia();
+                    }}
+                  >
+                    Clear
+                  </Button>
+                )}
+              </div>
+
+              {mediaType !== "none" && (
+                <div className="mt-2">
+                  <Input
+                    type="file"
+                    accept={mediaType === "image" ? "image/*" : "video/*"}
+                    onChange={handleFileChange}
+                    className="cursor-pointer"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {mediaType === "image" 
+                      ? "Supported formats: JPG, PNG, GIF (max 5MB)" 
+                      : "Supported formats: MP4, WebM (max 20MB)"}
+                  </p>
+                </div>
+              )}
+
+              {mediaPreview && (
+                <div className="mt-2 border rounded-md p-2">
+                  {mediaType === "image" && (
+                    <img 
+                      src={mediaPreview} 
+                      alt="Preview" 
+                      className="max-h-40 mx-auto rounded-md" 
+                    />
+                  )}
+                  {mediaType === "video" && (
+                    <video 
+                      src={mediaPreview} 
+                      controls 
+                      className="max-h-40 w-full rounded-md" 
+                    />
+                  )}
+                </div>
+              )}
             </div>
           </div>
           
