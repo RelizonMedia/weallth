@@ -134,6 +134,7 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
 
               {/* Color-coded areas for score categories */}
               <Area 
+                dataKey="score"
                 y1={4.7} 
                 y2={5} 
                 fill="#8B5CF6" 
@@ -142,6 +143,7 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
                 name="Amazing (4.7-5.0)"
               />
               <Area 
+                dataKey="score"
                 y1={4.5} 
                 y2={4.7} 
                 fill="#6C5DD3" 
@@ -150,6 +152,7 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
                 name="Great (4.5-4.7)"
               />
               <Area 
+                dataKey="score"
                 y1={4.0} 
                 y2={4.5} 
                 fill="#4ECDC4" 
@@ -158,6 +161,7 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
                 name="Healthy (4.0-4.5)"
               />
               <Area 
+                dataKey="score"
                 y1={0} 
                 y2={4.0} 
                 fill="#F97316" 
