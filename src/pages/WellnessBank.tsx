@@ -5,7 +5,7 @@ import { useWellnessTracking } from "@/hooks/useWellnessTracking";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BabyStepsHistory from "@/components/BabyStepsHistory";
 import WellnessChart from "@/components/WellnessChart";
-import { Star, MessageCircle, Trophy, PartyPopper, Calendar, Clock } from "lucide-react";
+import { Star, MessageCircle, Trophy, PartyPopper, Calendar, Clock, Check } from "lucide-react";
 import {
   Table,
   TableBody,
