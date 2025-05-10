@@ -10,11 +10,11 @@ interface LayoutProps {
 }
 
 const Layout = ({ children }: LayoutProps) => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Default to closed
   const isMobile = useIsMobile();
   
-  // On mobile, default to sidebar closed
-  const effectiveSidebarOpen = isMobile ? false : sidebarOpen;
+  // On mobile, sidebar is only shown when explicitly toggled
+  const effectiveSidebarOpen = isMobile ? sidebarOpen : false; // Desktop always uses hover
   
   const toggleSidebar = () => {
     setSidebarOpen(prevState => !prevState);
@@ -23,10 +23,7 @@ const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="min-h-screen bg-background">
       <Sidebar isOpen={effectiveSidebarOpen} />
-      <div className={cn(
-        "transition-all duration-300 ease-in-out",
-        effectiveSidebarOpen && !isMobile ? "lg:ml-64" : "ml-0"
-      )}>
+      <div className="transition-all duration-300 ease-in-out ml-0">
         <Header toggleSidebar={toggleSidebar} />
         <main className="container mx-auto p-4 md:p-6">
           {children}

@@ -38,23 +38,17 @@ const Sidebar = ({ isOpen }: SidebarProps) => {
   const [isHovering, setIsHovering] = useState(false);
   const isMobile = useIsMobile();
   
-  // Determine if sidebar should be shown (based on isOpen prop and hover state)
-  // For better clarity, we're making the logic more explicit
-  const showSidebar = isMobile ? isOpen : (isOpen || isHovering);
+  // Always show sidebar on hover, regardless of the isOpen prop
+  const showSidebar = isMobile ? isOpen : isHovering;
   
   return (
     <>
-      {/* Hover detection area - always visible on desktop, hidden on mobile */}
-      {!isMobile && (
-        <div
-          className={cn(
-            "fixed inset-y-0 left-0 z-30 w-3 transition-opacity duration-300",
-            showSidebar ? "opacity-0" : "opacity-100"
-          )}
-          onMouseEnter={() => setIsHovering(true)}
-          aria-hidden="true"
-        />
-      )}
+      {/* Hover detection area - always visible */}
+      <div
+        className="fixed inset-y-0 left-0 z-30 w-6 transition-opacity duration-300"
+        onMouseEnter={() => setIsHovering(true)}
+        aria-hidden="true"
+      />
       
       {/* Main sidebar */}
       <aside
@@ -62,8 +56,8 @@ const Sidebar = ({ isOpen }: SidebarProps) => {
           "fixed inset-y-0 left-0 z-40 w-64 bg-background border-r transform transition-transform duration-300 ease-in-out",
           showSidebar ? "translate-x-0" : "-translate-x-full"
         )}
-        onMouseEnter={() => !isMobile && setIsHovering(true)}
-        onMouseLeave={() => !isMobile && setIsHovering(false)}
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
       >
         <div className="flex flex-col h-full p-4">
           <div className="flex items-center gap-2 mb-10 px-2 py-4">
