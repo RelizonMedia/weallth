@@ -19,7 +19,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         console.log("Auth loading timeout reached - showing fallback");
         setAuthTimeout(true);
       }
-    }, 3000); // Reduced from 5 seconds to 3 seconds for faster fallback
+    }, 3000); // 3 seconds for faster fallback
     
     return () => clearTimeout(timer);
   }, [loading]);
@@ -46,7 +46,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
   
   // If loading timed out or no user, redirect to auth
-  if (authTimeout || !user) {
+  if (!user) {
     console.log("Redirecting to auth page", { authTimeout, hasUser: !!user });
     return <Navigate to="/auth" replace />;
   }

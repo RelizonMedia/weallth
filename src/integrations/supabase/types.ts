@@ -108,6 +108,21 @@ export type Database = {
         }
         Relationships: []
       }
+      Weallth: {
+        Row: {
+          created_at: string
+          id: number
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+        }
+        Update: {
+          created_at?: string
+          id?: number
+        }
+        Relationships: []
+      }
       wellness_entries: {
         Row: {
           category: string

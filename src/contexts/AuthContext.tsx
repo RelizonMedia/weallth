@@ -47,11 +47,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             username: user.email?.split('@')[0] || null,
             full_name: user.user_metadata?.full_name || null,
             avatar_url: user.user_metadata?.avatar_url || null,
-            bio: null,
-            interests: [],
-            goals: [],
-            dreams: [],
-            social_links: []
+            bio: null
           });
         
         if (insertError) {
@@ -85,7 +81,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (event === 'SIGNED_IN' && session?.user) {
             console.log("User signed in, ensuring profile exists");
             // Ensure profile exists when user signs in
-            await ensureProfile();
+            setTimeout(async () => {
+              await ensureProfile();
+            }, 0);
           }
           
           if (event === 'SIGNED_OUT') {
@@ -97,31 +95,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Then check for existing session
       console.log("Checking for existing session");
-      supabase.auth.getSession().then(async ({ data: { session } }) => {
-        console.log("Existing session check result:", session ? "Found session" : "No session");
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          console.log("Found existing user session, ensuring profile exists");
-          // Ensure profile exists for existing session
-          await ensureProfile();
-        } else {
-          // If on production domain and no session, redirect to auth immediately
-          const isProductionDomain = window.location.hostname === 'weallth.ai';
-          if (isProductionDomain && window.location.pathname !== '/auth') {
-            console.log("No session on production domain - redirecting to auth page");
-            navigate('/auth');
+      const checkSession = async () => {
+        try {
+          const { data: { session }, error } = await supabase.auth.getSession();
+          
+          if (error) {
+            console.error("Error getting session:", error);
+            setLoading(false);
+            setAuthInitialized(true);
+            return;
           }
+          
+          console.log("Existing session check result:", session ? "Found session" : "No session");
+          setSession(session);
+          setUser(session?.user ?? null);
+          
+          if (session?.user) {
+            console.log("Found existing user session, ensuring profile exists");
+            // Ensure profile exists for existing session
+            setTimeout(async () => {
+              await ensureProfile();
+            }, 0);
+          } else {
+            // If on production domain and no session, redirect to auth immediately
+            const isProductionDomain = window.location.hostname === 'weallth.ai';
+            if (isProductionDomain && window.location.pathname !== '/auth') {
+              console.log("No session on production domain - redirecting to auth page");
+              navigate('/auth');
+            }
+          }
+          
+          setLoading(false);
+          setAuthInitialized(true);
+        } catch (err) {
+          console.error("Critical error checking session:", err);
+          setLoading(false);
+          setAuthInitialized(true);
         }
-        
-        setLoading(false);
-        setAuthInitialized(true);
-      }).catch(err => {
-        console.error("Error getting session:", err);
-        setLoading(false);
-        setAuthInitialized(true);
-      });
+      };
+      
+      checkSession();
 
       return () => {
         try {
@@ -158,7 +171,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshSession = async () => {
     try {
-      const { data } = await supabase.auth.getSession();
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        throw error;
+      }
       setSession(data.session);
       setUser(data.session?.user ?? null);
     } catch (error) {
@@ -174,7 +190,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(false);
         setAuthInitialized(true);
       }
-    }, 3000); // Reduced from 5 seconds to 3 seconds for faster response
+    }, 3000); // 3 seconds timeout for faster response
 
     return () => clearTimeout(timeout);
   }, [authInitialized]);

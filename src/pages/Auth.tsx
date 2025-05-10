@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { Mail, Lock, Loader2 } from "lucide-react";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -16,32 +17,54 @@ const Auth = () => {
   const [initialLoading, setInitialLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  // Debug values specific to the production domain
-  const isProdDomain = window.location.hostname === 'weallth.ai';
+  
+  // Debug values specific to the domain
+  const currentDomain = window.location.hostname;
+  const isProdDomain = currentDomain === 'weallth.ai';
   
   useEffect(() => {
-    console.log(`Auth page mounted on domain: ${window.location.hostname}`);
+    console.log(`Auth page mounted on domain: ${currentDomain}`);
     console.log(`Is production domain: ${isProdDomain}`);
     
     // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("Auth page session check result:", session ? "User already logged in" : "No session found");
-      
-      if (session) {
-        console.log("Redirecting to home page from auth page");
-        navigate("/");
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Error checking session in Auth page:", error);
+          return;
+        }
+        
+        console.log("Auth page session check result:", session ? "User already logged in" : "No session found");
+        
+        if (session) {
+          console.log("Redirecting to home page from auth page");
+          navigate("/");
+          return;
+        }
+      } catch (err) {
+        console.error("Exception during session check:", err);
+      } finally {
+        setInitialLoading(false);
       }
-      
-      setInitialLoading(false);
-    }).catch(err => {
-      console.error("Error checking session in Auth page:", err);
-      setInitialLoading(false);
-    });
+    };
+    
+    checkSession();
   }, [navigate, isProdDomain]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email || !password) {
+      toast({
+        title: "Missing information",
+        description: "Please provide both email and password",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+    
     try {
       setLoading(true);
       console.log("Attempting signup with email:", email);
@@ -49,17 +72,25 @@ const Auth = () => {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: window.location.origin,
+        }
       });
 
       if (error) throw error;
 
-      if (data) {
-        console.log("Signup successful:", data);
+      if (data && data.user) {
+        console.log("Signup successful:", data.user.id);
         toast({
           title: "Account created successfully",
-          description: "Please check your email for confirmation",
+          description: data.session ? "You are now logged in!" : "Please check your email for confirmation",
           duration: 5000,
         });
+        
+        if (data.session) {
+          // If session is available immediately (email confirmation disabled in Supabase)
+          navigate("/");
+        }
       }
     } catch (error: any) {
       console.error("Signup error:", error);
@@ -76,6 +107,16 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email || !password) {
+      toast({
+        title: "Missing information",
+        description: "Please provide both email and password",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+    
     try {
       setLoading(true);
       console.log("Attempting signin with email:", email);
@@ -89,11 +130,11 @@ const Auth = () => {
 
       if (data.session) {
         console.log("Signin successful, redirecting to home");
-        navigate("/");
         toast({
           title: "Signed in successfully",
           duration: 3000,
         });
+        navigate("/");
       }
     } catch (error: any) {
       console.error("Signin error:", error);
@@ -141,7 +182,9 @@ const Auth = () => {
               <TabsContent value="signin">
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signin-email">Email</Label>
+                    <Label htmlFor="signin-email" className="flex items-center gap-2">
+                      <Mail className="h-4 w-4" /> Email
+                    </Label>
                     <Input
                       id="signin-email"
                       type="email"
@@ -149,11 +192,14 @@ const Auth = () => {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      className="bg-background"
                     />
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="signin-password">Password</Label>
+                      <Label htmlFor="signin-password" className="flex items-center gap-2">
+                        <Lock className="h-4 w-4" /> Password
+                      </Label>
                     </div>
                     <Input
                       id="signin-password"
@@ -161,17 +207,27 @@ const Auth = () => {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      className="bg-background"
                     />
                   </div>
                   <Button disabled={loading} className="w-full" type="submit">
-                    {loading ? "Signing in..." : "Sign In"}
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Signing in...
+                      </>
+                    ) : (
+                      "Sign In"
+                    )}
                   </Button>
                 </form>
               </TabsContent>
               <TabsContent value="signup">
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
+                    <Label htmlFor="signup-email" className="flex items-center gap-2">
+                      <Mail className="h-4 w-4" /> Email
+                    </Label>
                     <Input
                       id="signup-email"
                       type="email"
@@ -179,26 +235,43 @@ const Auth = () => {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      className="bg-background"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password</Label>
+                    <Label htmlFor="signup-password" className="flex items-center gap-2">
+                      <Lock className="h-4 w-4" /> Password
+                    </Label>
                     <Input
                       id="signup-password"
                       type="password"
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      minLength={6}
+                      className="bg-background"
                     />
                   </div>
                   <Button disabled={loading} className="w-full" type="submit">
-                    {loading ? "Signing up..." : "Sign Up"}
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Signing up...
+                      </>
+                    ) : (
+                      "Sign Up"
+                    )}
                   </Button>
                 </form>
               </TabsContent>
             </CardContent>
-            <CardFooter className="text-center text-sm text-muted-foreground">
-              By continuing, you agree to our Terms of Service and Privacy Policy.
+            <CardFooter className="flex flex-col space-y-2 text-center text-sm text-muted-foreground">
+              <p>By continuing, you agree to our Terms of Service and Privacy Policy.</p>
+              {isProdDomain && (
+                <p className="text-xs">
+                  Secure sign-in powered by Supabase Auth on {currentDomain}
+                </p>
+              )}
             </CardFooter>
           </Tabs>
         </Card>
