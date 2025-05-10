@@ -5,11 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Send, Brain, Sparkles, Info, LifeBuoy, ThumbsUp } from "lucide-react";
+import { Send, Brain, Sparkles, Info, LifeBuoy, ThumbsUp, Star } from "lucide-react";
 import AIMessage from "@/components/AIMessage";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
+import confetti from "canvas-confetti";
 
 // Define message types
 interface Message {
@@ -64,7 +65,8 @@ const AICompanionPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedExpert, setSelectedExpert] = useState<Expert>(experts[0]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
+  const [stars, setStars] = useState<number>(0);
+  
   // Fetch user's wellness data
   const {
     data: wellnessData
@@ -87,6 +89,14 @@ const AICompanionPage = () => {
     enabled: !!user
   });
 
+  // Load stars from localStorage
+  useEffect(() => {
+    const savedStars = localStorage.getItem('wellnessStars');
+    if (savedStars) {
+      setStars(parseInt(savedStars, 10));
+    }
+  }, []);
+  
   // Auto-scroll to bottom of messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({
@@ -97,7 +107,10 @@ const AICompanionPage = () => {
   // Add greeting message when expert is selected
   useEffect(() => {
     if (selectedExpert) {
-      const greetingMessage = selectedExpert.id === "marketplace-guide" ? `Hi! I'm your ${selectedExpert.name}. ${selectedExpert.description}. I specialize in ${selectedExpert.specialty}. You can ask me about products in our Wellness Marketplace or visit the marketplace directly to browse all offerings.` : `Hi! I'm your ${selectedExpert.name}. ${selectedExpert.description}. I specialize in ${selectedExpert.specialty}. How can I help you today?`;
+      const greetingMessage = selectedExpert.id === "marketplace-guide" 
+        ? `Hi! I'm your ${selectedExpert.name}. ${selectedExpert.description}. I specialize in ${selectedExpert.specialty}. You can ask me about products in our Wellness Marketplace or visit the marketplace directly to browse all offerings.` 
+        : `Hi! I'm your ${selectedExpert.name}. ${selectedExpert.description}. I specialize in ${selectedExpert.specialty}. How can I help you today?`;
+      
       setMessages([{
         role: "assistant",
         content: greetingMessage,
@@ -106,12 +119,14 @@ const AICompanionPage = () => {
       }]);
     }
   }, [selectedExpert]);
+  
   const handleExpertChange = (expertId: string) => {
     const expert = experts.find(e => e.id === expertId);
     if (expert) {
       setSelectedExpert(expert);
     }
   };
+  
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
     const userMessage: Message = {
@@ -123,12 +138,27 @@ const AICompanionPage = () => {
     setInputMessage("");
     setIsLoading(true);
     try {
+      // Check if message mentions achievements or completed goals
+      const achievementKeywords = ['completed', 'finished', 'achieved', 'done', 'accomplished', 'goal', 'step', 'success'];
+      const isAchievementMessage = achievementKeywords.some(keyword => inputMessage.toLowerCase().includes(keyword));
+      
       // In a real implementation, we would call an edge function here
       // that would process the message with an AI model
-
-      // For now, simulate a response based on the selected expert
       setTimeout(() => {
-        const simulatedResponse = generateSimulatedResponse(inputMessage, selectedExpert, wellnessData);
+        // If achievement message, trigger celebration
+        if (isAchievementMessage) {
+          try {
+            confetti({
+              particleCount: 100,
+              spread: 70,
+              origin: { y: 0.6 }
+            });
+          } catch (error) {
+            console.error("Error triggering confetti:", error);
+          }
+        }
+        
+        const simulatedResponse = generateSimulatedResponse(inputMessage, selectedExpert, wellnessData, isAchievementMessage);
         const assistantMessage: Message = {
           role: "assistant",
           content: simulatedResponse,
@@ -150,11 +180,17 @@ const AICompanionPage = () => {
   };
 
   // Simulated response generation based on expert type and user message
-  const generateSimulatedResponse = (message: string, expert: Expert, wellnessData: any) => {
+  const generateSimulatedResponse = (message: string, expert: Expert, wellnessData: any, isAchievement = false) => {
     const latestWellness = wellnessData && wellnessData.length > 0 ? wellnessData[0] : null;
     const overallScore = latestWellness?.overall_score || "unknown";
     const category = latestWellness?.category || "unknown";
     const lowercaseMessage = message.toLowerCase();
+    
+    // If it's an achievement message, add celebration response
+    if (isAchievement) {
+      return `That's absolutely fantastic! 🎉 Celebrating your steps toward wellness is so important. Each achievement, no matter how small, is moving you closer to your goals. You should be incredibly proud of yourself! This journey isn't always easy, but you're showing real commitment. Keep up the amazing work! Would you like to share more about how this accomplishment has made you feel?`;
+    }
+    
     switch (expert.id) {
       case "wellness-coach":
         if (lowercaseMessage.includes("score") || lowercaseMessage.includes("wellness")) {
@@ -182,12 +218,14 @@ const AICompanionPage = () => {
         return "I'm here to support you on your wellness journey. What specific aspect of your wellness would you like to focus on today?";
     }
   };
+  
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
   };
+  
   return <Layout>
       <div className="container mx-auto py-6 space-y-6">
         <div className="flex flex-col md:flex-row justify-between gap-4">
@@ -197,6 +235,15 @@ const AICompanionPage = () => {
               Your personalized wellness guide with expert insights and recommendations
             </p>
           </div>
+          {stars > 0 && (
+            <div className="flex items-center space-x-2 bg-amber-50 px-4 py-2 rounded-lg border border-amber-200">
+              <Star className="h-5 w-5 text-amber-500 fill-amber-500" />
+              <div>
+                <span className="font-bold text-amber-800">{stars}</span>
+                <span className="text-sm ml-1 text-amber-700">Wellness Stars Earned</span>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

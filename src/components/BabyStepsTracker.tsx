@@ -4,7 +4,7 @@ import { WellnessRating } from "@/types/wellness";
 import { wellnessMetrics } from "@/data/wellnessMetrics";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Check, Clock, Calendar, Star, Edit, Trash } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -31,6 +31,14 @@ const BabyStepsTracker = ({ ratings, onComplete, onToggleStep }: BabyStepsTracke
   );
   const [starsEarned, setStarsEarned] = useState(0);
   
+  // On component mount, load stars from localStorage
+  useEffect(() => {
+    const savedStars = localStorage.getItem('wellnessStars');
+    if (savedStars) {
+      setStarsEarned(parseInt(savedStars, 10));
+    }
+  }, []);
+  
   // Filter out ratings without baby steps
   const babySteps = stepsWithData.filter(step => step.babyStep.trim() !== '');
   
@@ -45,9 +53,12 @@ const BabyStepsTracker = ({ ratings, onComplete, onToggleStep }: BabyStepsTracke
   const triggerCelebration = () => {
     try {
       confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
+        particleCount: 150,
+        spread: 90,
+        origin: { y: 0.6 },
+        colors: ['#FFD700', '#FFA500', '#FF4500', '#9370DB', '#7B68EE'],
+        shapes: ['star', 'circle'],
+        ticks: 200
       });
     } catch (error) {
       console.error("Error triggering confetti:", error);
@@ -68,16 +79,34 @@ const BabyStepsTracker = ({ ratings, onComplete, onToggleStep }: BabyStepsTracke
     // Show celebration and increase star count if checked
     if (checked) {
       triggerCelebration();
-      setStarsEarned(prev => prev + 1);
+      const newStarsCount = starsEarned + 1;
+      setStarsEarned(newStarsCount);
+      localStorage.setItem('wellnessStars', newStarsCount.toString());
       
       toast({
-        title: "Goal achieved! 🎉",
-        description: "You've earned a star for your wellness bank!",
-        duration: 3000,
+        title: "🎉 Goal achieved! 🎉",
+        description: "Amazing job! You've earned a star for your wellness bank!",
+        duration: 5000,
       });
+      
+      // Show a second toast with more encouragement after a delay
+      setTimeout(() => {
+        toast({
+          title: "⭐ Progress Milestone! ⭐",
+          description: "You're one step closer to your wellness goals! Keep up the great work!",
+          duration: 4000,
+        });
+      }, 1500);
     } else {
+      // Decrease star count if unchecking
+      if (starsEarned > 0) {
+        const newStarsCount = starsEarned - 1;
+        setStarsEarned(newStarsCount);
+        localStorage.setItem('wellnessStars', newStarsCount.toString());
+      }
+      
       toast({
-        title: "Step marked as not completed",
+        title: "Step unmarked",
         description: "You can complete it later when you're ready.",
         duration: 1500,
       });
@@ -210,7 +239,7 @@ const BabyStepsTracker = ({ ratings, onComplete, onToggleStep }: BabyStepsTracke
           </>
         )}
       </CardContent>
-    </Card>
+    
   );
 };
 
