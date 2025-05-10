@@ -130,7 +130,7 @@ const GoalTrackerPage = () => {
             <Tabs defaultValue="active">
               <TabsList className="grid grid-cols-2 mb-4">
                 <TabsTrigger value="active">Active Baby Steps</TabsTrigger>
-                <TabsTrigger value="history">Goal History</TabsTrigger>
+                <TabsTrigger value="history">Baby Step Wins</TabsTrigger>
               </TabsList>
               
               <TabsContent value="active" className="space-y-4">
