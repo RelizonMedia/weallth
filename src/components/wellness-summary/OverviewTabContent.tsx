@@ -9,6 +9,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { Separator } from "@/components/ui/separator";
+import { CheckCircle2, ListTodo } from "lucide-react";
 
 interface OverviewTabContentProps {
   data: DailyWellnessEntry[];
@@ -152,6 +154,25 @@ const OverviewTabContent = ({ data }: OverviewTabContentProps) => {
     </Card>
   );
 
+  // Extract baby steps from the most recent entry
+  const getBabyStepsToFocus = () => {
+    if (localData.length === 0 || !localData[0].ratings) return [];
+    
+    // Get all baby steps from the latest entry that aren't completed
+    const babySteps = localData[0].ratings
+      .filter(rating => rating.babyStep && rating.babyStep.trim() !== "" && !rating.completed)
+      .map(rating => ({
+        metricId: rating.metricId,
+        babyStep: rating.babyStep,
+        score: rating.score
+      }));
+    
+    // Sort by score (lowest first as they need more focus)
+    return babySteps.sort((a, b) => a.score - b.score);
+  };
+  
+  const babyStepsToFocus = getBabyStepsToFocus();
+
   return (
     <div className="grid gap-6">
       {localData.length > 0 ? <WellnessChart data={localData} /> : noDataMessage}
@@ -174,6 +195,37 @@ const OverviewTabContent = ({ data }: OverviewTabContentProps) => {
                   compact={false} 
                   onUpdateBabyStep={handleUpdateBabyStep}
                 />
+              )}
+              
+              {/* Baby Steps Focus Summary */}
+              {babyStepsToFocus.length > 0 && (
+                <div className="mt-6">
+                  <Separator className="my-4" />
+                  <div className="flex items-center gap-2 mb-3">
+                    <ListTodo className="h-5 w-5 text-primary" />
+                    <h3 className="font-medium text-lg">Key Baby Steps to Focus On</h3>
+                  </div>
+                  <div className="space-y-3">
+                    {babyStepsToFocus.slice(0, 3).map((step, index) => {
+                      // Find the metric name for this baby step
+                      const metricName = formattedData[0]?.ratings?.find(
+                        r => r.metricId === step.metricId
+                      )?.metricName || "Wellness";
+                      
+                      return (
+                        <div key={index} className="flex items-start gap-2 bg-muted/50 rounded-md p-3">
+                          <CheckCircle2 className="h-5 w-5 text-primary mt-0.5" />
+                          <div>
+                            <p className="font-medium">{step.babyStep}</p>
+                            <p className="text-sm text-muted-foreground">
+                              To improve your {metricName.toLowerCase()} score ({step.score.toFixed(1)})
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               )}
             </div>
           </CardContent>
