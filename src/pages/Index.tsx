@@ -126,12 +126,14 @@ const Index = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6">
-            {/* Track Wellness Today Button - added above the Wellness Score section */}
-            <div className="flex justify-end">
-              <Button asChild variant="outline" size="sm">
+            {/* Track Wellness Today Button - centered and more prominent */}
+            <div className="flex justify-center">
+              <Button asChild 
+                className="px-8 py-6 shadow-lg animate-pulse-gentle bg-gradient-to-r from-wellness-purple to-wellness-teal hover:from-wellness-teal hover:to-wellness-purple text-white transition-all duration-300"
+                size="lg">
                 <Link to="/track?mode=new" className="flex items-center gap-2">
-                  <CalendarPlus className="h-4 w-4" />
-                  Track Wellness Today
+                  <CalendarPlus className="h-6 w-6" />
+                  <span className="text-base font-bold">Track Today's Wellness</span>
                 </Link>
               </Button>
             </div>
