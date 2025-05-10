@@ -5,6 +5,7 @@ import WellnessStatsCards from "@/components/wellness-bank/WellnessStatsCards";
 import WellnessTabs from "@/components/wellness-bank/WellnessTabs";
 import WellnessHistoryDetail from "@/components/wellness-bank/WellnessHistoryDetail";
 import { useToast } from "@/hooks/use-toast";
+import { Trophy } from "lucide-react"; // Add missing Trophy icon import
 
 const WellnessBank = () => {
   const { historyData, isLoading } = useWellnessTracking();
