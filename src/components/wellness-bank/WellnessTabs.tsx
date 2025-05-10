@@ -22,8 +22,8 @@ const WellnessTabs = ({
   return <Tabs defaultValue="progress" className="w-full mb-4 overflow-hidden max-w-full">
       <TabsList className="mb-3 overflow-x-auto flex whitespace-nowrap w-full max-w-full">
         
-        <TabsTrigger value="goals" className="text-xs md:text-sm">Baby Steps History</TabsTrigger>
-        <TabsTrigger value="points" className="text-xs md:text-sm">Points History</TabsTrigger>
+        
+        <TabsTrigger value="points" className="text-xs md:text-sm">Wellness Bank History</TabsTrigger>
         
       </TabsList>
       

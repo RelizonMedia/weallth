@@ -1,26 +1,20 @@
-
 import { format } from "date-fns";
 import { Star, Trophy } from "lucide-react";
 import { DailyWellnessEntry } from "@/types/wellness";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableHead,
-  TableRow,
-} from "@/components/ui/table";
-
+import { Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from "@/components/ui/table";
 interface PointsHistoryProps {
   historyData: DailyWellnessEntry[];
 }
-
-const PointsHistory = ({ historyData }: PointsHistoryProps) => {
+const PointsHistory = ({
+  historyData
+}: PointsHistoryProps) => {
   // Helper function to ensure we have a valid date object for formatting
   const formatDateTime = (dateStr: string | undefined) => {
-    if (!dateStr) return { date: "No date", time: "No time" };
-    
+    if (!dateStr) return {
+      date: "No date",
+      time: "No time"
+    };
     try {
       const date = new Date(dateStr);
       return {
@@ -29,14 +23,15 @@ const PointsHistory = ({ historyData }: PointsHistoryProps) => {
       };
     } catch (error) {
       console.error("Date formatting error:", error);
-      return { date: "Invalid date", time: "Invalid time" };
+      return {
+        date: "Invalid date",
+        time: "Invalid time"
+      };
     }
   };
-
-  return (
-    <Card>
+  return <Card>
       <CardHeader>
-        <CardTitle>Points History</CardTitle>
+        <CardTitle>Wellness Bank History</CardTitle>
         <CardDescription>Track your wellness points over time</CardDescription>
       </CardHeader>
       <CardContent>
@@ -51,12 +46,10 @@ const PointsHistory = ({ historyData }: PointsHistoryProps) => {
           </TableHeader>
           <TableBody>
             {historyData.map((entry, index) => {
-              const pointsEarned = Math.round(entry.overallScore * 10);
-              const stepsCompleted = entry.ratings.filter(r => r.completed).length;
-              const entryDatetime = formatDateTime(entry.timestamp || entry.date);
-              
-              return (
-                <TableRow key={index}>
+            const pointsEarned = Math.round(entry.overallScore * 10);
+            const stepsCompleted = entry.ratings.filter(r => r.completed).length;
+            const entryDatetime = formatDateTime(entry.timestamp || entry.date);
+            return <TableRow key={index}>
                   <TableCell className="font-medium">
                     {entryDatetime.date}
                     <div className="text-xs text-muted-foreground">
@@ -76,14 +69,11 @@ const PointsHistory = ({ historyData }: PointsHistoryProps) => {
                       <span>{stepsCompleted}</span>
                     </div>
                   </TableCell>
-                </TableRow>
-              );
-            })}
+                </TableRow>;
+          })}
           </TableBody>
         </Table>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default PointsHistory;
