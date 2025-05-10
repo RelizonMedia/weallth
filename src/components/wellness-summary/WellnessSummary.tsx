@@ -97,10 +97,7 @@ const WellnessSummary = ({ data, onClose }: WellnessSummaryProps) => {
       </div>
 
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">
-          {filteredData.length} {filteredData.length === 1 ? 'entry' : 'entries'} 
-          {dateRange.from || dateRange.to ? ' in selected period' : ' total'}
-        </h3>
+        <div className="flex-1"></div>
         <DateRangeSelector onRangeChange={setDateRange} />
       </div>
 
