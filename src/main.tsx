@@ -3,9 +3,13 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 
+// Set default theme to light
+localStorage.setItem("theme", "light");
+localStorage.setItem("darkMode", "false");
+
 // Log application startup with domain and theme information
 console.log(`Initializing Weallth application on ${window.location.hostname}...`);
-console.log(`Current theme: ${localStorage.getItem("theme") || "not set (using default)"}`);
+console.log(`Current theme: ${localStorage.getItem("theme") || "light"}`);
 
 // Improved root element detection and error handling
 const root = document.getElementById("root");
@@ -26,7 +30,11 @@ if (!root) {
   document.body.appendChild(errorDiv);
 } else {
   try {
-    console.log("Mounting Weallth application...");
+    // Apply light theme to document
+    document.documentElement.classList.remove('dark');
+    document.documentElement.classList.add('light');
+    
+    console.log("Mounting Weallth application with light theme...");
     const reactRoot = createRoot(root);
     reactRoot.render(<App />);
     console.log("Weallth application mounted successfully");

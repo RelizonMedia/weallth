@@ -22,11 +22,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       return storedTheme;
     }
     
-    // Check for system preference
-    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      return "dark";
-    }
-    
+    // Default to light theme
     return "light";
   });
 
@@ -44,18 +40,18 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       root.classList.add(theme);
     }
     
-    // Always store the actual theme (not "system")
+    // Store the theme preference
+    localStorage.setItem("theme", theme);
+    
+    // Set effectiveTheme for backward compatibility
     const effectiveTheme = theme === "system" 
       ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") 
       : theme;
     
-    // Update localStorage
-    localStorage.setItem("theme", effectiveTheme);
-    
-    // Set darkMode flag for backward compatibility
+    // Update localStorage for backward compatibility
     localStorage.setItem("darkMode", effectiveTheme === "dark" ? "true" : "false");
     
-    console.log("Theme applied:", effectiveTheme);
+    console.log("Theme applied:", theme, "Effective theme:", effectiveTheme);
   }, [theme]);
 
   // Set up a listener for system theme changes
@@ -69,7 +65,6 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
         document.documentElement.classList.add(newTheme);
         
         // Update localStorage with the effective theme
-        localStorage.setItem("theme", newTheme);
         localStorage.setItem("darkMode", newTheme === "dark" ? "true" : "false");
       }
     };
