@@ -5,7 +5,7 @@ const ScoreLegend = () => {
   const legendItems = getWellnessLegendItems();
 
   return (
-    <div className="flex flex-wrap justify-center gap-2 mt-2 text-[10px]">
+    <div className="flex flex-wrap justify-center gap-1 mt-1 text-[9px]">
       {legendItems.map((item) => (
         <div key={item.label} className="flex items-center">
           <div 

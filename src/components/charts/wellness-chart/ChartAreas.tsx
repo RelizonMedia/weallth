@@ -14,7 +14,7 @@ const ChartAreas = () => {
           y1={area.y1} 
           y2={area.y2} 
           fill={area.fill} 
-          fillOpacity={0.2} 
+          fillOpacity={0.15} 
           strokeOpacity={0}
           name={area.name}
         />

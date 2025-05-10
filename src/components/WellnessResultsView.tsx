@@ -26,10 +26,10 @@ const WellnessResultsView = ({
   };
 
   return (
-    <div className="py-2 md:py-4 space-y-6 w-full max-w-full overflow-hidden">
+    <div className="py-1 md:py-2 space-y-3 w-full max-w-full overflow-hidden">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
         <div className="max-w-full overflow-hidden">
-          <h1 className="text-lg md:text-2xl font-bold">Wellness Tracking</h1>
+          <h1 className="text-lg md:text-xl font-bold">Wellness Tracking</h1>
           <p className="text-muted-foreground text-xs md:text-sm">
             Your wellness tracking results and historical data
           </p>

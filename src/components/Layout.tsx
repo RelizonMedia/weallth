@@ -29,8 +29,8 @@ const Layout = ({ children }: LayoutProps) => {
     }
     
     // Add overflow control to prevent unwanted scrolling
-    document.body.style.overflow = 'hidden';
-    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = '';
+    document.documentElement.style.overflow = '';
     
     return () => {
       // Clean up when component unmounts
@@ -40,14 +40,14 @@ const Layout = ({ children }: LayoutProps) => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background overflow-hidden">
+    <div className="min-h-screen bg-background">
       <Sidebar isOpen={effectiveSidebarOpen} />
       <div className={cn(
-        "transition-all duration-300 ease-in-out w-full max-w-full overflow-hidden",
+        "transition-all duration-300 ease-in-out w-full max-w-full",
         effectiveSidebarOpen ? "ml-64" : "ml-0"
       )}>
         <Header toggleSidebar={toggleSidebar} />
-        <main className="container mx-auto p-2 md:p-6 max-w-full overflow-hidden">
+        <main className="container mx-auto p-2 md:p-4 max-w-full">
           {children}
         </main>
       </div>

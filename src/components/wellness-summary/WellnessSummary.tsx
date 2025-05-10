@@ -10,6 +10,7 @@ import OverviewTabContent from "./OverviewTabContent";
 import MetricsTabContent from "./MetricsTabContent";
 import WellnessHistoryView from "./WellnessHistoryView";
 import DateRangeSelector, { DateRange } from "./DateRangeSelector";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface WellnessSummaryProps {
   data: DailyWellnessEntry[];
@@ -47,9 +48,9 @@ const WellnessSummary = ({ data, onClose }: WellnessSummaryProps) => {
 
   if (!latestEntry) {
     return (
-      <div className="p-6 text-center">
+      <div className="p-3 text-center">
         <p>No wellness data available. Start tracking to see your progress!</p>
-        <Button onClick={onClose} className="mt-4">Start Tracking</Button>
+        <Button onClick={onClose} className="mt-3">Start Tracking</Button>
       </div>
     );
   }
@@ -69,46 +70,48 @@ const WellnessSummary = ({ data, onClose }: WellnessSummaryProps) => {
   });
 
   return (
-    <div className="space-y-4 overflow-hidden w-full max-w-full">
-      <div className="flex flex-col gap-4">
-        <WellnessScoreDisplay
-          score={latestEntry.overallScore}
-          category={latestEntry.category}
-          previousScore={previousEntry?.overallScore}
-          timestamp={latestEntry.timestamp}
-        />
-        <DateRangeSelector onRangeChange={setDateRange} />
+    <ScrollArea className="h-[calc(100vh-12rem)]">
+      <div className="space-y-3 overflow-hidden w-full max-w-full pr-2">
+        <div className="flex flex-col gap-3">
+          <WellnessScoreDisplay
+            score={latestEntry.overallScore}
+            category={latestEntry.category}
+            previousScore={previousEntry?.overallScore}
+            timestamp={latestEntry.timestamp}
+          />
+          <DateRangeSelector onRangeChange={setDateRange} />
+        </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="overview" className="flex items-center gap-1 text-xs md:text-sm">
+              <ChartLine className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="truncate">Overview</span>
+            </TabsTrigger>
+            <TabsTrigger value="metrics" className="flex items-center gap-1 text-xs md:text-sm">
+              <ChartBar className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="truncate">Metrics</span>
+            </TabsTrigger>
+            <TabsTrigger value="history" className="flex items-center gap-1 text-xs md:text-sm">
+              <Calendar className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="truncate">History</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="mt-3">
+            <OverviewTabContent data={filteredData} />
+          </TabsContent>
+          
+          <TabsContent value="metrics" className="mt-3">
+            <MetricsTabContent data={filteredData} />
+          </TabsContent>
+          
+          <TabsContent value="history" className="mt-3">
+            <WellnessHistoryView data={dataWithFormattedDates} />
+          </TabsContent>
+        </Tabs>
       </div>
-
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="overview" className="flex items-center gap-1 text-xs md:text-sm">
-            <ChartLine className="h-3 w-3 md:h-4 md:w-4" />
-            <span className="truncate">Overview</span>
-          </TabsTrigger>
-          <TabsTrigger value="metrics" className="flex items-center gap-1 text-xs md:text-sm">
-            <ChartBar className="h-3 w-3 md:h-4 md:w-4" />
-            <span className="truncate">Metrics</span>
-          </TabsTrigger>
-          <TabsTrigger value="history" className="flex items-center gap-1 text-xs md:text-sm">
-            <Calendar className="h-3 w-3 md:h-4 md:w-4" />
-            <span className="truncate">History</span>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="mt-4">
-          <OverviewTabContent data={filteredData} />
-        </TabsContent>
-        
-        <TabsContent value="metrics" className="mt-4">
-          <MetricsTabContent data={filteredData} />
-        </TabsContent>
-        
-        <TabsContent value="history" className="mt-4">
-          <WellnessHistoryView data={dataWithFormattedDates} />
-        </TabsContent>
-      </Tabs>
-    </div>
+    </ScrollArea>
   );
 };
 

@@ -12,7 +12,8 @@ const ReferenceLines = () => {
           key={boundary.value}
           y={boundary.value} 
           stroke={boundary.color} 
-          strokeDasharray="3 3" 
+          strokeDasharray="3 3"
+          strokeWidth={0.5}
         />
       ))}
     </>

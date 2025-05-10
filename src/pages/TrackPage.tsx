@@ -54,7 +54,7 @@ const TrackPage = () => {
   
   return (
     <Layout>
-      <div className="flex flex-col space-y-4 w-full max-w-full overflow-hidden">
+      <div className="flex flex-col space-y-2 w-full max-w-full overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
           <div className="max-w-full overflow-hidden">
             <h1 className="text-lg md:text-2xl font-bold truncate">
