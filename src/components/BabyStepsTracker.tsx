@@ -171,7 +171,7 @@ const BabyStepsTracker = ({
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle className="text-2xl">Active Baby Step Tracker</CardTitle>
+            <CardTitle className="text-2xl">Active Baby Steps</CardTitle>
             <p className="text-sm text-muted-foreground flex items-center gap-1">
               <Calendar className="h-4 w-4" /> 
               Last updated on {formattedDate}
