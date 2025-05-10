@@ -70,7 +70,7 @@ const Sidebar = ({ isOpen }: SidebarProps) => {
           </div>
           
           <nav className="space-y-2 flex-1">
-            <NavItem icon={Home} label="Dashboard" active href="/" />
+            <NavItem icon={Home} label="Home" active href="/" />
             <NavItem icon={Activity} label="Track Today" href="/track" />
             <NavItem icon={Users} label="Community" href="/community" />
             <NavItem icon={ShoppingCart} label="Wellness Marketplace" href="/marketplace" />
