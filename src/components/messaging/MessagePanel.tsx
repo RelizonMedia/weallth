@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { MessageData } from "@/types/message";
 import { useToast } from "@/hooks/use-toast";
