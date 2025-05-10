@@ -5,7 +5,7 @@ import { useWellnessTracking } from "@/hooks/useWellnessTracking";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BabyStepsHistory from "@/components/BabyStepsHistory";
 import WellnessChart from "@/components/WellnessChart";
-import { Wallet, Star, Coins, Trophy } from "lucide-react";
+import { Star, MessageCircle, Trophy, PartyPopper } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -27,9 +27,9 @@ const WellnessBank = () => {
     return total + Math.round(entry.overallScore * 10); // Convert score to points
   }, 0);
   
-  // Calculate wellness gold (1 gold = 50 points)
-  const goldAmount = Math.floor(totalPoints / 50);
-  const remainingPoints = totalPoints % 50;
+  // Community engagement metrics (simulated data - would be replaced with actual data)
+  const tipsShared = 12;
+  const celebrationsGiven = 8;
 
   return (
     <Layout>
@@ -44,7 +44,7 @@ const WellnessBank = () => {
             </CardHeader>
             <CardContent>
               <div className="flex items-center">
-                <Coins className="h-6 w-6 mr-2 text-amber-500" />
+                <Trophy className="h-6 w-6 mr-2 text-amber-500" />
                 <span className="text-3xl font-bold">{totalPoints}</span>
               </div>
             </CardContent>
@@ -52,20 +52,33 @@ const WellnessBank = () => {
           
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Wellness Gold</CardTitle>
+              <CardTitle className="text-sm font-medium">Wellness Tips Shared</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center">
-                <Trophy className="h-6 w-6 mr-2 text-amber-500 fill-amber-500" />
-                <span className="text-3xl font-bold">{goldAmount}</span>
-                <span className="text-xs ml-2 text-muted-foreground self-end mb-1">{remainingPoints}/50 pts</span>
+                <MessageCircle className="h-6 w-6 mr-2 text-blue-500" />
+                <span className="text-3xl font-bold">{tipsShared}</span>
+                <Star className="h-4 w-4 ml-2 text-amber-500 fill-amber-500" />
               </div>
             </CardContent>
           </Card>
           
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Completed Baby Steps</CardTitle>
+              <CardTitle className="text-sm font-medium">Celebrations Given</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center">
+                <PartyPopper className="h-6 w-6 mr-2 text-purple-500" />
+                <span className="text-3xl font-bold">{celebrationsGiven}</span>
+                <Star className="h-4 w-4 ml-2 text-amber-500 fill-amber-500" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Baby Steps Completed</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center">
@@ -73,18 +86,6 @@ const WellnessBank = () => {
                 <span className="text-3xl font-bold">
                   {allRatings.filter(rating => rating.completed).length}
                 </span>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Days Tracked</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center">
-                <Wallet className="h-6 w-6 mr-2 text-teal-500" />
-                <span className="text-3xl font-bold">{historyData.length}</span>
               </div>
             </CardContent>
           </Card>
@@ -138,7 +139,7 @@ const WellnessBank = () => {
                           <TableCell>{entry.overallScore.toFixed(1)}</TableCell>
                           <TableCell>
                             <div className="flex items-center">
-                              <Coins className="h-4 w-4 mr-1 text-amber-500" />
+                              <Trophy className="h-4 w-4 mr-1 text-amber-500" />
                               <span>{pointsEarned}</span>
                             </div>
                           </TableCell>
