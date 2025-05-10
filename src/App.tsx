@@ -34,21 +34,26 @@ const queryClient = new QueryClient({
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [initError, setInitError] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
   // Enhanced initialization with better error handling
   useEffect(() => {
     try {
-      console.log("Weallth application initializing...");
+      console.log(`Weallth application initializing on ${window.location.hostname}...`);
       
       // Check if critical DOM elements are available
       if (!document.getElementById("root")) {
         throw new Error("Root element not found");
       }
       
+      // Add this line to handle CORS if needed
+      document.domain = document.domain.split('.').slice(-2).join('.');
+      
       // Simulate initialization process
       const initApp = setTimeout(() => {
         console.log("Application initialized successfully");
         setIsLoading(false);
+        setIsMounted(true);
       }, 800);
       
       return () => clearTimeout(initApp);
