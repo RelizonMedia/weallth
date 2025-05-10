@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, ReferenceLine } from 'recharts';
 import { DailyWellnessEntry, WellnessScoreCategory } from "@/types/wellness";
@@ -13,7 +12,7 @@ const getScoreColor = (score: number): string => {
   if (score < 4.0) return "#F97316"; // Unhealthy - Orange
   if (score < 4.5) return "#4ECDC4"; // Healthy - Teal
   if (score < 4.7) return "#6C5DD3"; // Great - Purple
-  return "#8B5CF6"; // Amazing - Vivid Purple
+  return "#FFD700"; // Amazing - Yellow/Gold like a star (changed from purple)
 };
 
 // Custom dot component to render different colors based on score
@@ -118,7 +117,7 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
                 dataKey="score"
                 y1={4.7} 
                 y2={5} 
-                fill="#8B5CF6" 
+                fill="#FFD700" 
                 fillOpacity={0.2} 
                 strokeOpacity={0}
                 name="Amazing (4.7-5.0)"
@@ -152,7 +151,7 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
               />
               
               {/* Reference lines for category boundaries */}
-              <ReferenceLine y={4.7} stroke="#8B5CF6" strokeDasharray="3 3" />
+              <ReferenceLine y={4.7} stroke="#FFD700" strokeDasharray="3 3" />
               <ReferenceLine y={4.5} stroke="#6C5DD3" strokeDasharray="3 3" />
               <ReferenceLine y={4.0} stroke="#4ECDC4" strokeDasharray="3 3" />
               
@@ -186,7 +185,7 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
             <span>4.5-4.7: Great</span>
           </div>
           <div className="flex items-center">
-            <div className="w-3 h-3 rounded-full mr-1" style={{ backgroundColor: "#8B5CF6" }}></div>
+            <div className="w-3 h-3 rounded-full mr-1" style={{ backgroundColor: "#FFD700" }}></div>
             <span>4.7-5.0: Amazing</span>
           </div>
         </div>
