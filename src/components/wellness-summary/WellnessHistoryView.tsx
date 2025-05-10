@@ -3,6 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DailyWellnessEntry } from "@/types/wellness";
 import { wellnessMetrics } from "@/data/wellnessMetrics";
 import { Clock } from "lucide-react";
+import { useState } from "react";
+import DateRangeSelector, { DateRangeType } from "./DateRangeSelector";
+import { isWithinInterval } from "date-fns";
 
 interface WellnessHistoryViewProps {
   data: Array<DailyWellnessEntry & {
@@ -12,85 +15,121 @@ interface WellnessHistoryViewProps {
 }
 
 const WellnessHistoryView = ({ data }: WellnessHistoryViewProps) => {
+  const [filteredData, setFilteredData] = useState(data);
+  
+  // Handle date range filtering
+  const handleDateRangeChange = (range: { 
+    type: DateRangeType; 
+    dateRange: { from: Date | undefined; to: Date | undefined } 
+  }) => {
+    if (range.type === "all") {
+      // Show all data
+      setFilteredData(data);
+      return;
+    }
+    
+    // Apply date filtering
+    if (range.dateRange.from && range.dateRange.to) {
+      const filtered = data.filter(entry => {
+        const entryDate = new Date(entry.timestamp || entry.date);
+        return isWithinInterval(entryDate, {
+          start: range.dateRange.from as Date,
+          end: range.dateRange.to as Date
+        });
+      });
+      
+      setFilteredData(filtered.length > 0 ? filtered : []);
+    }
+  };
+  
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Complete Wellness History</CardTitle>
-        <CardDescription>All your tracked entries with detailed timestamps</CardDescription>
+      <CardHeader className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+        <div>
+          <CardTitle>Complete Wellness History</CardTitle>
+          <CardDescription>All your tracked entries with detailed timestamps</CardDescription>
+        </div>
+        <DateRangeSelector onRangeChange={handleDateRangeChange} />
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {data.map((entry, index) => {
-            return (
-              <div key={index} className="p-4 border rounded-lg">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium">
-                    {entry.formattedDate}
-                  </span>
-                  <div className="flex items-center">
-                    <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">
-                      {entry.formattedTime}
+        {filteredData.length > 0 ? (
+          <div className="space-y-4">
+            {filteredData.map((entry, index) => {
+              return (
+                <div key={index} className="p-4 border rounded-lg">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-medium">
+                      {entry.formattedDate}
                     </span>
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">
+                        {entry.formattedTime}
+                      </span>
+                    </div>
                   </div>
-                </div>
-                
-                <div className="flex items-center space-x-4">
-                  <div className="h-12 w-12 bg-wellness-teal/20 rounded-full flex items-center justify-center text-wellness-teal">
-                    <span className="text-xl font-bold">{entry.overallScore.toFixed(1)}</span>
+                  
+                  <div className="flex items-center space-x-4">
+                    <div className="h-12 w-12 bg-wellness-teal/20 rounded-full flex items-center justify-center text-wellness-teal">
+                      <span className="text-xl font-bold">{entry.overallScore.toFixed(1)}</span>
+                    </div>
+                    <div>
+                      <span className="text-lg font-medium">{entry.category}</span>
+                      {entry.ratings && Array.isArray(entry.ratings) && entry.ratings.length > 0 ? (
+                        <div className="grid grid-cols-5 gap-1 mt-2">
+                          {entry.ratings.slice(0, 5).map(rating => {
+                            const metric = wellnessMetrics.find(m => m.id === rating?.metricId);
+                            return (
+                              <div key={rating?.metricId} className="text-center" title={metric?.name}>
+                                <span className="text-xs text-muted-foreground">{metric?.name?.substring(0, 3)}.</span>
+                                <div className="font-semibold">{rating?.score}</div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-muted-foreground mt-1">No detailed metrics available</div>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-lg font-medium">{entry.category}</span>
-                    {entry.ratings && Array.isArray(entry.ratings) && entry.ratings.length > 0 ? (
-                      <div className="grid grid-cols-5 gap-1 mt-2">
-                        {entry.ratings.slice(0, 5).map(rating => {
-                          const metric = wellnessMetrics.find(m => m.id === rating?.metricId);
+                  
+                  {entry.ratings && Array.isArray(entry.ratings) && entry.ratings.length > 0 && (
+                    <div className="mt-3 pt-3 border-t">
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                        {entry.ratings.map(rating => {
+                          if (!rating) return null;
+                          const metric = wellnessMetrics.find(m => m.id === rating.metricId);
                           return (
-                            <div key={rating?.metricId} className="text-center" title={metric?.name}>
-                              <span className="text-xs text-muted-foreground">{metric?.name?.substring(0, 3)}.</span>
-                              <div className="font-semibold">{rating?.score}</div>
+                            <div key={rating.metricId} className="p-2 bg-slate-50 rounded">
+                              <div className="text-xs font-medium">{metric?.name || 'Unknown'}</div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-lg font-bold">{rating.score}</span>
+                                {rating.completed && (
+                                  <span className="text-xs px-2 py-0.5 bg-green-100 text-green-800 rounded-full">
+                                    Completed
+                                  </span>
+                                )}
+                              </div>
+                              {rating.babyStep && (
+                                <div className="mt-1 text-xs text-muted-foreground truncate" title={rating.babyStep}>
+                                  {rating.babyStep}
+                                </div>
+                              )}
                             </div>
                           );
                         })}
                       </div>
-                    ) : (
-                      <div className="text-sm text-muted-foreground mt-1">No detailed metrics available</div>
-                    )}
-                  </div>
-                </div>
-                
-                {entry.ratings && Array.isArray(entry.ratings) && entry.ratings.length > 0 && (
-                  <div className="mt-3 pt-3 border-t">
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                      {entry.ratings.map(rating => {
-                        if (!rating) return null;
-                        const metric = wellnessMetrics.find(m => m.id === rating.metricId);
-                        return (
-                          <div key={rating.metricId} className="p-2 bg-slate-50 rounded">
-                            <div className="text-xs font-medium">{metric?.name || 'Unknown'}</div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-lg font-bold">{rating.score}</span>
-                              {rating.completed && (
-                                <span className="text-xs px-2 py-0.5 bg-green-100 text-green-800 rounded-full">
-                                  Completed
-                                </span>
-                              )}
-                            </div>
-                            {rating.babyStep && (
-                              <div className="mt-1 text-xs text-muted-foreground truncate" title={rating.babyStep}>
-                                {rating.babyStep}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
                     </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="flex items-center justify-center py-8">
+            <p className="text-muted-foreground">No wellness data available for the selected period</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
