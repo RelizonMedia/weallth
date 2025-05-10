@@ -8,7 +8,7 @@ import ConversationList from "@/components/messaging/ConversationList";
 import MessagePanel from "@/components/messaging/MessagePanel";
 import { useConversations } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
-import { MessageConversation, MessageData } from "@/types/message";
+import { MessageConversation, MessageData, Message } from "@/types/message";
 
 const Messages = () => {
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
@@ -27,6 +27,18 @@ const Messages = () => {
     lastMessage: conv.last_message || "",
     timestamp: conv.updated_at || conv.created_at,
     unreadCount: 0, // Default to 0 for now
+  }));
+  
+  // Convert Message[] to MessageData[]
+  const formattedMessages: MessageData[] = messages.map(msg => ({
+    id: msg.id,
+    sender_id: msg.is_from_user ? (user?.id || '') : selectedConversation || '',
+    recipient_id: msg.is_from_user ? (selectedConversation || '') : (user?.id || ''),
+    content: msg.content,
+    is_read: true, // Assume read for simplicity
+    created_at: msg.created_at,
+    updated_at: msg.updated_at || msg.created_at,
+    senderName: msg.is_from_user ? 'You' : recipientName
   }));
   
   // Handle sending message
@@ -63,7 +75,7 @@ const Messages = () => {
             <MessagePanel
               selectedConversation={selectedConversation}
               recipientName={recipientName}
-              messages={messages as MessageData[]} 
+              messages={formattedMessages} 
               onSendMessage={handleSendMessageWrapper}
               onNewMessage={handleNewMessage}
             />
