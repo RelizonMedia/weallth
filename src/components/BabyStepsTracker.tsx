@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { WellnessRating } from "@/types/wellness";
 import { wellnessMetrics } from "@/data/wellnessMetrics";
@@ -12,28 +11,30 @@ import confetti from "canvas-confetti";
 import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } from "@/components/ui/menubar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-
 interface BabyStepsTrackerProps {
   ratings: WellnessRating[];
   onComplete: () => void;
   onToggleStep: (metricId: string, completed: boolean) => void;
 }
-
-const BabyStepsTracker = ({ ratings, onComplete, onToggleStep }: BabyStepsTrackerProps) => {
-  const { toast } = useToast();
-  const [stepsWithData, setStepsWithData] = useState(
-    ratings.map(rating => {
-      const metric = wellnessMetrics.find(m => m.id === rating.metricId);
-      return {
-        ...rating,
-        metricName: metric?.name || ""
-      };
-    })
-  );
+const BabyStepsTracker = ({
+  ratings,
+  onComplete,
+  onToggleStep
+}: BabyStepsTrackerProps) => {
+  const {
+    toast
+  } = useToast();
+  const [stepsWithData, setStepsWithData] = useState(ratings.map(rating => {
+    const metric = wellnessMetrics.find(m => m.id === rating.metricId);
+    return {
+      ...rating,
+      metricName: metric?.name || ""
+    };
+  }));
   const [starsEarned, setStarsEarned] = useState(0);
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebratedStep, setCelebratedStep] = useState<string>("");
-  
+
   // On component mount, load stars from localStorage
   useEffect(() => {
     const savedStars = localStorage.getItem('wellnessStars');
@@ -41,17 +42,17 @@ const BabyStepsTracker = ({ ratings, onComplete, onToggleStep }: BabyStepsTracke
       setStarsEarned(parseInt(savedStars, 10));
     }
   }, []);
-  
+
   // Filter out ratings without baby steps
   const babySteps = stepsWithData.filter(step => step.babyStep.trim() !== '');
-  
+
   // Count completed steps
   const completedCount = babySteps.filter(step => step.completed).length;
-  const progress = babySteps.length > 0 ? (completedCount / babySteps.length) * 100 : 0;
-  
+  const progress = babySteps.length > 0 ? completedCount / babySteps.length * 100 : 0;
+
   // Format the date when the baby steps were created
   const formattedDate = ratings.length > 0 ? format(new Date(ratings[0].date), 'MMM dd, yyyy') : format(new Date(), 'MMM dd, yyyy');
-  
+
   // Show confetti celebration effect
   const triggerCelebration = () => {
     try {
@@ -59,78 +60,83 @@ const BabyStepsTracker = ({ ratings, onComplete, onToggleStep }: BabyStepsTracke
       confetti({
         particleCount: 100,
         spread: 70,
-        origin: { y: 0.6 },
+        origin: {
+          y: 0.6
+        },
         colors: ['#FFD700', '#FFA500', '#FF4500', '#9370DB', '#7B68EE'],
         shapes: ['star', 'circle'],
         ticks: 200
       });
-      
+
       // Second wave of confetti after a small delay
       setTimeout(() => {
         confetti({
           particleCount: 50,
           angle: 60,
           spread: 55,
-          origin: { x: 0, y: 0.6 },
+          origin: {
+            x: 0,
+            y: 0.6
+          },
           colors: ['#00BFFF', '#FF1493', '#FFFF00', '#FF4500', '#32CD32'],
           shapes: ['star', 'circle'],
           ticks: 200
         });
       }, 250);
-      
+
       // Third wave from the other side
       setTimeout(() => {
         confetti({
           particleCount: 50,
           angle: 120,
           spread: 55,
-          origin: { x: 1, y: 0.6 },
+          origin: {
+            x: 1,
+            y: 0.6
+          },
           colors: ['#9370DB', '#7B68EE', '#20B2AA', '#FF6347', '#FFD700'],
           shapes: ['star', 'circle'],
           ticks: 200
         });
       }, 400);
-      
     } catch (error) {
       console.error("Error triggering confetti:", error);
     }
   };
-  
   const handleToggle = (metricId: string, checked: boolean, babyStep: string) => {
     // Update local state
-    setStepsWithData(prev => 
-      prev.map(step => 
-        step.metricId === metricId ? { ...step, completed: checked } : step
-      )
-    );
-    
+    setStepsWithData(prev => prev.map(step => step.metricId === metricId ? {
+      ...step,
+      completed: checked
+    } : step));
+
     // Call the parent handler
     onToggleStep(metricId, checked);
-    
+
     // Show celebration and increase star count if checked
     if (checked) {
       triggerCelebration();
       const newStarsCount = starsEarned + 1;
       setStarsEarned(newStarsCount);
       localStorage.setItem('wellnessStars', newStarsCount.toString());
-      
+
       // Show the celebration dialog
       setCelebratedStep(babyStep);
       setShowCelebration(true);
-      
+
       // Also show toast notifications
       toast({
         title: "🎉 Goal achieved! 🎉",
         description: "Amazing job! You've earned a star for your wellness bank!",
-        duration: 5000,
+        duration: 5000
       });
-      
+
       // Show a second toast with more encouragement after a delay
       setTimeout(() => {
         toast({
           title: "⭐ Progress Milestone! ⭐",
           description: "You're one step closer to your wellness goals! Keep up the great work!",
-          duration: 4000,
+          duration: 4000
         });
       }, 1500);
     } else {
@@ -140,71 +146,54 @@ const BabyStepsTracker = ({ ratings, onComplete, onToggleStep }: BabyStepsTracke
         setStarsEarned(newStarsCount);
         localStorage.setItem('wellnessStars', newStarsCount.toString());
       }
-      
       toast({
         title: "Step unmarked",
         description: "You can complete it later when you're ready.",
-        duration: 1500,
+        duration: 1500
       });
     }
   };
-  
   const handleAllComplete = () => {
     toast({
       title: "Great job!",
       description: "You've tracked your wellness and followed up on your baby steps.",
-      duration: 3000,
+      duration: 3000
     });
     onComplete();
   };
-  
+
   // Get motivational messages for celebrations
   const getMotivationalMessage = () => {
-    const messages = [
-      "You're doing amazing! Every step counts toward your wellness journey.",
-      "That's the way! Your commitment to your wellness is truly inspiring.",
-      "Fantastic progress! You're building healthy habits one step at a time.",
-      "Excellent work! Your dedication to wellness is something to celebrate.",
-      "Great job! Small steps lead to big changes in your wellness journey."
-    ];
-    
+    const messages = ["You're doing amazing! Every step counts toward your wellness journey.", "That's the way! Your commitment to your wellness is truly inspiring.", "Fantastic progress! You're building healthy habits one step at a time.", "Excellent work! Your dedication to wellness is something to celebrate.", "Great job! Small steps lead to big changes in your wellness journey."];
     return messages[Math.floor(Math.random() * messages.length)];
   };
-  
-  return (
-    <Card className="mb-8">
+  return <Card className="mb-8">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle className="text-2xl">Active Goal Tracker</CardTitle>
+            <CardTitle className="text-2xl">Active Baby Step Tracker</CardTitle>
             <p className="text-sm text-muted-foreground flex items-center gap-1">
               <Calendar className="h-4 w-4" /> 
               Last updated on {formattedDate}
             </p>
           </div>
-          {starsEarned > 0 && (
-            <div className="flex items-center bg-amber-100 px-3 py-1 rounded-full">
+          {starsEarned > 0 && <div className="flex items-center bg-amber-100 px-3 py-1 rounded-full">
               <Star className="h-4 w-4 text-amber-500 mr-1 fill-amber-500" />
               <span className="text-amber-700 font-medium">{starsEarned}</span>
-            </div>
-          )}
+            </div>}
         </div>
       </CardHeader>
       <CardContent>
-        {babySteps.length === 0 ? (
-          <div className="text-center py-8">
+        {babySteps.length === 0 ? <div className="text-center py-8">
             <p className="text-lg text-muted-foreground">You haven't set any baby steps to track.</p>
             <Button onClick={onComplete} className="mt-4">
               Return to Dashboard
             </Button>
-          </div>
-        ) : (
-          <>
+          </div> : <>
             <div className="w-full bg-gray-200 h-2 rounded-full mb-4">
-              <div 
-                className="bg-wellness-purple h-2 rounded-full transition-all duration-300" 
-                style={{ width: `${progress}%` }}
-              />
+              <div className="bg-wellness-purple h-2 rounded-full transition-all duration-300" style={{
+            width: `${progress}%`
+          }} />
             </div>
             
             <div className="text-sm font-medium mb-2">
@@ -212,21 +201,11 @@ const BabyStepsTracker = ({ ratings, onComplete, onToggleStep }: BabyStepsTracke
             </div>
             
             <div className="space-y-4 my-4">
-              {babySteps.map((step) => {
-                // Calculate how many times this goal was completed
-                const completionCount = ratings
-                  .filter(r => r.babyStep === step.babyStep && r.completed)
-                  .length;
-                
-                return (
-                  <div key={`${step.metricId}-${step.babyStep}`} className="flex items-start space-x-3 p-3 rounded-md bg-muted/30">
-                    <Checkbox
-                      checked={step.completed}
-                      onCheckedChange={(checked) => 
-                        handleToggle(step.metricId, checked as boolean, step.babyStep)
-                      }
-                      className="mt-1"
-                    />
+              {babySteps.map(step => {
+            // Calculate how many times this goal was completed
+            const completionCount = ratings.filter(r => r.babyStep === step.babyStep && r.completed).length;
+            return <div key={`${step.metricId}-${step.babyStep}`} className="flex items-start space-x-3 p-3 rounded-md bg-muted/30">
+                    <Checkbox checked={step.completed} onCheckedChange={checked => handleToggle(step.metricId, checked as boolean, step.babyStep)} className="mt-1" />
                     <div className="flex-1">
                       <div className="flex justify-between items-start">
                         <p className={`font-medium pr-2 ${step.completed ? 'line-through text-muted-foreground' : ''}`}>
@@ -257,27 +236,20 @@ const BabyStepsTracker = ({ ratings, onComplete, onToggleStep }: BabyStepsTracke
                         <p className="text-xs text-muted-foreground">
                           {step.metricName}
                         </p>
-                        {completionCount > 0 && (
-                          <p className="text-xs text-muted-foreground">
+                        {completionCount > 0 && <p className="text-xs text-muted-foreground">
                             Completed {completionCount} {completionCount === 1 ? 'time' : 'times'}
-                          </p>
-                        )}
+                          </p>}
                       </div>
                     </div>
-                    {step.completed ? (
-                      <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+                    {step.completed ? <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
                         <Check className="mr-0.5 h-3 w-3" />
                         Done
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800">
+                      </span> : <span className="inline-flex items-center rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800">
                         <Clock className="mr-0.5 h-3 w-3" />
                         Pending
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
+                      </span>}
+                  </div>;
+          })}
             </div>
             
             <div className="flex justify-center mt-6">
@@ -285,8 +257,7 @@ const BabyStepsTracker = ({ ratings, onComplete, onToggleStep }: BabyStepsTracke
                 Complete Tracking
               </Button>
             </div>
-          </>
-        )}
+          </>}
         
         {/* Celebration Dialog */}
         <Dialog open={showCelebration} onOpenChange={setShowCelebration}>
@@ -322,8 +293,6 @@ const BabyStepsTracker = ({ ratings, onComplete, onToggleStep }: BabyStepsTracke
           </DialogContent>
         </Dialog>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default BabyStepsTracker;
