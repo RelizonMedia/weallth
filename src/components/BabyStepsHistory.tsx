@@ -2,17 +2,18 @@
 import { WellnessRating } from "@/types/wellness";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
-import { Check, Star } from "lucide-react";
+import { Check, Star, Calendar, Clock } from "lucide-react";
 import { wellnessMetrics } from "@/data/wellnessMetrics";
+import { Badge } from "@/components/ui/badge";
 
 interface BabyStepsHistoryProps {
   steps: WellnessRating[];
 }
 
 const BabyStepsHistory = ({ steps }: BabyStepsHistoryProps) => {
-  // Filter only steps that have been completed and have a baby step
-  const completedSteps = steps
-    .filter(step => step.completed && step.babyStep.trim() !== '')
+  // Filter only steps that have a baby step
+  const allStepsWithContent = steps
+    .filter(step => step.babyStep.trim() !== '')
     .map(step => {
       const metric = wellnessMetrics.find(m => m.id === step.metricId);
       return {
@@ -22,7 +23,38 @@ const BabyStepsHistory = ({ steps }: BabyStepsHistoryProps) => {
     })
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  if (completedSteps.length === 0) {
+  const completedSteps = allStepsWithContent.filter(step => step.completed);
+
+  // Group steps by date and then by baby step content to show completion frequency
+  const stepsByDate: Record<string, Record<string, {
+    step: typeof allStepsWithContent[0],
+    count: number,
+    dates: string[],
+    isActive: boolean
+  }>> = {};
+
+  // First, group all steps by date
+  allStepsWithContent.forEach(step => {
+    const date = step.date;
+    if (!stepsByDate[date]) {
+      stepsByDate[date] = {};
+    }
+    
+    const stepKey = `${step.metricId}-${step.babyStep}`;
+    
+    if (!stepsByDate[date][stepKey]) {
+      stepsByDate[date][stepKey] = {
+        step,
+        count: step.completed ? 1 : 0,
+        dates: [date],
+        isActive: !step.completed
+      };
+    } else if (step.completed) {
+      stepsByDate[date][stepKey].count += 1;
+    }
+  });
+
+  if (allStepsWithContent.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -30,21 +62,12 @@ const BabyStepsHistory = ({ steps }: BabyStepsHistoryProps) => {
         </CardHeader>
         <CardContent>
           <p className="text-center py-8 text-muted-foreground">
-            You haven't completed any baby steps yet.
+            You haven't created any baby steps yet.
           </p>
         </CardContent>
       </Card>
     );
   }
-
-  // Group steps by date
-  const stepsByDate: Record<string, typeof completedSteps> = {};
-  completedSteps.forEach(step => {
-    if (!stepsByDate[step.date]) {
-      stepsByDate[step.date] = [];
-    }
-    stepsByDate[step.date].push(step);
-  });
 
   return (
     <Card>
@@ -59,26 +82,48 @@ const BabyStepsHistory = ({ steps }: BabyStepsHistoryProps) => {
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          {Object.entries(stepsByDate).map(([date, steps]) => (
+          {Object.entries(stepsByDate).map(([date, stepsMap]) => (
             <div key={date} className="border-b border-gray-200 pb-4 last:border-0 last:pb-0">
-              <h3 className="font-medium text-sm mb-2">
+              <h3 className="font-medium text-sm mb-2 flex items-center">
+                <Calendar className="h-4 w-4 mr-1" />
                 {format(new Date(date), 'MMMM d, yyyy')}
               </h3>
               <div className="space-y-2">
-                {steps.map((step, index) => (
-                  <div 
-                    key={`${step.metricId}-${index}`} 
-                    className="flex items-center space-x-3 p-2 rounded-md bg-green-50"
-                  >
-                    <div className="bg-green-500 rounded-full p-1">
-                      <Check className="h-3 w-3 text-white" />
+                {Object.values(stepsMap).map((entry, index) => {
+                  const { step, count } = entry;
+                  const isCompleted = step.completed;
+                  
+                  return (
+                    <div 
+                      key={`${step.metricId}-${index}`} 
+                      className={`flex items-center space-x-3 p-2 rounded-md ${isCompleted ? 'bg-green-50' : 'bg-amber-50'}`}
+                    >
+                      <div className={`rounded-full p-1 ${isCompleted ? 'bg-green-500' : 'bg-amber-500'}`}>
+                        {isCompleted ? (
+                          <Check className="h-3 w-3 text-white" />
+                        ) : (
+                          <Clock className="h-3 w-3 text-white" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <p className="font-medium text-sm">{step.babyStep}</p>
+                          {count > 1 && (
+                            <Badge variant="secondary" className="ml-2">
+                              Completed {count}x
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex justify-between">
+                          <p className="text-xs text-muted-foreground">{step.metricName}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {step.timestamp ? format(new Date(step.timestamp), 'h:mm a') : ''}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-sm">{step.babyStep}</p>
-                      <p className="text-xs text-muted-foreground">{step.metricName}</p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ))}

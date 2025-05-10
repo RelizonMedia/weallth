@@ -3,12 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { WellnessRating } from "@/types/wellness";
 import { wellnessMetrics } from "@/data/wellnessMetrics";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Check, Clock, Calendar, Star } from "lucide-react";
+import { Check, Clock, Calendar, Star, Edit, Trash } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import confetti from "canvas-confetti";
+import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } from "@/components/ui/menubar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface BabyStepsTrackerProps {
   ratings: WellnessRating[];
@@ -96,10 +98,10 @@ const BabyStepsTracker = ({ ratings, onComplete, onToggleStep }: BabyStepsTracke
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle className="text-2xl">Baby Step Goal Tracker</CardTitle>
+            <CardTitle className="text-2xl">Active Goal Tracker</CardTitle>
             <p className="text-sm text-muted-foreground flex items-center gap-1">
               <Calendar className="h-4 w-4" /> 
-              Created on {formattedDate}
+              Last updated on {formattedDate}
             </p>
           </div>
           {starsEarned > 0 && (
@@ -132,43 +134,72 @@ const BabyStepsTracker = ({ ratings, onComplete, onToggleStep }: BabyStepsTracke
             </div>
             
             <div className="space-y-4 my-4">
-              {babySteps.map((step) => (
-                <div key={step.metricId} className="flex items-start space-x-3 p-3 rounded-md bg-muted/30">
-                  <Checkbox
-                    checked={step.completed}
-                    onCheckedChange={(checked) => 
-                      handleToggle(step.metricId, checked as boolean)
-                    }
-                    className="mt-1"
-                  />
-                  <div className="flex-1">
-                    <p className={`font-medium ${step.completed ? 'line-through text-muted-foreground' : ''}`}>
-                      {step.babyStep}
-                    </p>
-                    <div className="flex items-center justify-between mt-0.5">
-                      <p className="text-xs text-muted-foreground">
-                        {step.metricName}
-                      </p>
-                      {step.completed && (
-                        <p className="text-xs text-muted-foreground">
-                          Completed: {format(new Date(), 'MMM dd, yyyy')}
+              {babySteps.map((step) => {
+                // Calculate how many times this goal was completed
+                const completionCount = ratings
+                  .filter(r => r.babyStep === step.babyStep && r.completed)
+                  .length;
+                
+                return (
+                  <div key={`${step.metricId}-${step.babyStep}`} className="flex items-start space-x-3 p-3 rounded-md bg-muted/30">
+                    <Checkbox
+                      checked={step.completed}
+                      onCheckedChange={(checked) => 
+                        handleToggle(step.metricId, checked as boolean)
+                      }
+                      className="mt-1"
+                    />
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start">
+                        <p className={`font-medium pr-2 ${step.completed ? 'line-through text-muted-foreground' : ''}`}>
+                          {step.babyStep}
                         </p>
-                      )}
+                        
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>
+                              <Check className="mr-2 h-4 w-4" />
+                              <span>Mark as complete</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Trash className="mr-2 h-4 w-4" />
+                              <span>Delete goal</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                      
+                      <div className="flex items-center justify-between mt-0.5">
+                        <p className="text-xs text-muted-foreground">
+                          {step.metricName}
+                        </p>
+                        {completionCount > 0 && (
+                          <p className="text-xs text-muted-foreground">
+                            Completed {completionCount} {completionCount === 1 ? 'time' : 'times'}
+                          </p>
+                        )}
+                      </div>
                     </div>
+                    {step.completed ? (
+                      <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+                        <Check className="mr-0.5 h-3 w-3" />
+                        Done
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800">
+                        <Clock className="mr-0.5 h-3 w-3" />
+                        Pending
+                      </span>
+                    )}
                   </div>
-                  {step.completed ? (
-                    <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
-                      <Check className="mr-0.5 h-3 w-3" />
-                      Done
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800">
-                      <Clock className="mr-0.5 h-3 w-3" />
-                      Pending
-                    </span>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
             
             <div className="flex justify-center mt-6">

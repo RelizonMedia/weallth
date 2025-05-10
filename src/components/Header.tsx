@@ -1,5 +1,5 @@
 
-import { Bell, Menu, User, Activity, Wallet } from "lucide-react";
+import { Bell, Menu, User, Activity, Wallet, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu,
@@ -33,6 +33,10 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
 
   const handleWellnessBank = () => {
     navigate('/wellness-bank');
+  };
+  
+  const handleGoalTracker = () => {
+    navigate('/goal-tracker');
   };
 
   return (
@@ -98,6 +102,13 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
               >
                 <Activity className="h-4 w-4 mr-2" />
                 <span>My Wellness Tracking</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                className="cursor-pointer flex items-center" 
+                onClick={handleGoalTracker}
+              >
+                <Target className="h-4 w-4 mr-2" />
+                <span>My Goal Tracker</span>
               </DropdownMenuItem>
               <DropdownMenuItem 
                 className="cursor-pointer flex items-center" 

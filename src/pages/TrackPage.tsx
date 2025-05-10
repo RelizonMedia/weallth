@@ -7,7 +7,8 @@ import { useWellnessTracking } from "@/hooks/useWellnessTracking";
 import WellnessSummary from "@/components/WellnessSummary";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { CalendarPlus } from "lucide-react";
+import { CalendarPlus, Target } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const TrackPage = () => {
   const {
@@ -53,21 +54,36 @@ const TrackPage = () => {
             </p>
           </div>
           
-          <Button 
-            onClick={() => {
-              if (showingHistory) {
-                setShowingHistory(false);
-              } else {
-                setShowingHistory(true);
-                setSubmitted(false);
-              }
-            }} 
-            variant="outline"
-            className="flex items-center gap-2"
-          >
-            <CalendarPlus className="h-4 w-4" />
-            {showingHistory ? "Track New Entry" : "View History"}
-          </Button>
+          <div className="flex gap-2">
+            {showingHistory && (
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2"
+                asChild
+              >
+                <Link to="/goal-tracker">
+                  <Target className="h-4 w-4" />
+                  View Goal Tracker
+                </Link>
+              </Button>
+            )}
+            
+            <Button 
+              onClick={() => {
+                if (showingHistory) {
+                  setShowingHistory(false);
+                } else {
+                  setShowingHistory(true);
+                  setSubmitted(false);
+                }
+              }} 
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <CalendarPlus className="h-4 w-4" />
+              {showingHistory ? "Track New Entry" : "View History"}
+            </Button>
+          </div>
         </div>
         
         {showingHistory && (
