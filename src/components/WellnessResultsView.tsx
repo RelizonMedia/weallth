@@ -26,15 +26,15 @@ const WellnessResultsView = ({
   };
 
   return (
-    <div className="py-4 space-y-8">
-      <div className="flex justify-between items-center">
+    <div className="py-4 space-y-8 w-full max-w-full overflow-hidden">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Wellness Tracking</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl md:text-3xl font-bold">Wellness Tracking</h1>
+          <p className="text-muted-foreground text-sm">
             Your wellness tracking results and historical data
           </p>
         </div>
-        <Button onClick={() => navigate('/')} variant="outline" className="flex items-center gap-2">
+        <Button onClick={() => navigate('/')} variant="outline" className="flex items-center gap-2 text-sm">
           Back to Dashboard
         </Button>
       </div>
@@ -54,18 +54,20 @@ const WellnessResultsView = ({
       </div>
       
       {/* Conditional rendering based on toggle state */}
-      {showSummary ? (
-        <WellnessSummary 
-          data={historyData} 
-          onClose={() => setShowSummary(false)}
-        />
-      ) : (
-        <BabyStepsTracker 
-          ratings={ratings} 
-          onComplete={handleGoToDashboard}
-          onToggleStep={onToggleBabyStep}
-        />
-      )}
+      <div className="w-full max-w-full overflow-x-hidden">
+        {showSummary ? (
+          <WellnessSummary 
+            data={historyData} 
+            onClose={() => setShowSummary(false)}
+          />
+        ) : (
+          <BabyStepsTracker 
+            ratings={ratings} 
+            onComplete={handleGoToDashboard}
+            onToggleStep={onToggleBabyStep}
+          />
+        )}
+      </div>
     </div>
   );
 };

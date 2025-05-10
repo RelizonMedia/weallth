@@ -54,13 +54,13 @@ const TrackPage = () => {
   
   return (
     <Layout>
-      <div className="flex flex-col space-y-6">
+      <div className="flex flex-col space-y-6 w-full max-w-full">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">
+          <div className="w-full">
+            <h1 className="text-2xl md:text-3xl font-bold">
               {showingHistory ? "My Wellness Tracking" : "Track Today's Wellness"}
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-sm md:text-base">
               {showingHistory 
                 ? "View your complete wellness journey with detailed metrics and trends"
                 : "Rate each of your 10 core wellness metrics and set baby steps for improvement"
@@ -68,16 +68,17 @@ const TrackPage = () => {
             </p>
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full md:w-auto">
             {showingHistory && (
               <Button 
                 variant="outline" 
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 text-xs md:text-sm"
                 asChild
+                size="sm"
               >
                 <Link to="/goal-tracker">
                   <Target className="h-4 w-4" />
-                  View Goal Tracker
+                  <span className="truncate">Goal Tracker</span>
                 </Link>
               </Button>
             )}
@@ -92,10 +93,11 @@ const TrackPage = () => {
                 }
               }} 
               variant="outline"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 text-xs md:text-sm flex-grow md:flex-grow-0"
+              size="sm"
             >
               <CalendarPlus className="h-4 w-4" />
-              {showingHistory ? "Track New Entry" : "View History"}
+              <span className="truncate">{showingHistory ? "Track New Entry" : "View History"}</span>
             </Button>
           </div>
         </div>

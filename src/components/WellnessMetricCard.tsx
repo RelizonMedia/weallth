@@ -92,7 +92,7 @@ const WellnessMetricCard = ({ metric, initialRating, onSave }: WellnessMetricCar
             <div className="h-10 w-10 rounded-full bg-wellness-purple/20 flex items-center justify-center">
               <IconComponent className="h-5 w-5 text-wellness-purple" />
             </div>
-            <CardTitle className="text-lg font-medium">{metric.name}</CardTitle>
+            <CardTitle className="text-lg font-medium truncate max-w-[140px] sm:max-w-none">{metric.name}</CardTitle>
           </div>
           {isSaved && (
             <div className="bg-wellness-teal/30 text-wellness-teal rounded-full p-1">
@@ -102,21 +102,21 @@ const WellnessMetricCard = ({ metric, initialRating, onSave }: WellnessMetricCar
         </div>
       </CardHeader>
       <CardContent className="pt-4">
-        <p className="text-sm text-muted-foreground mb-4">{metric.description}</p>
+        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{metric.description}</p>
         
         <div className="space-y-4">
           <div>
-            <p className="text-sm font-medium mb-1">How would you rate yourself today? (1-5 stars, precise to 0.1)</p>
+            <p className="text-sm font-medium mb-1">Rate (1-5 stars)</p>
             <StarRating value={score} onChange={handleScoreChange} />
           </div>
           
           <div>
-            <p className="text-sm font-medium mb-1">One baby step to improve (optional):</p>
+            <p className="text-sm font-medium mb-1">Baby step (optional):</p>
             <Input
               value={babyStep}
               onChange={(e) => handleBabyStepChange(e.target.value)}
               onBlur={handleInputBlur}
-              placeholder={`One small way to improve my ${metric.name.toLowerCase()}`}
+              placeholder="Small improvement step"
               className={`flex-1 ${isSaved ? "border-wellness-teal/50" : ""}`}
             />
           </div>
