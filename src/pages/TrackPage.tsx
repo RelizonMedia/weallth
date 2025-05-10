@@ -20,6 +20,9 @@ const TrackPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Adding a helper to count metrics with scores
+  const ratedMetricsCount = ratings.filter(r => r.score > 0).length;
+
   const handleSaveRating = (rating: WellnessRating) => {
     // Check if we already have a rating for this metric
     const existingIndex = ratings.findIndex(r => r.metricId === rating.metricId);
@@ -42,10 +45,13 @@ const TrackPage = () => {
   };
   
   const handleSubmit = () => {
-    if (ratings.length < wellnessMetrics.length) {
+    // Modified to check for scores only, not baby steps
+    const metricsWithScores = ratings.filter(r => r.score > 0);
+    
+    if (metricsWithScores.length < wellnessMetrics.length) {
       toast({
-        title: "All metrics required",
-        description: "Please rate all 10 wellness metrics before submitting.",
+        title: "All metrics need ratings",
+        description: `Please rate all 10 wellness metrics before submitting. (${metricsWithScores.length}/10 rated)`,
         variant: "destructive"
       });
       return;
@@ -78,13 +84,13 @@ const TrackPage = () => {
     navigate('/');
   };
   
-  // Calculate completion percentage
-  const completionPercentage = (ratings.length / wellnessMetrics.length) * 100;
+  // Calculate completion percentage based on scored metrics only
+  const completionPercentage = (ratedMetricsCount / wellnessMetrics.length) * 100;
   
   // Debug to check ratings state
   useEffect(() => {
-    console.log("Current ratings:", ratings.length, "of", wellnessMetrics.length);
-  }, [ratings]);
+    console.log("Current ratings:", ratedMetricsCount, "of", wellnessMetrics.length);
+  }, [ratings, ratedMetricsCount]);
   
   return (
     <Layout>
@@ -101,7 +107,7 @@ const TrackPage = () => {
           <AlertTitle>Track Your Wellness Daily</AlertTitle>
           <AlertDescription>
             For best results, track your wellness metrics at the same time each day.
-            Reflect honestly on each area and set achievable baby steps.
+            Rate each area honestly - adding baby steps for improvement is optional.
           </AlertDescription>
         </Alert>
         
@@ -126,16 +132,15 @@ const TrackPage = () => {
         ) : (
           <>
             <div className="flex items-center space-x-2">
-              <span className="font-medium">{ratings.length} of {wellnessMetrics.length} metrics rated</span>
+              <span className="font-medium">{ratedMetricsCount} of {wellnessMetrics.length} metrics rated</span>
               <Progress value={completionPercentage} className="w-32 h-2" />
             </div>
             
-            {ratings.length < wellnessMetrics.length && (
+            {ratedMetricsCount < wellnessMetrics.length && (
               <Alert variant="default" className="bg-muted/50">
                 <AlertTitle>Rate all 10 metrics to continue</AlertTitle>
                 <AlertDescription>
-                  Set a score (1-5 stars) and add one baby step for improvement for each metric.
-                  Your ratings will automatically be saved once both are complete.
+                  Set a score (1-5 stars) for each metric. Baby steps for improvement are optional.
                 </AlertDescription>
               </Alert>
             )}
@@ -156,11 +161,11 @@ const TrackPage = () => {
                 onClick={handleSubmit} 
                 size="lg" 
                 variant="default"
-                disabled={ratings.length < wellnessMetrics.length}
+                disabled={ratedMetricsCount < wellnessMetrics.length}
                 className="px-8 bg-wellness-teal hover:bg-wellness-teal/90 text-white"
               >
-                {ratings.length < wellnessMetrics.length ? (
-                  <>Submit Today's Wellness Tracking ({ratings.length}/{wellnessMetrics.length})</>
+                {ratedMetricsCount < wellnessMetrics.length ? (
+                  <>Submit Today's Wellness Tracking ({ratedMetricsCount}/{wellnessMetrics.length})</>
                 ) : (
                   <>
                     <CheckCircle className="h-5 w-5 mr-2" />

@@ -33,26 +33,25 @@ const WellnessMetricCard = ({ metric, initialRating, onSave }: WellnessMetricCar
   
   const IconComponent = iconMap[metric.icon] || Activity;
   
-  // Auto-save when score changes
+  // Auto-save when score changes - this is the key change
   const handleScoreChange = (newScore: number) => {
     setScore(newScore);
-    if (babyStep.trim()) {
-      saveRating(newScore, babyStep);
-    }
+    // Save even without baby step text
+    saveRating(newScore, babyStep);
   };
   
-  // Save rating when input loses focus if we have both score and baby step
+  // Save rating when input loses focus
   const handleInputBlur = () => {
-    if (score > 0 && babyStep.trim()) {
+    if (score > 0) {
       saveRating(score, babyStep);
     }
   };
 
-  // Handle input change and save if both fields are complete
+  // Handle input change
   const handleBabyStepChange = (value: string) => {
     setBabyStep(value);
-    if (score > 0 && value.trim()) {
-      // Immediately save rather than using a timeout
+    if (score > 0) {
+      // Save whenever there's a score, even with empty baby step
       saveRating(score, value);
     }
   };
@@ -62,8 +61,8 @@ const WellnessMetricCard = ({ metric, initialRating, onSave }: WellnessMetricCar
     const rating = {
       metricId: metric.id,
       score: currentScore,
-      babyStep: currentBabyStep,
-      completed: true,
+      babyStep: currentBabyStep, // Can be empty string
+      completed: currentScore > 0, // Only require a score to be "complete"
       date: new Date().toISOString()
     };
     
@@ -72,7 +71,7 @@ const WellnessMetricCard = ({ metric, initialRating, onSave }: WellnessMetricCar
     setIsSaved(true);
   };
   
-  // If initial rating changes (e.g. when added from parent), update local state
+  // If initial rating changes, update local state
   useEffect(() => {
     if (initialRating) {
       setScore(initialRating.score);
@@ -81,7 +80,8 @@ const WellnessMetricCard = ({ metric, initialRating, onSave }: WellnessMetricCar
     }
   }, [initialRating]);
   
-  const isComplete = score > 0 && babyStep.trim().length > 0;
+  // Change to only require score to be complete
+  const isComplete = score > 0;
   
   return (
     <Card className={`overflow-hidden transition-all ${isSaved ? "border-wellness-teal" : "hover:shadow-md"}`}>
@@ -110,7 +110,7 @@ const WellnessMetricCard = ({ metric, initialRating, onSave }: WellnessMetricCar
           </div>
           
           <div>
-            <p className="text-sm font-medium mb-1">One baby step to improve:</p>
+            <p className="text-sm font-medium mb-1">One baby step to improve (optional):</p>
             <Input
               value={babyStep}
               onChange={(e) => handleBabyStepChange(e.target.value)}
@@ -122,7 +122,7 @@ const WellnessMetricCard = ({ metric, initialRating, onSave }: WellnessMetricCar
           
           <div className="pt-2">
             <Progress 
-              value={isComplete ? 100 : (score > 0 ? 50 : 0)} 
+              value={isComplete ? 100 : 0} 
               className="h-1" 
             />
           </div>
