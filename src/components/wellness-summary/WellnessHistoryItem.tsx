@@ -1,15 +1,9 @@
 
-import { Clock, Plus } from "lucide-react";
+import { Clock } from "lucide-react";
 import { format } from "date-fns";
 import { wellnessMetrics } from "@/data/wellnessMetrics";
 import { DailyWellnessEntry } from "@/types/wellness";
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Input } from "@/components/ui/input";
 
 interface WellnessHistoryItemProps {
   entry: DailyWellnessEntry & { 
@@ -17,7 +11,6 @@ interface WellnessHistoryItemProps {
     formattedTime: string;
   };
   compact?: boolean;
-  onAddBabyStep?: (metricId: string, babyStep: string) => void;
 }
 
 // Function to get the color based on the wellness score
@@ -47,38 +40,11 @@ const getCategoryTextColor = (category: string): string => {
   }
 };
 
-const WellnessHistoryItem = ({ entry, compact, onAddBabyStep }: WellnessHistoryItemProps) => {
-  const { toast } = useToast();
-  const [newBabySteps, setNewBabySteps] = useState<Record<string, string>>({});
-  
+const WellnessHistoryItem = ({ entry, compact }: WellnessHistoryItemProps) => {
   if (!entry) return null;
   
   // Get the appropriate text color for the category
   const categoryColor = getCategoryTextColor(entry.category);
-
-  // Handle saving a new baby step
-  const handleSaveBabyStep = (metricId: string) => {
-    if (!newBabySteps[metricId] || newBabySteps[metricId].trim() === '') {
-      toast({
-        title: "Please enter a baby step",
-        description: "The baby step cannot be empty",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (onAddBabyStep) {
-      onAddBabyStep(metricId, newBabySteps[metricId]);
-      
-      toast({
-        title: "Baby step added",
-        description: "Your baby step has been added successfully"
-      });
-      
-      // Clear this specific baby step input
-      setNewBabySteps(prev => ({...prev, [metricId]: ''}));
-    }
-  };
   
   return (
     <div className="border rounded-lg p-4">
@@ -104,7 +70,6 @@ const WellnessHistoryItem = ({ entry, compact, onAddBabyStep }: WellnessHistoryI
           const score = metricRating?.score || 0;
           const colorClasses = getScoreColor(score);
           const category = getScoreCategory(score);
-          const hasBabyStep = metricRating?.babyStep && metricRating.babyStep.trim() !== '';
           
           return (
             <HoverCard key={metric.id}>
@@ -119,45 +84,6 @@ const WellnessHistoryItem = ({ entry, compact, onAddBabyStep }: WellnessHistoryI
                 <div className="space-y-2">
                   <h4 className="font-semibold">{metric.name}</h4>
                   <p className="text-sm text-muted-foreground">{metric.description}</p>
-                  
-                  {hasBabyStep ? (
-                    <div className="mt-2">
-                      <p className="text-sm font-medium">Your baby step:</p>
-                      <div className="bg-muted p-2 rounded-md text-sm mt-1">
-                        {metricRating?.babyStep}
-                      </div>
-                      <div className="mt-1 text-xs text-muted-foreground flex items-center">
-                        <span className={`h-2 w-2 rounded-full ${metricRating?.completed ? 'bg-green-500' : 'bg-yellow-500'} mr-1`}></span>
-                        <span>{metricRating?.completed ? 'Completed' : 'In progress'}</span>
-                      </div>
-                    </div>
-                  ) : onAddBabyStep ? (
-                    <div className="mt-2">
-                      <p className="text-sm font-medium">Add a baby step:</p>
-                      <div className="flex mt-1 space-x-2">
-                        <Input 
-                          placeholder="What small step can you take?"
-                          value={newBabySteps[metric.id] || ''}
-                          onChange={(e) => setNewBabySteps(prev => ({...prev, [metric.id]: e.target.value}))}
-                          className="text-sm"
-                        />
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button onClick={() => handleSaveBabyStep(metric.id)} size="sm" variant="secondary">
-                                <Plus className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Add this baby step</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-xs italic text-muted-foreground">No baby step defined for this metric.</p>
-                  )}
                 </div>
               </HoverCardContent>
             </HoverCard>
