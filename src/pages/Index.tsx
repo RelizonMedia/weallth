@@ -125,17 +125,29 @@ const Index = () => {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <WellnessScoreDisplay 
-              score={todayEntry.overallScore} 
-              category={todayEntry.category}
-              previousScore={previousEntry?.overallScore}
-            />
-            <BabyStepsList 
-              ratings={todayEntry.ratings} 
-              onStepToggle={handleStepToggle} 
-            />
-            <WellnessStreak days={wellnessData.streakDays} />
+          <div className="grid grid-cols-1 gap-6">
+            {/* Track Wellness Today Button - added above the Wellness Score section */}
+            <div className="flex justify-end">
+              <Button asChild variant="outline" size="sm">
+                <Link to="/track?mode=new" className="flex items-center gap-2">
+                  <CalendarPlus className="h-4 w-4" />
+                  Track Wellness Today
+                </Link>
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <WellnessScoreDisplay 
+                score={todayEntry.overallScore} 
+                category={todayEntry.category}
+                previousScore={previousEntry?.overallScore}
+              />
+              <BabyStepsList 
+                ratings={todayEntry.ratings} 
+                onStepToggle={handleStepToggle} 
+              />
+              <WellnessStreak days={wellnessData.streakDays} />
+            </div>
           </div>
         )}
         
