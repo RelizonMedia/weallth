@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Star, MessageCircle, Trophy, PartyPopper, Search, Users, Plus, User, Lock } from "lucide-react";
+import { Star, MessageCircle, Trophy, PartyPopper, Search, Users, Plus, User, Lock, Folder, Globe, FolderPlus, UserPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import CreateWellnessSpace from "@/components/CreateWellnessSpace";
+import InviteFriendsModal from "@/components/InviteFriendsModal";
 
 // Mock data for communities and posts
 const mockCommunities = [
@@ -66,6 +68,10 @@ const Community = () => {
   const [postType, setPostType] = useState("progress");
   const [searchQuery, setSearchQuery] = useState("");
   const [privacyLevel, setPrivacyLevel] = useState("community");
+  const [createSpaceOpen, setCreateSpaceOpen] = useState(false);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [selectedSpace, setSelectedSpace] = useState<string | null>(null);
+  const [userSpaces, setUserSpaces] = useState<any[]>([]);
   const { toast } = useToast();
 
   const handlePostSubmit = (e: React.FormEvent) => {
@@ -107,11 +113,13 @@ const Community = () => {
     });
   };
 
-  const handleCreateCommunity = () => {
-    toast({
-      title: "Coming soon!",
-      description: "This feature will be available soon",
-    });
+  const handleInviteFriends = (spaceName: string) => {
+    setSelectedSpace(spaceName);
+    setInviteModalOpen(true);
+  };
+
+  const handleSpaceCreated = (newSpace: any) => {
+    setUserSpaces([newSpace, ...userSpaces]);
   };
 
   const filteredCommunities = mockCommunities.filter(community => 
@@ -255,17 +263,60 @@ const Community = () => {
               <div className="relative flex-1 max-w-sm">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input 
-                  placeholder="Search communities..." 
+                  placeholder="Search spaces..." 
                   className="pl-8"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <Button onClick={handleCreateCommunity}>
-                <Plus className="h-4 w-4 mr-2" /> Create Space
+              <Button onClick={() => setCreateSpaceOpen(true)}>
+                <FolderPlus className="h-4 w-4 mr-2" /> Create Space
               </Button>
             </div>
 
+            {userSpaces.length > 0 && (
+              <>
+                <h3 className="text-lg font-medium mt-6 mb-3">Your Spaces</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {userSpaces.map((space: any) => (
+                    <Card key={space.id}>
+                      <CardHeader>
+                        <div className="flex justify-between items-center">
+                          <CardTitle className="text-lg flex items-center">
+                            {space.name}
+                            {space.isPrivate && <Lock className="ml-2 h-4 w-4 text-muted-foreground" />}
+                            {!space.isPrivate && <Globe className="ml-2 h-4 w-4 text-muted-foreground" />}
+                          </CardTitle>
+                        </div>
+                        <CardDescription className="flex items-center">
+                          <Users className="h-3 w-3 mr-1" /> {space.members} member{space.members !== 1 ? 's' : ''}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm">{space.description || "No description provided."}</p>
+                      </CardContent>
+                      <CardFooter className="gap-2">
+                        <Button 
+                          variant="default" 
+                          className="w-full"
+                        >
+                          View Space
+                        </Button>
+                        <Button 
+                          variant="outline"
+                          className="flex-shrink-0"
+                          onClick={() => handleInviteFriends(space.name)}
+                        >
+                          <UserPlus className="h-4 w-4" />
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              </>
+            )}
+
+            <h3 className="text-lg font-medium mt-6 mb-3">Discover Spaces</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredCommunities.map((community) => (
                 <Card key={community.id}>
@@ -274,6 +325,7 @@ const Community = () => {
                       <CardTitle className="text-lg flex items-center">
                         {community.name}
                         {community.isPrivate && <Lock className="ml-2 h-4 w-4 text-muted-foreground" />}
+                        {!community.isPrivate && <Globe className="ml-2 h-4 w-4 text-muted-foreground" />}
                       </CardTitle>
                       {community.joined ? (
                         <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">Joined</span>
@@ -355,6 +407,20 @@ const Community = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Create Space Modal */}
+      <CreateWellnessSpace 
+        open={createSpaceOpen} 
+        onOpenChange={setCreateSpaceOpen} 
+        onCreated={handleSpaceCreated}
+      />
+
+      {/* Invite Friends Modal */}
+      <InviteFriendsModal 
+        open={inviteModalOpen} 
+        onOpenChange={setInviteModalOpen}
+        spaceName={selectedSpace || ""}
+      />
     </Layout>
   );
 };
