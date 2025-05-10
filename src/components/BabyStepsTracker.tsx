@@ -2,28 +2,28 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { WellnessRating } from "@/types/wellness";
 import { wellnessMetrics } from "@/data/wellnessMetrics";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Check, Clock, Calendar, Star, Edit, Trash, PartyPopper, Award } from "lucide-react";
+import { Check, Clock, Calendar, Star, Edit, Trash } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import confetti from "canvas-confetti";
-import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } from "@/components/ui/menubar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import CelebrationDialog from "./baby-steps/CelebrationDialog";
+
 interface BabyStepsTrackerProps {
   ratings: WellnessRating[];
   onComplete: () => void;
   onToggleStep: (metricId: string, completed: boolean) => void;
 }
+
 const BabyStepsTracker = ({
   ratings,
   onComplete,
   onToggleStep
 }: BabyStepsTrackerProps) => {
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
+  
   const [stepsWithData, setStepsWithData] = useState(ratings.map(rating => {
     const metric = wellnessMetrics.find(m => m.id === rating.metricId);
     return {
@@ -31,9 +31,11 @@ const BabyStepsTracker = ({
       metricName: metric?.name || ""
     };
   }));
+  
   const [starsEarned, setStarsEarned] = useState(0);
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebratedStep, setCelebratedStep] = useState<string>("");
+  const [completionTime, setCompletionTime] = useState<string>(format(new Date(), "MMM dd, yyyy 'at' h:mm a"));
 
   // On component mount, load stars from localStorage
   useEffect(() => {
@@ -103,6 +105,7 @@ const BabyStepsTracker = ({
       console.error("Error triggering confetti:", error);
     }
   };
+  
   const handleToggle = (metricId: string, checked: boolean, babyStep: string) => {
     // Update local state
     setStepsWithData(prev => prev.map(step => step.metricId === metricId ? {
@@ -120,8 +123,9 @@ const BabyStepsTracker = ({
       setStarsEarned(newStarsCount);
       localStorage.setItem('wellnessStars', newStarsCount.toString());
 
-      // Show the celebration dialog
+      // Set celebration data and show dialog
       setCelebratedStep(babyStep);
+      setCompletionTime(format(new Date(), "MMM dd, yyyy 'at' h:mm a"));
       setShowCelebration(true);
 
       // Also show toast notifications
@@ -153,6 +157,7 @@ const BabyStepsTracker = ({
       });
     }
   };
+  
   const handleAllComplete = () => {
     toast({
       title: "Great job!",
@@ -167,7 +172,8 @@ const BabyStepsTracker = ({
     const messages = ["You're doing amazing! Every step counts toward your wellness journey.", "That's the way! Your commitment to your wellness is truly inspiring.", "Fantastic progress! You're building healthy habits one step at a time.", "Excellent work! Your dedication to wellness is something to celebrate.", "Great job! Small steps lead to big changes in your wellness journey."];
     return messages[Math.floor(Math.random() * messages.length)];
   };
-  return <Card className="mb-8">
+  return (
+    <Card className="mb-8">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
           <div>
@@ -184,16 +190,20 @@ const BabyStepsTracker = ({
         </div>
       </CardHeader>
       <CardContent>
-        {babySteps.length === 0 ? <div className="text-center py-8">
+        {babySteps.length === 0 ? (
+          <div className="text-center py-8">
             <p className="text-lg text-muted-foreground">You haven't set any baby steps to track.</p>
             <Button onClick={onComplete} className="mt-4">
               Return to Dashboard
             </Button>
-          </div> : <>
+          </div>
+        ) : (
+          <>
             <div className="w-full bg-gray-200 h-2 rounded-full mb-4">
-              <div className="bg-wellness-purple h-2 rounded-full transition-all duration-300" style={{
-            width: `${progress}%`
-          }} />
+              <div 
+                className="bg-wellness-purple h-2 rounded-full transition-all duration-300" 
+                style={{ width: `${progress}%` }} 
+              />
             </div>
             
             <div className="text-sm font-medium mb-2">
@@ -253,46 +263,27 @@ const BabyStepsTracker = ({
             </div>
             
             <div className="flex justify-center mt-6">
-              <Button onClick={handleAllComplete} size="lg" className="bg-wellness-purple hover:bg-wellness-purple/90">
+              <Button 
+                onClick={handleAllComplete} 
+                size="lg" 
+                className="bg-wellness-purple hover:bg-wellness-purple/90"
+              >
                 Complete Tracking
               </Button>
             </div>
-          </>}
+          </>
+        )}
         
-        {/* Celebration Dialog */}
-        <Dialog open={showCelebration} onOpenChange={setShowCelebration}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-center text-2xl font-bold text-amber-600 flex items-center justify-center gap-2">
-                <PartyPopper className="h-6 w-6 text-amber-500" />
-                Celebration Time!
-                <PartyPopper className="h-6 w-6 text-amber-500" />
-              </DialogTitle>
-            </DialogHeader>
-            <div className="flex flex-col items-center py-4">
-              <div className="bg-amber-50 rounded-full p-6 mb-4">
-                <Award className="h-16 w-16 text-amber-500" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">Amazing Achievement!</h3>
-              <p className="text-center mb-2">
-                You've completed: <span className="font-bold">{celebratedStep}</span>
-              </p>
-              <p className="text-center text-muted-foreground mb-4">
-                {getMotivationalMessage()}
-              </p>
-              <div className="bg-amber-100 rounded-full px-4 py-2 flex items-center">
-                <Star className="h-5 w-5 text-amber-500 mr-2 fill-amber-500" />
-                <span className="text-amber-700 font-medium">+1 Star Added to Your Wellness Bank!</span>
-              </div>
-            </div>
-            <div className="flex justify-center">
-              <Button onClick={() => setShowCelebration(false)} className="bg-wellness-purple hover:bg-wellness-purple/90">
-                Continue My Journey
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        {/* Replace the old Dialog with our updated CelebrationDialog component */}
+        <CelebrationDialog
+          open={showCelebration}
+          onOpenChange={setShowCelebration}
+          stepName={celebratedStep}
+          completionTime={completionTime}
+        />
       </CardContent>
-    </Card>;
+    </Card>
+  );
 };
+
 export default BabyStepsTracker;

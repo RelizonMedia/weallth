@@ -45,11 +45,38 @@ export const useCelebration = () => {
     triggerCelebration();
   };
   
+  const shareWin = (type: string) => {
+    if (!celebratedStep) return;
+    
+    const shareMessage = `I just completed "${celebratedStep}" on my wellness journey! 🎉`;
+    const shareUrl = window.location.href;
+    
+    switch (type) {
+      case 'sms':
+        window.open(`sms:?body=${encodeURIComponent(shareMessage + ' ' + shareUrl)}`);
+        break;
+      case 'email':
+        window.open(`mailto:?subject=My Wellness Achievement&body=${encodeURIComponent(shareMessage + '\n\n' + shareUrl)}`);
+        break;
+      case 'twitter':
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMessage)}&url=${encodeURIComponent(shareUrl)}`);
+        break;
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareMessage)}`);
+        break;
+      case 'community':
+        // This would be handled by internal app logic in the future
+        console.log("Sharing to community:", shareMessage);
+        break;
+    }
+  };
+  
   return {
     showCelebration,
     setShowCelebration,
     celebratedStep,
     completionTime,
-    celebrate
+    celebrate,
+    shareWin
   };
 };
