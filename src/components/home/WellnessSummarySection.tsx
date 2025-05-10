@@ -23,6 +23,7 @@ const WellnessSummarySection = ({
         score={todayEntry.overallScore} 
         category={todayEntry.category} 
         previousScore={previousEntry?.overallScore} 
+        timestamp={todayEntry.timestamp} 
       />
       {todayEntry && todayEntry.ratings && (
         <BabyStepsList 
