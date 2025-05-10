@@ -1,5 +1,5 @@
 
-import { WellnessMetric } from "@/types/wellness";
+import { WellnessMetric, WellnessScoreCategory } from "@/types/wellness";
 
 export const wellnessMetrics: WellnessMetric[] = [
   {
@@ -64,7 +64,7 @@ export const wellnessMetrics: WellnessMetric[] = [
   }
 ];
 
-export function getWellnessCategory(score: number): "Unhealthy" | "Healthy" | "Great" | "Amazing" {
+export function getWellnessCategory(score: number): WellnessScoreCategory {
   if (score < 4.0) return "Unhealthy";
   if (score < 4.5) return "Healthy";
   if (score < 4.7) return "Great";
@@ -84,7 +84,7 @@ export const demoWellnessData = {
         date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString()
       })),
       overallScore: 3.8,
-      category: "Unhealthy"
+      category: "Unhealthy" as WellnessScoreCategory
     },
     {
       date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -96,7 +96,7 @@ export const demoWellnessData = {
         date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
       })),
       overallScore: 4.1,
-      category: "Healthy"
+      category: "Healthy" as WellnessScoreCategory
     },
     {
       date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -108,7 +108,7 @@ export const demoWellnessData = {
         date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString()
       })),
       overallScore: 4.2,
-      category: "Healthy"
+      category: "Healthy" as WellnessScoreCategory
     },
     {
       date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -120,7 +120,7 @@ export const demoWellnessData = {
         date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
       })),
       overallScore: 4.4,
-      category: "Healthy"
+      category: "Healthy" as WellnessScoreCategory
     },
     {
       date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -132,7 +132,7 @@ export const demoWellnessData = {
         date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
       })),
       overallScore: 4.6,
-      category: "Great"
+      category: "Great" as WellnessScoreCategory
     },
     {
       date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -144,7 +144,7 @@ export const demoWellnessData = {
         date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
       })),
       overallScore: 4.7,
-      category: "Amazing"
+      category: "Amazing" as WellnessScoreCategory
     },
   ],
   streakDays: 6

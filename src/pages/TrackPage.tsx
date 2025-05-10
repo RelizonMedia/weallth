@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import WellnessMetricCard from "@/components/WellnessMetricCard";
 import { Button } from "@/components/ui/button";
 import { wellnessMetrics, getWellnessCategory } from "@/data/wellnessMetrics";
-import { WellnessRating, DailyWellnessEntry } from "@/types/wellness";
+import { WellnessRating, DailyWellnessEntry, WellnessScoreCategory } from "@/types/wellness";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { AlertCircle, CheckCircle, ChartPie } from "lucide-react";
@@ -21,8 +20,8 @@ const TrackPage = () => {
   const [showBabySteps, setShowBabySteps] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [overallScore, setOverallScore] = useState(0);
-  const [category, setCategory] = useState("");
-  const [historyData, setHistoryData] = useState<DailyWellnessEntry[]>(demoWellnessData.entries);
+  const [category, setCategory] = useState<WellnessScoreCategory>("Healthy");
+  const [historyData, setHistoryData] = useState<DailyWellnessEntry[]>(demoWellnessData.entries as DailyWellnessEntry[]);
   const { toast } = useToast();
   const navigate = useNavigate();
 
