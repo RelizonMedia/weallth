@@ -29,6 +29,7 @@ const Profile = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("basic");
   const [profile, setProfile] = useState<ProfileData>({
     username: null,
     full_name: null,
