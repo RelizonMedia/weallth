@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import WellnessScoreDisplay from "@/components/WellnessScoreDisplay";
@@ -13,16 +14,23 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { marketplaceProducts } from "@/data/marketplaceData";
 import ProductCard from "@/components/ProductCard";
+import { useAuth } from "@/contexts/AuthContext";
+import { useWellnessHistory } from "@/hooks/wellness/useWellnessHistory";
 
 const Index = () => {
   const [wellnessData, setWellnessData] = useState(demoWellnessData);
   const [todayEntry, setTodayEntry] = useState<DailyWellnessEntry | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { historyData, isLoading: isLoadingWellnessData } = useWellnessHistory();
 
   // Check if we already have today's entry
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
-    const existingEntry = wellnessData.entries.find(entry => entry.date === today);
+    
+    // Try to use actual history data first if available
+    const dataToUse = historyData?.length > 0 ? historyData : wellnessData.entries;
+    const existingEntry = dataToUse.find(entry => entry.date === today);
     
     if (existingEntry) {
       // Ensure the category is a valid WellnessScoreCategory
@@ -32,7 +40,7 @@ const Index = () => {
       };
       setTodayEntry(validatedEntry);
     }
-  }, [wellnessData]);
+  }, [wellnessData, historyData]);
 
   // Helper function to validate that a string is a valid WellnessScoreCategory
   const validateCategory = (category: string): WellnessScoreCategory => {
@@ -75,14 +83,8 @@ const Index = () => {
     ? wellnessData.entries[wellnessData.entries.length - 2] 
     : null;
 
-  // Ensure chart data has valid categories
-  const chartData = {
-    ...wellnessData,
-    entries: wellnessData.entries.map(entry => ({
-      ...entry,
-      category: validateCategory(entry.category)
-    }))
-  };
+  // Prepare wellness chart data - use actual user data if available
+  const chartData = historyData?.length > 0 ? historyData : wellnessData.entries;
 
   // Get recommended products for home page display
   const recommendedProducts = marketplaceProducts
@@ -137,8 +139,32 @@ const Index = () => {
           </div>
         )}
         
+        {/* Wellness Progress Chart */}
         <div className="grid grid-cols-1 gap-6">
-          <WellnessChart data={chartData.entries} />
+          <Card className="overflow-hidden">
+            <CardHeader className="p-4">
+              <CardTitle className="text-base md:text-lg">My Wellness Progress</CardTitle>
+              <CardDescription className="text-xs md:text-sm">Track how your wellness has changed over time</CardDescription>
+            </CardHeader>
+            <CardContent className="p-2 md:p-4">
+              {isLoadingWellnessData ? (
+                <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                  Loading your wellness data...
+                </div>
+              ) : chartData.length > 0 ? (
+                <WellnessChart data={chartData} />
+              ) : (
+                <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                  <div className="text-center">
+                    <p className="mb-4">No wellness data available yet.</p>
+                    <Button asChild size="sm">
+                      <Link to="/track?mode=new">Start Tracking</Link>
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
         
         {/* AI Companion Callout */}
