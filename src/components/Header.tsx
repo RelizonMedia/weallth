@@ -1,5 +1,5 @@
 
-import { Bell, Menu, User, Activity, Wallet, Target, Users } from "lucide-react";
+import { Bell, Menu, User, Activity, Wallet, Target, Users, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu,
@@ -10,7 +10,6 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -42,6 +41,10 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
   const handleMyWellnessSpaces = () => {
     navigate('/my-wellness-spaces');
   };
+  
+  const handleMessages = () => {
+    navigate('/messages');
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
@@ -62,6 +65,16 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
         </div>
 
         <div className="ml-auto flex items-center space-x-4">
+          {/* Messages dropdown */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="relative"
+            onClick={handleMessages}
+          >
+            <Mail className="h-5 w-5" />
+          </Button>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">
