@@ -26,15 +26,15 @@ const WellnessResultsView = ({
   };
 
   return (
-    <div className="py-4 space-y-8 w-full overflow-hidden">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Wellness Tracking</h1>
-          <p className="text-muted-foreground text-sm">
+    <div className="py-2 md:py-4 space-y-6 w-full max-w-full overflow-hidden">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+        <div className="max-w-full overflow-hidden">
+          <h1 className="text-lg md:text-2xl font-bold">Wellness Tracking</h1>
+          <p className="text-muted-foreground text-xs md:text-sm">
             Your wellness tracking results and historical data
           </p>
         </div>
-        <Button onClick={() => navigate('/')} variant="outline" className="flex items-center gap-2 text-sm">
+        <Button onClick={() => navigate('/')} variant="outline" className="flex items-center gap-1 text-xs md:text-sm whitespace-nowrap">
           Back to Dashboard
         </Button>
       </div>
@@ -47,14 +47,14 @@ const WellnessResultsView = ({
         />
         <label 
           htmlFor="view-toggle" 
-          className="text-sm font-medium cursor-pointer"
+          className="text-xs md:text-sm font-medium cursor-pointer truncate"
         >
           {showSummary ? "Showing Wellness Summary" : "Showing Goal Tracker"}
         </label>
       </div>
       
       {/* Conditional rendering based on toggle state */}
-      <div className="w-full overflow-hidden">
+      <div className="w-full max-w-full overflow-hidden">
         {showSummary ? (
           <WellnessSummary 
             data={historyData} 

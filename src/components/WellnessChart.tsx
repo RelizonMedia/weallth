@@ -70,35 +70,38 @@ const WellnessChart = ({ data }: WellnessChartProps) => {
   const chartData = entriesWithDates.sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime());
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Wellness Progress</CardTitle>
-        <CardDescription>Track how your wellness has changed over time</CardDescription>
+    <Card className="w-full overflow-hidden">
+      <CardHeader className="p-4">
+        <CardTitle className="text-base md:text-lg">Wellness Progress</CardTitle>
+        <CardDescription className="text-xs md:text-sm">Track how your wellness has changed over time</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="h-[350px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
+      <CardContent className="p-2 md:p-4">
+        <div className="h-[300px] max-w-full overflow-hidden">
+          <ResponsiveContainer width="99%" height="100%">
             <LineChart
               data={chartData}
               margin={{
                 top: 5,
-                right: 30,
-                left: 20,
+                right: 10,
+                left: 0,
                 bottom: 25,
               }}
             >
               <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
               <XAxis 
                 dataKey="formattedDate"
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 10 }}
                 angle={-45}
                 textAnchor="end"
                 height={60}
+                tickMargin={8}
+                scale="point"
               />
               <YAxis 
-                tick={{ fontSize: 12 }} 
+                tick={{ fontSize: 10 }} 
                 domain={[0, 5]} 
                 ticks={[0, 1, 2, 3, 4, 5]}
+                width={25}
               />
               <Tooltip 
                 formatter={(value: number) => [`${value.toFixed(1)}`, 'Wellness Score']}
@@ -110,13 +113,13 @@ const WellnessChart = ({ data }: WellnessChartProps) => {
                     const scoreValue = item.score;
                     
                     // Return formatted date and score category
-                    return `${format(date, "MMMM d, yyyy")} at ${format(date, "h:mm a")}
-Score Category: ${category} (${scoreValue.toFixed(1)})`;
+                    return `${format(date, "MMM d, yyyy")}\nScore: ${scoreValue.toFixed(1)} (${category})`;
                   }
                   return "";
                 }}
+                contentStyle={{ fontSize: '10px' }}
               />
-              <Legend />
+              <Legend wrapperStyle={{ fontSize: '10px' }} />
               
               {/* Color-coded areas for score categories */}
               <Area 
@@ -126,7 +129,7 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
                 fill="#8B5CF6" 
                 fillOpacity={0.2} 
                 strokeOpacity={0}
-                name="Amazing (4.7-5.0)"
+                name="Amazing"
               />
               <Area 
                 dataKey="score"
@@ -135,7 +138,7 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
                 fill="#0EA5E9" 
                 fillOpacity={0.2} 
                 strokeOpacity={0}
-                name="Great (4.5-4.7)"
+                name="Great"
               />
               <Area 
                 dataKey="score"
@@ -144,7 +147,7 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
                 fill="#4ECDC4" 
                 fillOpacity={0.2} 
                 strokeOpacity={0}
-                name="Healthy (4.0-4.5)"
+                name="Healthy"
               />
               <Area 
                 dataKey="score"
@@ -153,7 +156,7 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
                 fill="#F97316" 
                 fillOpacity={0.2} 
                 strokeOpacity={0}
-                name="Unhealthy (<4.0)"
+                name="Unhealthy"
               />
               
               {/* Reference lines for category boundaries */}
@@ -165,7 +168,7 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
               <Line
                 type="monotone"
                 dataKey="score"
-                name="Wellness Score"
+                name="Score"
                 stroke="#000"
                 strokeWidth={2}
                 dot={CustomDot}
@@ -177,21 +180,21 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
         </div>
         
         {/* Small legend for categories */}
-        <div className="flex flex-wrap justify-center gap-4 mt-4 text-xs">
+        <div className="flex flex-wrap justify-center gap-2 mt-2 text-[10px]">
           <div className="flex items-center">
-            <div className="w-3 h-3 rounded-full mr-1" style={{ backgroundColor: "#F97316" }}></div>
+            <div className="w-2 h-2 rounded-full mr-1" style={{ backgroundColor: "#F97316" }}></div>
             <span>&lt;4.0: Unhealthy</span>
           </div>
           <div className="flex items-center">
-            <div className="w-3 h-3 rounded-full mr-1" style={{ backgroundColor: "#4ECDC4" }}></div>
+            <div className="w-2 h-2 rounded-full mr-1" style={{ backgroundColor: "#4ECDC4" }}></div>
             <span>4.0-4.5: Healthy</span>
           </div>
           <div className="flex items-center">
-            <div className="w-3 h-3 rounded-full mr-1" style={{ backgroundColor: "#0EA5E9" }}></div>
+            <div className="w-2 h-2 rounded-full mr-1" style={{ backgroundColor: "#0EA5E9" }}></div>
             <span>4.5-4.7: Great</span>
           </div>
           <div className="flex items-center">
-            <div className="w-3 h-3 rounded-full mr-1" style={{ backgroundColor: "#8B5CF6" }}></div>
+            <div className="w-2 h-2 rounded-full mr-1" style={{ backgroundColor: "#8B5CF6" }}></div>
             <span>4.7-5.0: Amazing</span>
           </div>
         </div>

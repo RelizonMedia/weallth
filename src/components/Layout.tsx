@@ -21,14 +21,14 @@ const Layout = ({ children }: LayoutProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="min-h-screen bg-background overflow-hidden">
       <Sidebar isOpen={effectiveSidebarOpen} />
       <div className={cn(
         "transition-all duration-300 ease-in-out w-full overflow-hidden",
         effectiveSidebarOpen ? "ml-64" : "ml-0"
       )}>
         <Header toggleSidebar={toggleSidebar} />
-        <main className="container mx-auto p-4 md:p-6 overflow-x-hidden">
+        <main className="container mx-auto p-2 md:p-6 overflow-hidden">
           {children}
         </main>
       </div>

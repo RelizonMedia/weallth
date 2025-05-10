@@ -20,21 +20,21 @@ const WellnessTabs = ({ historyData, allRatings }: WellnessTabsProps) => {
   const [selectedMetric, setSelectedMetric] = useState(wellnessMetrics[0]?.id || "");
 
   return (
-    <Tabs defaultValue="progress" className="w-full mb-6 overflow-hidden">
+    <Tabs defaultValue="progress" className="w-full mb-6 overflow-hidden max-w-full">
       <TabsList className="mb-4 overflow-x-auto flex whitespace-nowrap w-full max-w-full">
-        <TabsTrigger value="progress">Progress Chart</TabsTrigger>
-        <TabsTrigger value="goals">Baby Steps History</TabsTrigger>
-        <TabsTrigger value="points">Points History</TabsTrigger>
-        <TabsTrigger value="metrics">Metric History</TabsTrigger>
+        <TabsTrigger value="progress" className="text-xs md:text-sm">Progress Chart</TabsTrigger>
+        <TabsTrigger value="goals" className="text-xs md:text-sm">Baby Steps History</TabsTrigger>
+        <TabsTrigger value="points" className="text-xs md:text-sm">Points History</TabsTrigger>
+        <TabsTrigger value="metrics" className="text-xs md:text-sm">Metric History</TabsTrigger>
       </TabsList>
       
       <TabsContent value="progress">
-        <Card>
-          <CardHeader>
-            <CardTitle>Wellness Progress Over Time</CardTitle>
-            <CardDescription>Track your wellness journey with detailed timestamps</CardDescription>
+        <Card className="overflow-hidden">
+          <CardHeader className="p-3">
+            <CardTitle className="text-base md:text-lg">Wellness Progress Over Time</CardTitle>
+            <CardDescription className="text-xs md:text-sm">Track your wellness journey</CardDescription>
           </CardHeader>
-          <CardContent className="overflow-hidden">
+          <CardContent className="p-2 md:p-4 overflow-hidden">
             <WellnessChart data={historyData} />
           </CardContent>
         </Card>
@@ -49,32 +49,32 @@ const WellnessTabs = ({ historyData, allRatings }: WellnessTabsProps) => {
       </TabsContent>
 
       <TabsContent value="metrics">
-        <Card>
-          <CardHeader>
-            <CardTitle>Detailed Metric History</CardTitle>
-            <CardDescription>See how each wellness metric has changed over time</CardDescription>
+        <Card className="overflow-hidden">
+          <CardHeader className="p-3">
+            <CardTitle className="text-base md:text-lg">Detailed Metric History</CardTitle>
+            <CardDescription className="text-xs md:text-sm">See how each metric has changed over time</CardDescription>
           </CardHeader>
-          <CardContent className="overflow-hidden">
+          <CardContent className="p-2 md:p-4 overflow-hidden">
             {/* Metric selector */}
-            <div className="flex flex-col md:flex-row flex-wrap items-start md:items-center justify-between gap-4 mb-6">
+            <div className="flex flex-col md:flex-row flex-wrap items-start md:items-center justify-between gap-2 mb-3">
               <div className="flex items-center space-x-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
+                <Calendar className="h-3 w-3 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">
                   {historyData.length} entries tracked
                 </span>
               </div>
               <div className="flex items-center space-x-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground truncate max-w-[200px]">
-                  Last updated: {historyData.length > 0 ? format(new Date(historyData[0].timestamp || historyData[0].date), "MMM d, yyyy h:mm a") : "No data"}
+                <Clock className="h-3 w-3 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground truncate max-w-[200px]">
+                  Last updated: {historyData.length > 0 ? format(new Date(historyData[0].timestamp || historyData[0].date), "MMM d") : "No data"}
                 </span>
               </div>
             </div>
             
             {/* Metric selector */}
-            <div className="mb-6">
+            <div className="mb-3">
               <select 
-                className="w-full bg-background border border-input p-2 rounded-md"
+                className="w-full bg-background border border-input p-1 md:p-2 rounded-md text-xs md:text-sm"
                 value={selectedMetric}
                 onChange={(e) => setSelectedMetric(e.target.value)}
               >
@@ -87,7 +87,7 @@ const WellnessTabs = ({ historyData, allRatings }: WellnessTabsProps) => {
             </div>
             
             {/* Metric chart */}
-            <div className="mt-6 overflow-hidden">
+            <div className="mt-3 overflow-hidden">
               {selectedMetric && (
                 <MetricHistoryChart 
                   data={historyData} 

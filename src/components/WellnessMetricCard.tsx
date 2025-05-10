@@ -86,38 +86,38 @@ const WellnessMetricCard = ({ metric, initialRating, onSave }: WellnessMetricCar
   
   return (
     <Card className={`overflow-hidden transition-all ${isSaved ? "border-wellness-teal" : "hover:shadow-md"}`}>
-      <CardHeader className={`pb-2 ${isSaved ? "bg-wellness-teal/20" : "bg-gradient-to-r from-wellness-teal/20 to-wellness-purple/20"}`}>
+      <CardHeader className={`p-3 ${isSaved ? "bg-wellness-teal/20" : "bg-gradient-to-r from-wellness-teal/20 to-wellness-purple/20"}`}>
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="h-10 w-10 rounded-full bg-wellness-purple/20 flex items-center justify-center">
-              <IconComponent className="h-5 w-5 text-wellness-purple" />
+          <div className="flex items-center space-x-2">
+            <div className="h-8 w-8 rounded-full bg-wellness-purple/20 flex items-center justify-center">
+              <IconComponent className="h-4 w-4 text-wellness-purple" />
             </div>
-            <CardTitle className="text-lg font-medium truncate max-w-[140px] sm:max-w-none">{metric.name}</CardTitle>
+            <CardTitle className="text-sm md:text-base font-medium truncate max-w-[140px] sm:max-w-none">{metric.name}</CardTitle>
           </div>
           {isSaved && (
             <div className="bg-wellness-teal/30 text-wellness-teal rounded-full p-1">
-              <Check className="h-5 w-5" />
+              <Check className="h-4 w-4" />
             </div>
           )}
         </div>
       </CardHeader>
-      <CardContent className="pt-4">
-        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{metric.description}</p>
+      <CardContent className="p-3">
+        <p className="text-xs md:text-sm text-muted-foreground mb-3 line-clamp-2">{metric.description}</p>
         
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div>
-            <p className="text-sm font-medium mb-1">Rate (1-5 stars)</p>
+            <p className="text-xs md:text-sm font-medium mb-1">Rate (1-5 stars)</p>
             <StarRating value={score} onChange={handleScoreChange} />
           </div>
           
           <div>
-            <p className="text-sm font-medium mb-1">Baby step (optional):</p>
+            <p className="text-xs md:text-sm font-medium mb-1">Baby step (optional):</p>
             <Input
               value={babyStep}
               onChange={(e) => handleBabyStepChange(e.target.value)}
               onBlur={handleInputBlur}
               placeholder="Small improvement step"
-              className={`flex-1 ${isSaved ? "border-wellness-teal/50" : ""}`}
+              className={`text-xs md:text-sm flex-1 ${isSaved ? "border-wellness-teal/50" : ""}`}
             />
           </div>
           

@@ -54,16 +54,16 @@ const TrackPage = () => {
   
   return (
     <Layout>
-      <div className="flex flex-col space-y-6 w-full overflow-hidden">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold truncate">
+      <div className="flex flex-col space-y-4 w-full max-w-full overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+          <div className="max-w-full overflow-hidden">
+            <h1 className="text-lg md:text-2xl font-bold truncate">
               {showingHistory ? "My Wellness Tracking" : "Track Today's Wellness"}
             </h1>
-            <p className="text-muted-foreground text-sm md:text-base line-clamp-2">
+            <p className="text-muted-foreground text-xs md:text-sm line-clamp-2">
               {showingHistory 
-                ? "View your wellness journey with detailed metrics and trends"
-                : "Rate each of your 10 core wellness metrics and set baby steps for improvement"
+                ? "View your wellness journey with detailed metrics"
+                : "Rate your wellness metrics and set steps for improvement"
               }
             </p>
           </div>
@@ -72,12 +72,12 @@ const TrackPage = () => {
             {showingHistory && (
               <Button 
                 variant="outline" 
-                className="flex items-center gap-2 text-xs md:text-sm whitespace-nowrap"
+                className="flex items-center gap-1 text-xs whitespace-nowrap"
                 asChild
                 size="sm"
               >
                 <Link to="/goal-tracker">
-                  <Target className="h-4 w-4" />
+                  <Target className="h-3 w-3 md:h-4 md:w-4" />
                   <span className="truncate">Goal Tracker</span>
                 </Link>
               </Button>
@@ -93,33 +93,35 @@ const TrackPage = () => {
                 }
               }} 
               variant="outline"
-              className="flex items-center gap-2 text-xs md:text-sm whitespace-nowrap"
+              className="flex items-center gap-1 text-xs whitespace-nowrap"
               size="sm"
             >
-              <CalendarPlus className="h-4 w-4" />
+              <CalendarPlus className="h-3 w-3 md:h-4 md:w-4" />
               <span className="truncate">{showingHistory ? "Track New Entry" : "View History"}</span>
             </Button>
           </div>
         </div>
         
-        {showingHistory && (
-          <WellnessSummary 
-            data={historyData} 
-            onClose={() => setShowingHistory(false)}
-          />
-        )}
-        
-        {!showingHistory && !submitted && (
-          <WellnessTrackingForm onSubmit={handleSubmit} />
-        )}
-        
-        {!showingHistory && submitted && (
-          <WellnessResultsView 
-            ratings={ratings}
-            historyData={historyData}
-            onToggleBabyStep={handleToggleBabyStep}
-          />
-        )}
+        <div className="max-w-full overflow-hidden">
+          {showingHistory && (
+            <WellnessSummary 
+              data={historyData} 
+              onClose={() => setShowingHistory(false)}
+            />
+          )}
+          
+          {!showingHistory && !submitted && (
+            <WellnessTrackingForm onSubmit={handleSubmit} />
+          )}
+          
+          {!showingHistory && submitted && (
+            <WellnessResultsView 
+              ratings={ratings}
+              historyData={historyData}
+              onToggleBabyStep={handleToggleBabyStep}
+            />
+          )}
+        </div>
       </div>
     </Layout>
   );

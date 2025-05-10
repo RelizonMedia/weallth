@@ -89,35 +89,38 @@ const MetricHistoryChart = ({ data, metric }: MetricHistoryChartProps) => {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{metric.name} History</CardTitle>
-        <CardDescription>Your {metric.name.toLowerCase()} progress over time</CardDescription>
+    <Card className="w-full overflow-hidden">
+      <CardHeader className="p-4">
+        <CardTitle className="text-base md:text-lg">{metric.name} History</CardTitle>
+        <CardDescription className="text-xs md:text-sm">Your {metric.name.toLowerCase()} progress over time</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-2 md:p-4">
         <div className="h-[200px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="99%" height="100%">
             <LineChart
               data={chartData}
               margin={{
                 top: 5,
-                right: 30,
-                left: 20,
+                right: 10,
+                left: 0,
                 bottom: 20,
               }}
             >
               <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
               <XAxis 
                 dataKey="formattedDate"
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 10 }}
                 angle={-30}
                 textAnchor="end"
                 height={50}
+                tickMargin={8}
+                scale="point"
               />
               <YAxis 
-                tick={{ fontSize: 12 }} 
+                tick={{ fontSize: 10 }} 
                 domain={[0, 5]} 
                 ticks={[0, 1, 2, 3, 4, 5]}
+                width={25}
               />
               <Tooltip 
                 formatter={(value: number) => [`${value.toFixed(1)}`, `${metric.name} Score`]}
@@ -129,11 +132,11 @@ const MetricHistoryChart = ({ data, metric }: MetricHistoryChartProps) => {
                     const scoreValue = item.score;
                     
                     // Return formatted date and score category
-                    return `${format(date, "MMMM d, yyyy")} at ${format(date, "h:mm a")}
-Score Category: ${category} (${scoreValue.toFixed(1)})`;
+                    return `${format(date, "MMM d, yyyy")}\nScore: ${scoreValue.toFixed(1)} (${category})`;
                   }
                   return "";
                 }}
+                contentStyle={{ fontSize: '10px' }}
               />
 
               {/* Color-coded areas for score categories */}
@@ -144,7 +147,7 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
                 fill="#8B5CF6" 
                 fillOpacity={0.2} 
                 strokeOpacity={0}
-                name="Amazing (4.7-5.0)"
+                name="Amazing"
               />
               <Area 
                 dataKey="score"
@@ -153,7 +156,7 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
                 fill="#0EA5E9" 
                 fillOpacity={0.2} 
                 strokeOpacity={0}
-                name="Great (4.5-4.7)"
+                name="Great"
               />
               <Area 
                 dataKey="score"
@@ -162,7 +165,7 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
                 fill="#4ECDC4" 
                 fillOpacity={0.2} 
                 strokeOpacity={0}
-                name="Healthy (4.0-4.5)"
+                name="Healthy"
               />
               <Area 
                 dataKey="score"
@@ -171,7 +174,7 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
                 fill="#F97316" 
                 fillOpacity={0.2} 
                 strokeOpacity={0}
-                name="Unhealthy (<4.0)"
+                name="Unhealthy"
               />
               
               {/* Reference lines for category boundaries */}
@@ -183,7 +186,7 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
               <Line
                 type="monotone"
                 dataKey="score"
-                name={`${metric.name} Score`}
+                name={`${metric.name}`}
                 stroke="#000"
                 strokeWidth={2}
                 dot={CustomDot}
@@ -195,22 +198,22 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
         </div>
         
         {/* Small legend for categories */}
-        <div className="flex flex-wrap justify-center gap-3 mt-2 text-xs">
+        <div className="flex flex-wrap justify-center gap-2 mt-1 text-[9px]">
           <div className="flex items-center">
             <div className="w-2 h-2 rounded-full mr-1" style={{ backgroundColor: "#F97316" }}></div>
-            <span>&lt;4.0: Unhealthy</span>
+            <span>Unhealthy</span>
           </div>
           <div className="flex items-center">
             <div className="w-2 h-2 rounded-full mr-1" style={{ backgroundColor: "#4ECDC4" }}></div>
-            <span>4.0-4.5: Healthy</span>
+            <span>Healthy</span>
           </div>
           <div className="flex items-center">
             <div className="w-2 h-2 rounded-full mr-1" style={{ backgroundColor: "#0EA5E9" }}></div>
-            <span>4.5-4.7: Great</span>
+            <span>Great</span>
           </div>
           <div className="flex items-center">
             <div className="w-2 h-2 rounded-full mr-1" style={{ backgroundColor: "#8B5CF6" }}></div>
-            <span>4.7-5.0: Amazing</span>
+            <span>Amazing</span>
           </div>
         </div>
       </CardContent>

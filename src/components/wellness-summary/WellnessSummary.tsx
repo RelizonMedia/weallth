@@ -69,8 +69,8 @@ const WellnessSummary = ({ data, onClose }: WellnessSummaryProps) => {
   });
 
   return (
-    <div className="space-y-6 overflow-hidden">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+    <div className="space-y-4 overflow-hidden w-full max-w-full">
+      <div className="flex flex-col gap-4">
         <WellnessScoreDisplay
           score={latestEntry.overallScore}
           category={latestEntry.category}
@@ -82,17 +82,17 @@ const WellnessSummary = ({ data, onClose }: WellnessSummaryProps) => {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="overview" className="flex items-center gap-2">
-            <ChartLine className="h-4 w-4" />
-            <span>Overview</span>
+          <TabsTrigger value="overview" className="flex items-center gap-1 text-xs md:text-sm">
+            <ChartLine className="h-3 w-3 md:h-4 md:w-4" />
+            <span className="truncate">Overview</span>
           </TabsTrigger>
-          <TabsTrigger value="metrics" className="flex items-center gap-2">
-            <ChartBar className="h-4 w-4" />
-            <span>Metrics</span>
+          <TabsTrigger value="metrics" className="flex items-center gap-1 text-xs md:text-sm">
+            <ChartBar className="h-3 w-3 md:h-4 md:w-4" />
+            <span className="truncate">Metrics</span>
           </TabsTrigger>
-          <TabsTrigger value="history" className="flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
-            <span>History</span>
+          <TabsTrigger value="history" className="flex items-center gap-1 text-xs md:text-sm">
+            <Calendar className="h-3 w-3 md:h-4 md:w-4" />
+            <span className="truncate">History</span>
           </TabsTrigger>
         </TabsList>
 
