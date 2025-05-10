@@ -192,7 +192,7 @@ const AICompanionPage = () => {
       <div className="container mx-auto py-6 space-y-6">
         <div className="flex flex-col md:flex-row justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Weallth - Your Personal Wellness Companion</h1>
+            <h1 className="text-3xl font-bold">Weallth is Your Personal Wellness Companion</h1>
             <p className="text-muted-foreground">
               Your personalized wellness guide with expert insights and recommendations
             </p>
