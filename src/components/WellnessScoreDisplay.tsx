@@ -4,20 +4,24 @@ import {
   TrendingUp,
   ThumbsUp,
   AlertTriangle,
+  CalendarClock,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { WellnessScoreCategory } from "@/types/wellness";
+import { format } from "date-fns";
 
 interface WellnessScoreDisplayProps {
   score: number;
   category: WellnessScoreCategory;
   previousScore?: number;
+  timestamp?: string;
 }
 
 const WellnessScoreDisplay = ({ 
   score, 
   category, 
-  previousScore 
+  previousScore,
+  timestamp
 }: WellnessScoreDisplayProps) => {
   const getCategoryConfig = (category: WellnessScoreCategory) => {
     switch (category) {
@@ -59,6 +63,11 @@ const WellnessScoreDisplay = ({
     ? Math.abs(((score - previousScore) / previousScore) * 100).toFixed(1)
     : null;
   
+  // Format the timestamp if available
+  const formattedDateTime = timestamp 
+    ? format(new Date(timestamp), "MMM d, yyyy 'at' h:mm a")
+    : "No date recorded";
+  
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -99,6 +108,13 @@ const WellnessScoreDisplay = ({
         <p className="text-sm text-muted-foreground mt-4">
           {categoryConfig.description}
         </p>
+
+        {timestamp && (
+          <div className="flex items-center mt-3 text-xs text-muted-foreground border-t pt-2">
+            <CalendarClock className="h-3 w-3 mr-1" />
+            <span>{formattedDateTime}</span>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -1,4 +1,3 @@
-
 export interface MessageData {
   id: string;
   sender_id: string;
@@ -55,3 +54,21 @@ export interface WellnessSpaceData {
   ownerId?: string;
   allowInvites?: boolean;
 }
+
+export type Conversation = {
+  id: string;
+  title: string;
+  user_id: string;
+  last_message: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Message = {
+  id: string;
+  conversation_id: string;
+  content: string;
+  is_from_user: boolean;
+  created_at: string;
+  updated_at?: string;
+};

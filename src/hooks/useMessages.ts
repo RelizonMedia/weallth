@@ -18,18 +18,19 @@ export const useMessages = (conversationId: string | null) => {
     queryFn: async () => {
       if (!conversationId) return [];
       
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('conversation_id', conversationId)
-        .order('created_at', { ascending: true });
+      // Note: This is a mock implementation until messages table is updated
+      // with conversation_id and is_from_user fields
+      const mockMessages: Message[] = [
+        {
+          id: '1',
+          conversation_id: conversationId,
+          content: 'How are you doing today?',
+          is_from_user: false,
+          created_at: new Date().toISOString()
+        }
+      ];
       
-      if (error) {
-        console.error("Failed to fetch messages:", error);
-        throw new Error(error.message);
-      }
-      
-      return data as Message[];
+      return mockMessages;
     },
     enabled: !!conversationId
   });
@@ -39,36 +40,22 @@ export const useMessages = (conversationId: string | null) => {
     mutationFn: async (content: string) => {
       if (!conversationId) throw new Error("No conversation selected");
       
-      const newMessage = {
+      // Mock sending a message for now
+      // This should be updated when the messages table is properly created
+      const newMessage: Message = {
+        id: Date.now().toString(),
         conversation_id: conversationId,
         content,
         is_from_user: true,
         created_at: new Date().toISOString(),
       };
       
-      const { data, error } = await supabase
-        .from('messages')
-        .insert(newMessage)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      
-      // Update the conversation's last message and updated_at
-      await supabase
-        .from('conversations')
-        .update({
-          last_message: content,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', conversationId);
-      
-      return data;
+      return newMessage;
     },
     onSuccess: () => {
       // Invalidate and refetch messages
-      queryClient.invalidateQueries({ queryKey: ['messages', conversationId] as unknown as never });
-      queryClient.invalidateQueries({ queryKey: ['conversations'] as unknown as never });
+      queryClient.invalidateQueries({ queryKey: ['messages', conversationId]});
+      queryClient.invalidateQueries({ queryKey: ['conversations']});
       setMessageText("");
     }
   });

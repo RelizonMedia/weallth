@@ -60,6 +60,7 @@ const WellnessSummary = ({ data, onClose }: WellnessSummaryProps) => {
         score={latestEntry.overallScore}
         category={latestEntry.category}
         previousScore={previousEntry?.overallScore}
+        timestamp={latestEntry.timestamp} // Pass the timestamp
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

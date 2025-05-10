@@ -14,18 +14,20 @@ export const useConversations = () => {
     queryFn: async () => {
       if (!user) return [];
       
-      const { data, error } = await supabase
-        .from('conversations')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false });
+      // Note: This is a mock implementation until conversations table is created
+      // Once the actual table is created, this should be updated
+      const mockConversations: Conversation[] = [
+        {
+          id: '1',
+          title: 'My first conversation',
+          user_id: user.id,
+          last_message: 'Hello there!',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ];
       
-      if (error) {
-        console.error("Failed to fetch conversations:", error);
-        throw new Error(error.message);
-      }
-      
-      return data as Conversation[];
+      return mockConversations;
     },
     enabled: !!user
   });
