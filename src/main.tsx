@@ -3,8 +3,9 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 
-// Log application startup with domain information
+// Log application startup with domain and theme information
 console.log(`Initializing Weallth application on ${window.location.hostname}...`);
+console.log(`Current theme: ${localStorage.getItem("theme") || "not set (using default)"}`);
 
 // Improved root element detection and error handling
 const root = document.getElementById("root");

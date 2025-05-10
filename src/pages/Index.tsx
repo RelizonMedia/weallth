@@ -6,7 +6,7 @@ import WellnessChart from "@/components/WellnessChart";
 import BabyStepsList from "@/components/BabyStepsList";
 import WellnessStreak from "@/components/WellnessStreak";
 import { Button } from "@/components/ui/button";
-import { CalendarPlus } from "lucide-react";
+import { CalendarPlus, MessageCircle } from "lucide-react";
 import { demoWellnessData } from "@/data/wellnessMetrics";
 import { DailyWellnessEntry, WellnessRating, WellnessScoreCategory } from "@/types/wellness";
 import { Link } from "react-router-dom";
@@ -99,12 +99,20 @@ const Index = () => {
               <p className="text-muted-foreground max-w-md mx-auto">
                 Take a few minutes to reflect on your wellness metrics and set your baby steps for improvement.
               </p>
-              <Button asChild>
-                <Link to="/track">
-                  <CalendarPlus className="mr-2 h-4 w-4" />
-                  Track Today
-                </Link>
-              </Button>
+              <div className="flex flex-col sm:flex-row justify-center gap-4">
+                <Button asChild>
+                  <Link to="/track">
+                    <CalendarPlus className="mr-2 h-4 w-4" />
+                    Track Today
+                  </Link>
+                </Button>
+                <Button asChild variant="secondary">
+                  <Link to="/ai-companion">
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    Chat with Weallth AI
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
         ) : (
@@ -124,6 +132,24 @@ const Index = () => {
         
         <div className="grid grid-cols-1 gap-6">
           <WellnessChart data={chartData.entries} />
+        </div>
+        
+        {/* AI Companion Callout */}
+        <div className="bg-accent/30 p-6 rounded-lg border border-accent/50">
+          <div className="flex flex-col md:flex-row items-center gap-4">
+            <div className="flex-1">
+              <h3 className="text-xl font-bold">Need wellness advice?</h3>
+              <p className="text-muted-foreground mt-2">
+                Chat with Weallth AI Companion for personalized insights and recommendations based on your wellness data.
+              </p>
+            </div>
+            <Button asChild>
+              <Link to="/ai-companion">
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Chat with Weallth AI
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
     </Layout>

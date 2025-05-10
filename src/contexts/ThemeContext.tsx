@@ -40,13 +40,22 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     if (theme === "system") {
       const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
       root.classList.add(systemTheme);
-      // Save the calculated theme to localStorage
-      localStorage.setItem("theme", systemTheme);
     } else {
       root.classList.add(theme);
-      // Save the chosen theme to localStorage
-      localStorage.setItem("theme", theme);
     }
+    
+    // Always store the actual theme (not "system")
+    const effectiveTheme = theme === "system" 
+      ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") 
+      : theme;
+    
+    // Update localStorage
+    localStorage.setItem("theme", effectiveTheme);
+    
+    // Set darkMode flag for backward compatibility
+    localStorage.setItem("darkMode", effectiveTheme === "dark" ? "true" : "false");
+    
+    console.log("Theme applied:", effectiveTheme);
   }, [theme]);
 
   // Set up a listener for system theme changes
@@ -58,6 +67,10 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
         const newTheme = mediaQuery.matches ? "dark" : "light";
         document.documentElement.classList.remove("light", "dark");
         document.documentElement.classList.add(newTheme);
+        
+        // Update localStorage with the effective theme
+        localStorage.setItem("theme", newTheme);
+        localStorage.setItem("darkMode", newTheme === "dark" ? "true" : "false");
       }
     };
     

@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -23,12 +24,6 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-  // Check if the user is logged in
-  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-
-  // Check dark mode preference
-  const darkMode = localStorage.getItem('darkMode') === 'true';
-
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
