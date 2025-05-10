@@ -13,10 +13,13 @@ const MetricHistoryChart = ({ data, metric }: MetricHistoryChartProps) => {
   // Extract date and score for the specific metric
   const chartData = data.map(entry => {
     const metricRating = entry.ratings.find(r => r.metricId === metric.id);
+    const date = new Date(entry.timestamp || entry.date);
     return {
       date: entry.date,
       score: metricRating?.score || 0,
-      fullDate: entry.date // Store full date for tooltip
+      timestamp: entry.timestamp || entry.date,
+      formattedDate: format(date, "MMM d"),
+      formattedTime: format(date, "h:mm a")
     };
   }).filter(item => item.score > 0); // Only include days with ratings
 
@@ -49,17 +52,16 @@ const MetricHistoryChart = ({ data, metric }: MetricHistoryChartProps) => {
                 top: 5,
                 right: 30,
                 left: 20,
-                bottom: 5,
+                bottom: 20,
               }}
             >
               <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
               <XAxis 
-                dataKey="date" 
+                dataKey="formattedDate"
                 tick={{ fontSize: 12 }}
-                tickFormatter={(value) => {
-                  const date = new Date(value);
-                  return `${date.getDate()}/${date.getMonth() + 1}`;
-                }}
+                angle={-30}
+                textAnchor="end"
+                height={50}
               />
               <YAxis 
                 tick={{ fontSize: 12 }} 
@@ -68,9 +70,13 @@ const MetricHistoryChart = ({ data, metric }: MetricHistoryChartProps) => {
               />
               <Tooltip 
                 formatter={(value: number) => [`${value.toFixed(1)}`, `${metric.name} Score`]}
-                labelFormatter={(label) => {
-                  const date = new Date(label as string);
-                  return format(date, "MMM d, yyyy h:mm a");
+                labelFormatter={(_, data) => {
+                  if (data && data.length > 0) {
+                    const item = data[0].payload;
+                    const date = new Date(item.timestamp);
+                    return `${format(date, "MMMM d, yyyy")} at ${format(date, "h:mm a")}`;
+                  }
+                  return "";
                 }}
               />
               <Line
@@ -79,8 +85,8 @@ const MetricHistoryChart = ({ data, metric }: MetricHistoryChartProps) => {
                 name={`${metric.name} Score`}
                 stroke="#6C5DD3"
                 strokeWidth={3}
-                dot={{ r: 5, strokeWidth: 2 }}
-                activeDot={{ r: 7, strokeWidth: 2 }}
+                dot={{ r: 4, strokeWidth: 2 }}
+                activeDot={{ r: 6, strokeWidth: 2 }}
               />
             </LineChart>
           </ResponsiveContainer>

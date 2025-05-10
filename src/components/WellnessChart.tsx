@@ -10,19 +10,25 @@ interface WellnessChartProps {
 
 const WellnessChart = ({ data }: WellnessChartProps) => {
   // Extract date and score for the chart
-  const chartData = data.map(entry => ({
-    date: entry.date,
-    score: entry.overallScore
-  }));
+  const chartData = data.map(entry => {
+    const date = new Date(entry.timestamp || entry.date);
+    return {
+      date: entry.date,
+      score: entry.overallScore,
+      timestamp: entry.timestamp || entry.date,
+      formattedDate: format(date, "MMM d"),
+      formattedTime: format(date, "h:mm a")
+    };
+  });
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Wellness Progress</CardTitle>
-        <CardDescription>Your wellness journey over time</CardDescription>
+        <CardDescription>Track how your wellness has changed over time</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px] w-full">
+        <div className="h-[350px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={chartData}
@@ -30,17 +36,16 @@ const WellnessChart = ({ data }: WellnessChartProps) => {
                 top: 5,
                 right: 30,
                 left: 20,
-                bottom: 5,
+                bottom: 25,
               }}
             >
               <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
               <XAxis 
-                dataKey="date" 
+                dataKey="formattedDate"
                 tick={{ fontSize: 12 }}
-                tickFormatter={(value) => {
-                  const date = new Date(value);
-                  return `${date.getDate()}/${date.getMonth() + 1}`;
-                }}
+                angle={-45}
+                textAnchor="end"
+                height={60}
               />
               <YAxis 
                 tick={{ fontSize: 12 }} 
@@ -49,9 +54,13 @@ const WellnessChart = ({ data }: WellnessChartProps) => {
               />
               <Tooltip 
                 formatter={(value: number) => [`${value.toFixed(1)}`, 'Wellness Score']}
-                labelFormatter={(label) => {
-                  const date = new Date(label as string);
-                  return format(date, "MMM d, yyyy h:mm a");
+                labelFormatter={(_, data) => {
+                  if (data && data.length > 0) {
+                    const item = data[0].payload;
+                    const date = new Date(item.timestamp);
+                    return `${format(date, "MMMM d, yyyy")} at ${format(date, "h:mm a")}`;
+                  }
+                  return "";
                 }}
               />
               <Legend />

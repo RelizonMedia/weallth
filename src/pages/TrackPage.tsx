@@ -4,6 +4,10 @@ import { Progress } from "@/components/ui/progress";
 import WellnessTrackingForm from "@/components/WellnessTrackingForm";
 import WellnessResultsView from "@/components/WellnessResultsView";
 import { useWellnessTracking } from "@/hooks/useWellnessTracking";
+import WellnessSummary from "@/components/WellnessSummary";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { CalendarPlus } from "lucide-react";
 
 const TrackPage = () => {
   const {
@@ -12,8 +16,12 @@ const TrackPage = () => {
     historyData,
     isLoading,
     handleSubmit,
-    handleToggleBabyStep
+    handleToggleBabyStep,
+    setSubmitted
   } = useWellnessTracking();
+  
+  // Add state to control view between history and form
+  const [showingHistory, setShowingHistory] = useState(true);
   
   // Check if we're still loading data
   if (isLoading) {
@@ -32,20 +40,48 @@ const TrackPage = () => {
   return (
     <Layout>
       <div className="flex flex-col space-y-6">
-        {!submitted ? (
-          <>
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h1 className="text-3xl font-bold">Track Today's Wellness</h1>
-                <p className="text-muted-foreground">
-                  Rate each of your 10 core wellness metrics and set baby steps for improvement
-                </p>
-              </div>
-            </div>
-            
-            <WellnessTrackingForm onSubmit={handleSubmit} />
-          </>
-        ) : (
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">
+              {showingHistory ? "Wellness Tracking History" : "Track Today's Wellness"}
+            </h1>
+            <p className="text-muted-foreground">
+              {showingHistory 
+                ? "View your complete wellness journey with detailed metrics and trends"
+                : "Rate each of your 10 core wellness metrics and set baby steps for improvement"
+              }
+            </p>
+          </div>
+          
+          <Button 
+            onClick={() => {
+              if (showingHistory) {
+                setShowingHistory(false);
+              } else {
+                setShowingHistory(true);
+                setSubmitted(false);
+              }
+            }} 
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <CalendarPlus className="h-4 w-4" />
+            {showingHistory ? "Track New Entry" : "View History"}
+          </Button>
+        </div>
+        
+        {showingHistory && (
+          <WellnessSummary 
+            data={historyData} 
+            onClose={() => setShowingHistory(false)}
+          />
+        )}
+        
+        {!showingHistory && !submitted && (
+          <WellnessTrackingForm onSubmit={handleSubmit} />
+        )}
+        
+        {!showingHistory && submitted && (
           <WellnessResultsView 
             ratings={ratings}
             historyData={historyData}
