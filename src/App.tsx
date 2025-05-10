@@ -15,6 +15,7 @@ import Auth from "@/pages/Auth";
 import NotFound from "@/pages/NotFound";
 import AICompanionPage from "@/pages/AICompanionPage";
 import MarketplacePage from "@/pages/MarketplacePage";
+import MyWellnessSpaces from "@/pages/MyWellnessSpaces";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,6 +38,7 @@ function App() {
               <Route path="/goal-tracker" element={<ProtectedRoute><GoalTrackerPage /></ProtectedRoute>} />
               <Route path="/wellness-bank" element={<ProtectedRoute><WellnessBank /></ProtectedRoute>} />
               <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
+              <Route path="/my-wellness-spaces" element={<ProtectedRoute><MyWellnessSpaces /></ProtectedRoute>} />
               <Route path="/ai-companion" element={<ProtectedRoute><AICompanionPage /></ProtectedRoute>} />
               <Route path="/marketplace" element={<ProtectedRoute><MarketplacePage /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
