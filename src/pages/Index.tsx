@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import WellnessScoreDisplay from "@/components/WellnessScoreDisplay";
@@ -16,22 +15,27 @@ import { marketplaceProducts } from "@/data/marketplaceData";
 import ProductCard from "@/components/ProductCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWellnessHistory } from "@/hooks/wellness/useWellnessHistory";
-
 const Index = () => {
   const [wellnessData, setWellnessData] = useState(demoWellnessData);
   const [todayEntry, setTodayEntry] = useState<DailyWellnessEntry | null>(null);
-  const { toast } = useToast();
-  const { user } = useAuth();
-  const { historyData, isLoading: isLoadingWellnessData } = useWellnessHistory();
+  const {
+    toast
+  } = useToast();
+  const {
+    user
+  } = useAuth();
+  const {
+    historyData,
+    isLoading: isLoadingWellnessData
+  } = useWellnessHistory();
 
   // Check if we already have today's entry
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
-    
+
     // Try to use actual history data first if available
     const dataToUse = historyData?.length > 0 ? historyData : wellnessData.entries;
     const existingEntry = dataToUse.find(entry => entry.date === today);
-    
     if (existingEntry) {
       // Ensure the category is a valid WellnessScoreCategory
       const validatedEntry = {
@@ -45,64 +49,50 @@ const Index = () => {
   // Helper function to validate that a string is a valid WellnessScoreCategory
   const validateCategory = (category: string): WellnessScoreCategory => {
     const validCategories: WellnessScoreCategory[] = ["Unhealthy", "Healthy", "Great", "Amazing"];
-    return validCategories.includes(category as WellnessScoreCategory) 
-      ? (category as WellnessScoreCategory) 
-      : "Healthy"; // Default fallback
+    return validCategories.includes(category as WellnessScoreCategory) ? category as WellnessScoreCategory : "Healthy"; // Default fallback
   };
-
   const handleStepToggle = (metricId: string, completed: boolean) => {
     if (!todayEntry) return;
-    
-    const updatedRatings = todayEntry.ratings.map(rating => 
-      rating.metricId === metricId ? { ...rating, completed } : rating
-    );
-    
-    const updatedEntry = { ...todayEntry, ratings: updatedRatings };
-    
+    const updatedRatings = todayEntry.ratings.map(rating => rating.metricId === metricId ? {
+      ...rating,
+      completed
+    } : rating);
+    const updatedEntry = {
+      ...todayEntry,
+      ratings: updatedRatings
+    };
+
     // Update today's entry
-    const updatedEntries = wellnessData.entries.map(entry => 
-      entry.date === updatedEntry.date ? updatedEntry : entry
-    );
-    
+    const updatedEntries = wellnessData.entries.map(entry => entry.date === updatedEntry.date ? updatedEntry : entry);
     setWellnessData(prev => ({
       ...prev,
       entries: updatedEntries
     }));
-    
     setTodayEntry(updatedEntry);
-    
     toast({
       title: completed ? "Baby step completed!" : "Baby step unmarked",
       description: "Keep working on your wellness journey",
-      duration: 3000,
+      duration: 3000
     });
   };
-
   const latestEntry = wellnessData.entries[wellnessData.entries.length - 1];
-  const previousEntry = wellnessData.entries.length > 1 
-    ? wellnessData.entries[wellnessData.entries.length - 2] 
-    : null;
+  const previousEntry = wellnessData.entries.length > 1 ? wellnessData.entries[wellnessData.entries.length - 2] : null;
 
   // Prepare wellness chart data - use actual user data if available
   const chartData = historyData?.length > 0 ? historyData : wellnessData.entries;
 
   // Get recommended products for home page display
-  const recommendedProducts = marketplaceProducts
-    .filter(product => product.tags.includes("recommended"))
-    .slice(0, 3);
-
-  return (
-    <Layout>
+  const recommendedProducts = marketplaceProducts.filter(product => product.tags.includes("recommended")).slice(0, 3);
+  return <Layout>
       <div className="flex flex-col space-y-8">
         <div className="flex flex-col space-y-2">
-          <h1 className="text-3xl font-bold">Welcome to Your Wellness Dashboard</h1>
+          <h1 className="text-3xl font-bold">Welcome to Your Wellness Home</h1>
           <p className="text-muted-foreground">
             Track, improve, and celebrate your holistic wellness journey
           </p>
         </div>
         
-        {!todayEntry ? (
-          <div className="flex items-center justify-center p-6 bg-muted/50 rounded-lg border border-dashed">
+        {!todayEntry ? <div className="flex items-center justify-center p-6 bg-muted/50 rounded-lg border border-dashed">
             <div className="text-center space-y-4">
               <h2 className="text-xl font-medium">Track Today's Wellness</h2>
               <p className="text-muted-foreground max-w-md mx-auto">
@@ -123,14 +113,10 @@ const Index = () => {
                 </Button>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-6">
+          </div> : <div className="grid grid-cols-1 gap-6">
             {/* Track Wellness Today Button - removed animation classes */}
             <div className="flex justify-center">
-              <Button asChild 
-                className="px-8 py-6 shadow-lg bg-gradient-to-r from-wellness-purple to-wellness-teal hover:from-wellness-teal hover:to-wellness-purple text-white transition-all duration-500"
-                size="lg">
+              <Button asChild className="px-8 py-6 shadow-lg bg-gradient-to-r from-wellness-purple to-wellness-teal hover:from-wellness-teal hover:to-wellness-purple text-white transition-all duration-500" size="lg">
                 <Link to="/track?mode=new" className="flex items-center gap-2">
                   <CalendarPlus className="h-6 w-6" />
                   <span className="text-base font-bold">Track Today's Wellness</span>
@@ -139,23 +125,11 @@ const Index = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {todayEntry && (
-                <WellnessScoreDisplay 
-                  score={todayEntry.overallScore} 
-                  category={todayEntry.category}
-                  previousScore={previousEntry?.overallScore}
-                />
-              )}
-              {todayEntry && todayEntry.ratings && (
-                <BabyStepsList 
-                  ratings={todayEntry.ratings} 
-                  onStepToggle={handleStepToggle} 
-                />
-              )}
+              {todayEntry && <WellnessScoreDisplay score={todayEntry.overallScore} category={todayEntry.category} previousScore={previousEntry?.overallScore} />}
+              {todayEntry && todayEntry.ratings && <BabyStepsList ratings={todayEntry.ratings} onStepToggle={handleStepToggle} />}
               <WellnessStreak days={wellnessData.streakDays} />
             </div>
-          </div>
-        )}
+          </div>}
         
         {/* Wellness Progress Chart */}
         <div className="grid grid-cols-1 gap-6">
@@ -165,22 +139,16 @@ const Index = () => {
               <CardDescription className="text-xs md:text-sm">Track how your wellness has changed over time</CardDescription>
             </CardHeader>
             <CardContent className="p-2 md:p-4">
-              {isLoadingWellnessData ? (
-                <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+              {isLoadingWellnessData ? <div className="h-[300px] flex items-center justify-center text-muted-foreground">
                   Loading your wellness data...
-                </div>
-              ) : chartData.length > 0 ? (
-                <WellnessChart data={chartData} />
-              ) : (
-                <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                </div> : chartData.length > 0 ? <WellnessChart data={chartData} /> : <div className="h-[300px] flex items-center justify-center text-muted-foreground">
                   <div className="text-center">
                     <p className="mb-4">No wellness data available yet.</p>
                     <Button asChild size="sm">
                       <Link to="/track?mode=new">Start Tracking</Link>
                     </Button>
                   </div>
-                </div>
-              )}
+                </div>}
             </CardContent>
           </Card>
         </div>
@@ -213,9 +181,7 @@ const Index = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {recommendedProducts.map(product => (
-                <ProductCard key={product.id} product={product} />
-              ))}
+              {recommendedProducts.map(product => <ProductCard key={product.id} product={product} />)}
             </div>
             <div className="mt-6 flex justify-center">
               <Button asChild variant="outline">
@@ -228,8 +194,6 @@ const Index = () => {
           </CardContent>
         </Card>
       </div>
-    </Layout>
-  );
+    </Layout>;
 };
-
 export default Index;
