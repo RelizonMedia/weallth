@@ -13,11 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Json } from "@/integrations/supabase/types";
-
-interface SocialLink {
-  platform: string;
-  url: string;
-}
+import { SocialLink } from "@/types/message";
 
 interface ProfileData {
   username: string | null;
@@ -42,7 +38,6 @@ const Profile = () => {
     goals: [],
     social_links: []
   });
-  const [activeTab, setActiveTab] = useState("basic");
   
   // New input states
   const [newInterest, setNewInterest] = useState("");
@@ -80,12 +75,12 @@ const Profile = () => {
           } else if (Array.isArray(data.social_links)) {
             // It's already an array, ensure each element has platform and url
             parsedSocialLinks = data.social_links
-              .filter((link): link is SocialLink => 
+              .filter((link: any) => 
                 typeof link === 'object' && 
                 link !== null && 
                 'platform' in link && 
                 'url' in link
-              );
+              ) as SocialLink[];
           }
         }
 
@@ -120,6 +115,7 @@ const Profile = () => {
       setLoading(true);
       if (!user) return;
 
+      // Convert SocialLinks array to a JSON structure for storage
       const updates = {
         id: user.id,
         username: profile.username,
@@ -128,7 +124,7 @@ const Profile = () => {
         bio: profile.bio,
         interests: profile.interests,
         goals: profile.goals,
-        social_links: profile.social_links,
+        social_links: profile.social_links as unknown as Json, // Type assertion for compatibility
         updated_at: new Date().toISOString(),
       };
 

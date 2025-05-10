@@ -13,11 +13,7 @@ import { User, MessageSquare, UserPlus, UserCheck, Mail, Share2 } from "lucide-r
 import { SendMessageModal } from "@/components/SendMessageModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Json } from "@/integrations/supabase/types";
-
-interface SocialLink {
-  platform: string;
-  url: string;
-}
+import { SocialLink } from "@/types/message";
 
 interface UserProfileData {
   id: string;
@@ -115,12 +111,12 @@ const UserProfile = () => {
           } else if (Array.isArray(profileData.social_links)) {
             // It's already an array, make sure each element has platform and url
             parsedSocialLinks = profileData.social_links
-              .filter((link): link is SocialLink => 
+              .filter((link: any) => 
                 typeof link === 'object' && 
                 link !== null && 
                 'platform' in link && 
                 'url' in link
-              );
+              ) as SocialLink[];
           }
         }
         
@@ -129,7 +125,7 @@ const UserProfile = () => {
           social_links: parsedSocialLinks,
           is_friend: isFriend,
           friend_request_status: friendStatus
-        });
+        } as UserProfileData);
       } catch (error) {
         console.error('Error loading profile:', error);
         toast({

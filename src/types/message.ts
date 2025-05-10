@@ -55,6 +55,7 @@ export type WellnessSpaceData = {
   mediaUrl: string | null;
   mediaType: 'none' | 'image' | 'video';
   ownerId?: string;
+  allowInvites?: boolean; // Added this field to match usage in CreateWellnessSpace
 };
 
 export type PrivacyLevel = 'private' | 'friends' | 'spaces' | 'public';

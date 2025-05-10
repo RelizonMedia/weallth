@@ -79,6 +79,7 @@ const Community = () => {
   const [createSpaceOpen, setCreateSpaceOpen] = useState(false);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [selectedSpace, setSelectedSpace] = useState<string | null>(null);
+  const [selectedSpaceId, setSelectedSpaceId] = useState<string | null>(null);
   const [userSpaces, setUserSpaces] = useState<any[]>([]);
   const [mediaType, setMediaType] = useState<"none" | "image" | "video">("none");
   const [mediaFile, setMediaFile] = useState<File | null>(null);
@@ -160,8 +161,9 @@ const Community = () => {
     });
   };
 
-  const handleInviteFriends = (spaceName: string) => {
+  const handleInviteFriends = (spaceName: string, spaceId: string | null) => {
     setSelectedSpace(spaceName);
+    setSelectedSpaceId(spaceId);
     setInviteModalOpen(true);
   };
 
@@ -310,7 +312,7 @@ const Community = () => {
                           <video 
                             src={mediaPreview} 
                             controls 
-                            className="max-h-40 w-full rounded-md" 
+                            className="w-full max-h-80" 
                           />
                         )}
                         <Button 
@@ -534,7 +536,7 @@ const Community = () => {
                         <Button 
                           variant="outline"
                           className="flex-shrink-0"
-                          onClick={() => handleInviteFriends(space.name)}
+                          onClick={() => handleInviteFriends(space.name, space.id)}
                         >
                           <UserPlus className="h-4 w-4" />
                         </Button>
@@ -649,6 +651,7 @@ const Community = () => {
         open={inviteModalOpen} 
         onOpenChange={setInviteModalOpen}
         spaceName={selectedSpace || ""}
+        spaceId={selectedSpaceId}
       />
     </Layout>
   );

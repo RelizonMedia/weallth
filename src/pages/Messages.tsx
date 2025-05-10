@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -131,7 +130,7 @@ const Messages = () => {
         if (messageError) throw messageError;
         
         if (messageData) {
-          const typedMessages = messageData.map((msg: MessageResult) => ({
+          const typedMessages: MessageData[] = messageData.map((msg: MessageResult) => ({
             id: msg.id,
             sender_id: msg.sender_id,
             recipient_id: msg.recipient_id,
@@ -150,10 +149,7 @@ const Messages = () => {
               .rpc('mark_messages_as_read', {
                 reader_id: user.id,
                 sender_id: selectedConversation
-              }) as {
-                data: any;
-                error: any;
-              };
+              });
           }
         }
       } catch (error) {
@@ -217,7 +213,7 @@ const Messages = () => {
       // Using type assertion to bypass TypeScript checking
       const { error } = await supabase
         .from('messages')
-        .insert(newMessage as any);
+        .insert(newMessage);
         
       if (error) throw error;
       

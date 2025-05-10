@@ -108,13 +108,13 @@ const CreateWellnessSpace = ({ open, onOpenChange, onCreated }: CreateWellnessSp
         name,
         description,
         isPrivate: privacy === "private",
-        allowInvites,
         members: 1,
         createdAt: new Date().toISOString(),
         isCreator: true,
         mediaUrl,
         mediaType: mediaFile ? mediaType : "none",
         ownerId: user.id,
+        allowInvites, // Now included in WellnessSpaceData type
       };
       
       // In a real implementation, we would save to Supabase here
