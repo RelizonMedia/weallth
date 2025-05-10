@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import WellnessMetricCard from "@/components/WellnessMetricCard";
@@ -13,6 +14,9 @@ import { Progress } from "@/components/ui/progress";
 import BabyStepsTracker from "@/components/BabyStepsTracker";
 import WellnessSummary from "@/components/WellnessSummary";
 import { demoWellnessData } from "@/data/wellnessMetrics";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const TrackPage = () => {
   const [ratings, setRatings] = useState<WellnessRating[]>([]);
@@ -24,9 +28,111 @@ const TrackPage = () => {
   const [historyData, setHistoryData] = useState<DailyWellnessEntry[]>(demoWellnessData.entries as DailyWellnessEntry[]);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   // Adding a helper to count metrics with scores
   const ratedMetricsCount = ratings.filter(r => r.score > 0).length;
+
+  // Fetch user's wellness entries
+  const { data: userWellnessEntries, isLoading } = useQuery({
+    queryKey: ['wellnessEntries', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+
+      const { data: entries, error } = await supabase
+        .from('wellness_entries')
+        .select('*, wellness_ratings(*)')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching wellness entries:', error);
+        throw error;
+      }
+
+      // Transform data to match our DailyWellnessEntry structure
+      return entries.map((entry): DailyWellnessEntry => ({
+        date: entry.date,
+        ratings: entry.wellness_ratings.map(rating => ({
+          metricId: rating.metric_id,
+          score: rating.score,
+          babyStep: rating.baby_step || '',
+          completed: rating.completed || false,
+          date: entry.created_at
+        })),
+        overallScore: entry.overall_score,
+        category: entry.category as WellnessScoreCategory
+      }));
+    },
+    enabled: !!user
+  });
+
+  // Save wellness entry mutation
+  const saveWellnessMutation = useMutation({
+    mutationFn: async (newEntry: {
+      ratings: WellnessRating[];
+      overallScore: number;
+      category: WellnessScoreCategory;
+    }) => {
+      if (!user) throw new Error("User not authenticated");
+
+      // 1. Create wellness entry
+      const { data: entryData, error: entryError } = await supabase
+        .from('wellness_entries')
+        .insert({
+          user_id: user.id,
+          date: new Date().toISOString().split('T')[0],
+          overall_score: newEntry.overallScore,
+          category: newEntry.category
+        })
+        .select('id')
+        .single();
+
+      if (entryError) throw entryError;
+
+      // 2. Create wellness ratings
+      const ratingsToInsert = newEntry.ratings.map(rating => ({
+        entry_id: entryData.id,
+        metric_id: rating.metricId,
+        score: rating.score,
+        baby_step: rating.babyStep,
+        completed: rating.completed
+      }));
+
+      const { error: ratingsError } = await supabase
+        .from('wellness_ratings')
+        .insert(ratingsToInsert);
+
+      if (ratingsError) throw ratingsError;
+
+      return entryData.id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['wellnessEntries'] });
+    }
+  });
+
+  // Update baby step completion status
+  const updateBabyStepMutation = useMutation({
+    mutationFn: async ({
+      ratingId,
+      completed
+    }: {
+      ratingId: string;
+      completed: boolean;
+    }) => {
+      const { error } = await supabase
+        .from('wellness_ratings')
+        .update({ completed })
+        .eq('id', ratingId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['wellnessEntries'] });
+    }
+  });
 
   const handleSaveRating = (rating: WellnessRating) => {
     // Check if we already have a rating for this metric
@@ -72,7 +178,31 @@ const TrackPage = () => {
     setCategory(wellnessCategory);
     setSubmitted(true);
     
-    // Create a new daily wellness entry
+    // Save to Supabase
+    if (user) {
+      saveWellnessMutation.mutate({
+        ratings,
+        overallScore: calculatedOverallScore,
+        category: wellnessCategory
+      }, {
+        onSuccess: () => {
+          toast({
+            title: "Wellness tracked successfully!",
+            description: "Your data has been saved to your profile",
+          });
+        },
+        onError: (error) => {
+          console.error("Error saving wellness data:", error);
+          toast({
+            title: "Error saving data",
+            description: "There was an issue saving your wellness data",
+            variant: "destructive"
+          });
+        }
+      });
+    }
+    
+    // Create a new daily wellness entry for local state
     const newEntry: DailyWellnessEntry = {
       date: new Date().toISOString().split('T')[0],
       ratings,
@@ -81,7 +211,7 @@ const TrackPage = () => {
     };
     
     // Add the new entry to the history
-    setHistoryData(prev => [...prev, newEntry]);
+    setHistoryData(prev => [newEntry, ...prev]);
     
     toast({
       title: "Wellness tracked successfully!",
@@ -98,6 +228,22 @@ const TrackPage = () => {
           : rating
       )
     );
+    
+    // Find the corresponding rating in the database and update if available
+    // This is for when viewing baby steps after submitting
+    if (user && submitted && userWellnessEntries && userWellnessEntries.length > 0) {
+      // Get the most recent entry
+      const latestEntry = userWellnessEntries[0];
+      const rating = latestEntry.ratings.find(r => r.metricId === metricId);
+      
+      // If the rating exists and has a database ID, update it
+      if (rating && 'id' in rating) {
+        updateBabyStepMutation.mutate({
+          ratingId: rating.id as string,
+          completed
+        });
+      }
+    }
   };
   
   const handleViewBabySteps = () => {
@@ -111,6 +257,13 @@ const TrackPage = () => {
   const handleToggleSummary = () => {
     setShowSummary(prev => !prev);
   };
+
+  // Use real data when available, fall back to demo data
+  useEffect(() => {
+    if (userWellnessEntries && userWellnessEntries.length > 0) {
+      setHistoryData(userWellnessEntries);
+    }
+  }, [userWellnessEntries]);
   
   // Calculate completion percentage based on scored metrics only
   const completionPercentage = (ratedMetricsCount / wellnessMetrics.length) * 100;
@@ -119,6 +272,20 @@ const TrackPage = () => {
   useEffect(() => {
     console.log("Current ratings:", ratedMetricsCount, "of", wellnessMetrics.length);
   }, [ratings, ratedMetricsCount]);
+  
+  // Check if we're still loading data
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex justify-center items-center h-[50vh]">
+          <div className="text-center">
+            <p className="text-lg mb-4">Loading your wellness data...</p>
+            <Progress value={undefined} className="w-48 h-2" />
+          </div>
+        </div>
+      </Layout>
+    );
+  }
   
   return (
     <Layout>
@@ -205,7 +372,7 @@ const TrackPage = () => {
             <div className="w-full max-w-md">
               <WellnessScoreDisplay
                 score={overallScore}
-                category={category as any}
+                category={category}
                 previousScore={undefined}
               />
             </div>
@@ -244,7 +411,7 @@ const TrackPage = () => {
             <div className="mb-6">
               <WellnessScoreDisplay
                 score={overallScore}
-                category={category as any}
+                category={category}
                 previousScore={undefined}
               />
             </div>

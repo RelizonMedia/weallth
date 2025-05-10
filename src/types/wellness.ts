@@ -12,6 +12,7 @@ export type WellnessRating = {
   babyStep: string;
   completed: boolean;
   date: string; // ISO string
+  id?: string; // Database ID for the rating (optional)
 };
 
 export type WellnessScoreCategory = 
