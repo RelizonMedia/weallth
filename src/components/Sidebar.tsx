@@ -73,8 +73,6 @@ const Sidebar = ({ isOpen }: SidebarProps) => {
             <NavItem icon={Home} label="Dashboard" active href="/" />
             <NavItem icon={Activity} label="Track Today" href="/track" />
             <NavItem icon={Users} label="Community" href="/community" />
-            <NavItem icon={Users} label="My Wellness Spaces" href="/my-wellness-spaces" />
-            <NavItem icon={MessageCircle} label="My AI Companion" href="/ai-companion" />
             <NavItem icon={ShoppingCart} label="Wellness Marketplace" href="/marketplace" />
           </nav>
           
