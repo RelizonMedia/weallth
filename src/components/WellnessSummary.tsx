@@ -40,9 +40,12 @@ const WellnessSummary = ({ data, onClose }: WellnessSummaryProps) => {
     );
   }
 
-  // Convert the data for the chart to include readable dates and times
+  // Safely convert the data for the chart to include readable dates and times
   const dataWithFormattedDates = data.map(entry => {
-    const entryDate = new Date(entry.timestamp || entry.date);
+    // Ensure entry has valid timestamp or date
+    const timestamp = entry.timestamp || entry.date;
+    const entryDate = timestamp ? new Date(timestamp) : new Date();
+    
     return {
       ...entry,
       formattedDate: format(entryDate, "MMM d, yyyy"),
@@ -102,7 +105,11 @@ const WellnessSummary = ({ data, onClose }: WellnessSummaryProps) => {
                       
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                         {wellnessMetrics.slice(0, 6).map(metric => {
-                          const metricRating = entry.ratings.find(r => r.metricId === metric.id);
+                          // Add null check to ensure entry.ratings exists
+                          const metricRating = entry.ratings && Array.isArray(entry.ratings) ? 
+                            entry.ratings.find(r => r && r.metricId === metric.id) : 
+                            undefined;
+                            
                           return (
                             <div key={metric.id} className="flex flex-col items-center p-3 border rounded-lg">
                               <span className="text-sm text-muted-foreground">{metric.name}</span>
@@ -192,45 +199,52 @@ const WellnessSummary = ({ data, onClose }: WellnessSummaryProps) => {
                         </div>
                         <div>
                           <span className="text-lg font-medium">{entry.category}</span>
-                          <div className="grid grid-cols-5 gap-1 mt-2">
-                            {entry.ratings.slice(0, 5).map(rating => {
+                          {entry.ratings && Array.isArray(entry.ratings) && entry.ratings.length > 0 ? (
+                            <div className="grid grid-cols-5 gap-1 mt-2">
+                              {entry.ratings.slice(0, 5).map(rating => {
+                                const metric = wellnessMetrics.find(m => m.id === rating?.metricId);
+                                return (
+                                  <div key={rating?.metricId} className="text-center" title={metric?.name}>
+                                    <span className="text-xs text-muted-foreground">{metric?.name?.substring(0, 3)}.</span>
+                                    <div className="font-semibold">{rating?.score}</div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <div className="text-sm text-muted-foreground mt-1">No detailed metrics available</div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {entry.ratings && Array.isArray(entry.ratings) && entry.ratings.length > 0 && (
+                        <div className="mt-3 pt-3 border-t">
+                          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                            {entry.ratings.map(rating => {
+                              if (!rating) return null;
                               const metric = wellnessMetrics.find(m => m.id === rating.metricId);
                               return (
-                                <div key={rating.metricId} className="text-center" title={metric?.name}>
-                                  <span className="text-xs text-muted-foreground">{metric?.name.substring(0, 3)}.</span>
-                                  <div className="font-semibold">{rating.score}</div>
+                                <div key={rating.metricId} className="p-2 bg-slate-50 rounded">
+                                  <div className="text-xs font-medium">{metric?.name || 'Unknown'}</div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-lg font-bold">{rating.score}</span>
+                                    {rating.completed && (
+                                      <span className="text-xs px-2 py-0.5 bg-green-100 text-green-800 rounded-full">
+                                        Completed
+                                      </span>
+                                    )}
+                                  </div>
+                                  {rating.babyStep && (
+                                    <div className="mt-1 text-xs text-muted-foreground truncate" title={rating.babyStep}>
+                                      {rating.babyStep}
+                                    </div>
+                                  )}
                                 </div>
                               );
                             })}
                           </div>
                         </div>
-                      </div>
-                      
-                      <div className="mt-3 pt-3 border-t">
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                          {entry.ratings.map(rating => {
-                            const metric = wellnessMetrics.find(m => m.id === rating.metricId);
-                            return (
-                              <div key={rating.metricId} className="p-2 bg-slate-50 rounded">
-                                <div className="text-xs font-medium">{metric?.name}</div>
-                                <div className="flex justify-between items-center">
-                                  <span className="text-lg font-bold">{rating.score}</span>
-                                  {rating.completed && (
-                                    <span className="text-xs px-2 py-0.5 bg-green-100 text-green-800 rounded-full">
-                                      Completed
-                                    </span>
-                                  )}
-                                </div>
-                                {rating.babyStep && (
-                                  <div className="mt-1 text-xs text-muted-foreground truncate" title={rating.babyStep}>
-                                    {rating.babyStep}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
+                      )}
                     </div>
                   );
                 })}
