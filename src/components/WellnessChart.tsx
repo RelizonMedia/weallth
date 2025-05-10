@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, ReferenceLine } from 'recharts';
 import { DailyWellnessEntry, WellnessScoreCategory } from "@/types/wellness";
 import { format } from "date-fns";
 
@@ -112,6 +112,45 @@ Score Category: ${category} (${scoreValue.toFixed(1)})`;
                 }}
               />
               <Legend />
+              
+              {/* Color-coded areas for score categories */}
+              <Area 
+                y1={4.7} 
+                y2={5} 
+                fill="#8B5CF6" 
+                fillOpacity={0.2} 
+                strokeOpacity={0}
+                name="Amazing (4.7-5.0)"
+              />
+              <Area 
+                y1={4.5} 
+                y2={4.7} 
+                fill="#6C5DD3" 
+                fillOpacity={0.2} 
+                strokeOpacity={0}
+                name="Great (4.5-4.7)"
+              />
+              <Area 
+                y1={4.0} 
+                y2={4.5} 
+                fill="#4ECDC4" 
+                fillOpacity={0.2} 
+                strokeOpacity={0}
+                name="Healthy (4.0-4.5)"
+              />
+              <Area 
+                y1={0} 
+                y2={4.0} 
+                fill="#F97316" 
+                fillOpacity={0.2} 
+                strokeOpacity={0}
+                name="Unhealthy (<4.0)"
+              />
+              
+              {/* Reference lines for category boundaries */}
+              <ReferenceLine y={4.7} stroke="#8B5CF6" strokeDasharray="3 3" />
+              <ReferenceLine y={4.5} stroke="#6C5DD3" strokeDasharray="3 3" />
+              <ReferenceLine y={4.0} stroke="#4ECDC4" strokeDasharray="3 3" />
               
               {/* Line to show the actual score trend with color-based dots */}
               <Line
