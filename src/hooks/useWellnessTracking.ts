@@ -53,45 +53,99 @@ export const useWellnessTracking = () => {
     enabled: !!user
   });
 
-  // Save wellness entry mutation
-  const saveWellnessMutation = useMutation({
+  // Check if an entry exists for today and update instead of insert
+  const checkAndUpdateTodayEntry = useMutation({
     mutationFn: async (newEntry: {
       ratings: WellnessRating[];
       overallScore: number;
       category: WellnessScoreCategory;
     }) => {
       if (!user) throw new Error("User not authenticated");
-
-      // 1. Create wellness entry
-      const { data: entryData, error: entryError } = await supabase
+      
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Check if entry for today exists
+      const { data: existingEntry, error: checkError } = await supabase
         .from('wellness_entries')
-        .insert({
-          user_id: user.id,
-          date: new Date().toISOString().split('T')[0],
-          overall_score: newEntry.overallScore,
-          category: newEntry.category
-        })
         .select('id')
+        .eq('user_id', user.id)
+        .eq('date', today)
         .single();
-
-      if (entryError) throw entryError;
-
-      // 2. Create wellness ratings
-      const ratingsToInsert = newEntry.ratings.map(rating => ({
-        entry_id: entryData.id,
-        metric_id: rating.metricId,
-        score: rating.score,
-        baby_step: rating.babyStep,
-        completed: rating.completed
-      }));
-
-      const { error: ratingsError } = await supabase
-        .from('wellness_ratings')
-        .insert(ratingsToInsert);
-
-      if (ratingsError) throw ratingsError;
-
-      return entryData.id;
+      
+      if (checkError && checkError.code !== 'PGRST116') {
+        // Error other than "not found"
+        throw checkError;
+      }
+      
+      if (existingEntry) {
+        // Update existing entry
+        const { error: updateError } = await supabase
+          .from('wellness_entries')
+          .update({
+            overall_score: newEntry.overallScore,
+            category: newEntry.category,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingEntry.id);
+        
+        if (updateError) throw updateError;
+        
+        // Delete old ratings and insert new ones
+        const { error: deleteError } = await supabase
+          .from('wellness_ratings')
+          .delete()
+          .eq('entry_id', existingEntry.id);
+        
+        if (deleteError) throw deleteError;
+        
+        // Insert new ratings
+        const ratingsToInsert = newEntry.ratings.map(rating => ({
+          entry_id: existingEntry.id,
+          metric_id: rating.metricId,
+          score: rating.score,
+          baby_step: rating.babyStep,
+          completed: rating.completed
+        }));
+        
+        const { error: ratingsError } = await supabase
+          .from('wellness_ratings')
+          .insert(ratingsToInsert);
+        
+        if (ratingsError) throw ratingsError;
+        
+        return existingEntry.id;
+      } else {
+        // Create new entry
+        const { data: entryData, error: entryError } = await supabase
+          .from('wellness_entries')
+          .insert({
+            user_id: user.id,
+            date: today,
+            overall_score: newEntry.overallScore,
+            category: newEntry.category
+          })
+          .select('id')
+          .single();
+  
+        if (entryError) throw entryError;
+  
+        // Create wellness ratings
+        const ratingsToInsert = newEntry.ratings.map(rating => ({
+          entry_id: entryData.id,
+          metric_id: rating.metricId,
+          score: rating.score,
+          baby_step: rating.babyStep,
+          completed: rating.completed
+        }));
+  
+        const { error: ratingsError } = await supabase
+          .from('wellness_ratings')
+          .insert(ratingsToInsert);
+  
+        if (ratingsError) throw ratingsError;
+  
+        return entryData.id;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['wellnessEntries'] });
@@ -146,7 +200,7 @@ export const useWellnessTracking = () => {
     
     // Save to Supabase
     if (user) {
-      saveWellnessMutation.mutate({
+      checkAndUpdateTodayEntry.mutate({
         ratings: ratingsWithDate,
         overallScore: calculatedOverallScore,
         category: wellnessCategory
