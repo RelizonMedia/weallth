@@ -52,19 +52,23 @@ const WellnessMetricCard = ({ metric, initialRating, onSave }: WellnessMetricCar
   const handleBabyStepChange = (value: string) => {
     setBabyStep(value);
     if (score > 0 && value.trim()) {
-      // Small timeout to ensure the value is set before saving
-      setTimeout(() => saveRating(score, value), 10);
+      // Immediately save rather than using a timeout
+      saveRating(score, value);
     }
   };
   
   const saveRating = (currentScore: number, currentBabyStep: string) => {
-    onSave({
+    // Make sure we create a properly formed rating object
+    const rating = {
       metricId: metric.id,
       score: currentScore,
       babyStep: currentBabyStep,
       completed: true,
       date: new Date().toISOString()
-    });
+    };
+    
+    // Pass the rating up to the parent component
+    onSave(rating);
     setIsSaved(true);
   };
   

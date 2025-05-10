@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import WellnessMetricCard from "@/components/WellnessMetricCard";
 import { Button } from "@/components/ui/button";
@@ -72,6 +72,11 @@ const TrackPage = () => {
   // Calculate completion percentage
   const completionPercentage = (ratings.length / wellnessMetrics.length) * 100;
   
+  // Debug to check ratings state
+  useEffect(() => {
+    console.log("Current ratings:", ratings.length, "of", wellnessMetrics.length);
+  }, [ratings]);
+  
   return (
     <Layout>
       <div className="flex flex-col space-y-6">
@@ -141,8 +146,9 @@ const TrackPage = () => {
               <Button 
                 onClick={handleSubmit} 
                 size="lg" 
+                variant="default"
                 disabled={ratings.length < wellnessMetrics.length}
-                className="px-8"
+                className="px-8 bg-wellness-teal hover:bg-wellness-teal/90 text-white"
               >
                 {ratings.length < wellnessMetrics.length ? (
                   <>Submit Today's Wellness Tracking ({ratings.length}/{wellnessMetrics.length})</>
