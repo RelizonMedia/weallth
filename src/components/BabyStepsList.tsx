@@ -7,6 +7,10 @@ import { wellnessMetrics } from "@/data/wellnessMetrics";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import confetti from "canvas-confetti";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { format } from "date-fns";
+import { PartyPopper, Award } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface BabyStepsListProps {
   ratings: WellnessRating[];
@@ -16,6 +20,9 @@ interface BabyStepsListProps {
 const BabyStepsList = ({ ratings, onStepToggle }: BabyStepsListProps) => {
   const { toast } = useToast();
   const [starsEarned, setStarsEarned] = useState(0);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [celebratedStep, setCelebratedStep] = useState<string>("");
+  const [completionTime, setCompletionTime] = useState<string>("");
   
   // On component mount, load stars from localStorage
   useEffect(() => {
@@ -62,13 +69,35 @@ const BabyStepsList = ({ ratings, onStepToggle }: BabyStepsListProps) => {
     }
   };
   
-  const handleStepToggle = (metricId: string, completed: boolean) => {
+  // Get motivational messages for celebrations
+  const getMotivationalMessage = () => {
+    const messages = [
+      "You're doing amazing! Every step counts toward your wellness journey.",
+      "That's the way! Your commitment to your wellness is truly inspiring.",
+      "Fantastic progress! You're building healthy habits one step at a time.",
+      "Excellent work! Your dedication to wellness is something to celebrate.",
+      "Great job! Small steps lead to big changes in your wellness journey."
+    ];
+    
+    return messages[Math.floor(Math.random() * messages.length)];
+  };
+  
+  const handleStepToggle = (metricId: string, completed: boolean, stepName: string) => {
     // Call the parent handler
     onStepToggle(metricId, completed);
+    
+    // Record the exact completion time
+    const now = new Date();
+    const formattedTime = format(now, "MMM dd, yyyy 'at' h:mm a");
+    setCompletionTime(formattedTime);
     
     // Show celebration and increase star count if checked
     if (completed) {
       triggerCelebration();
+      
+      // Set the celebrated step for the dialog
+      setCelebratedStep(stepName);
+      setShowCelebration(true);
       
       // Update stars in local storage
       const newStarsCount = starsEarned + 1;
@@ -129,7 +158,7 @@ const BabyStepsList = ({ ratings, onStepToggle }: BabyStepsListProps) => {
               <Checkbox
                 checked={step.completed}
                 onCheckedChange={(checked) => 
-                  handleStepToggle(step.metricId, checked as boolean)
+                  handleStepToggle(step.metricId, checked as boolean, step.babyStep)
                 }
                 className="mt-1"
               />
@@ -155,6 +184,43 @@ const BabyStepsList = ({ ratings, onStepToggle }: BabyStepsListProps) => {
             </div>
           ))}
         </div>
+        
+        {/* Celebration Dialog */}
+        <Dialog open={showCelebration} onOpenChange={setShowCelebration}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-center text-2xl font-bold text-amber-600 flex items-center justify-center gap-2">
+                <PartyPopper className="h-6 w-6 text-amber-500" />
+                Celebration Time!
+                <PartyPopper className="h-6 w-6 text-amber-500" />
+              </DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col items-center py-4">
+              <div className="bg-amber-50 rounded-full p-6 mb-4">
+                <Award className="h-16 w-16 text-amber-500" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Amazing Achievement!</h3>
+              <p className="text-center mb-2">
+                You've completed: <span className="font-bold">{celebratedStep}</span>
+              </p>
+              <p className="text-center text-muted-foreground mb-4">
+                {getMotivationalMessage()}
+              </p>
+              <div className="bg-amber-100 rounded-full px-4 py-2 flex items-center mb-4">
+                <Star className="h-5 w-5 text-amber-500 mr-2 fill-amber-500" />
+                <span className="text-amber-700 font-medium">+1 Star Added to Your Wellness Bank!</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Completed on {completionTime}
+              </p>
+            </div>
+            <div className="flex justify-center">
+              <Button onClick={() => setShowCelebration(false)} className="bg-wellness-purple hover:bg-wellness-purple/90">
+                Continue My Journey
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
