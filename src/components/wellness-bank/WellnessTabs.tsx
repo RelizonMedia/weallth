@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Calendar, ChartBar, ChartLine, Clock } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,24 +11,32 @@ import WellnessChart from "@/components/WellnessChart";
 import MetricHistoryChart from "@/components/MetricHistoryChart";
 import PointsHistory from "./PointsHistory";
 import { ScrollArea } from "@/components/ui/scroll-area";
+
 interface WellnessTabsProps {
   historyData: DailyWellnessEntry[];
   allRatings: WellnessRating[];
 }
+
 const WellnessTabs = ({
   historyData,
   allRatings
 }: WellnessTabsProps) => {
   const [selectedMetric, setSelectedMetric] = useState(wellnessMetrics[0]?.id || "");
-  return <Tabs defaultValue="progress" className="w-full mb-4 overflow-hidden max-w-full">
+  
+  return (
+    <Tabs defaultValue="points" className="w-full mb-4 overflow-hidden max-w-full">
       <TabsList className="mb-3 overflow-x-auto flex whitespace-nowrap w-full max-w-full">
-        
-        
         <TabsTrigger value="points" className="text-xs md:text-sm">Wellness Bank History</TabsTrigger>
-        
+        <TabsTrigger value="progress" className="text-xs md:text-sm">Progress Chart</TabsTrigger>
+        <TabsTrigger value="goals" className="text-xs md:text-sm">Baby Steps History</TabsTrigger>
+        <TabsTrigger value="metrics" className="text-xs md:text-sm">Detailed Metrics</TabsTrigger>
       </TabsList>
       
       <ScrollArea className="h-[calc(100vh-16rem)]">
+        <TabsContent value="points">
+          <PointsHistory historyData={historyData} />
+        </TabsContent>
+        
         <TabsContent value="progress">
           <Card className="overflow-hidden">
             <CardHeader className="p-2">
@@ -42,10 +51,6 @@ const WellnessTabs = ({
         
         <TabsContent value="goals">
           <BabyStepsHistory steps={allRatings} />
-        </TabsContent>
-        
-        <TabsContent value="points">
-          <PointsHistory historyData={historyData} />
         </TabsContent>
 
         <TabsContent value="metrics">
@@ -88,6 +93,8 @@ const WellnessTabs = ({
           </Card>
         </TabsContent>
       </ScrollArea>
-    </Tabs>;
+    </Tabs>
+  );
 };
+
 export default WellnessTabs;
