@@ -1,12 +1,10 @@
-
 import Layout from "@/components/Layout";
 import { useWellnessTracking } from "@/hooks/wellness/useWellnessTracking";
 import WellnessStatsCards from "@/components/wellness-bank/WellnessStatsCards";
 import WellnessTabs from "@/components/wellness-bank/WellnessTabs";
 import WellnessHistoryDetail from "@/components/wellness-bank/WellnessHistoryDetail";
 import { useToast } from "@/hooks/use-toast";
-import { Trophy, Star, MessageCircle, PartyPopper, Users, Award, Share } from "lucide-react"; 
-
+import { Trophy, Star, MessageCircle, PartyPopper, Users, Award, Share } from "lucide-react";
 const WellnessBank = () => {
   const {
     historyData,
@@ -30,7 +28,7 @@ const WellnessBank = () => {
   const friendsInvited = 5;
   const winsShared = 7;
   const communityMembers = 5;
-  
+
   // Calculate combined total stars (personal + community)
   const totalPersonalStars = totalPoints;
   const totalCommunityStars = tipsShared + celebrationsGiven + friendsInvited + winsShared;
@@ -39,10 +37,9 @@ const WellnessBank = () => {
   // Calculate total daily entries
   const uniqueDates = new Set(allRatings.map(rating => rating.date));
   const totalDailyEntries = uniqueDates.size;
-  
+
   // Calculate total completed baby steps
   const totalBabyStepsCompleted = allRatings.filter(rating => rating.completed).length;
-
   return <Layout>
       <div className="container max-w-5xl py-8">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
@@ -122,7 +119,7 @@ const WellnessBank = () => {
           <div className="bg-gradient-to-r from-amber-100 via-purple-100 to-blue-100 px-6 py-3 rounded-lg flex items-center">
             <Trophy className="h-6 w-6 mr-3 text-amber-600" />
             <div>
-              <div className="text-sm font-medium text-gray-700">Combined Total Stars</div>
+              <div className="text-sm font-medium text-gray-700">Total Wellness Stars</div>
               <div className="text-2xl font-bold">{combinedTotalStars}</div>
             </div>
           </div>
