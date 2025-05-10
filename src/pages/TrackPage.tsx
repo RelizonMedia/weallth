@@ -59,6 +59,8 @@ const TrackPage = () => {
     // Set the calculated values to state
     setOverallScore(calculatedOverallScore);
     setCategory(wellnessCategory);
+    
+    // Explicitly set the submitted state to true to trigger UI update
     setSubmitted(true);
     
     console.log("Submitting wellness entry:", {
@@ -77,6 +79,8 @@ const TrackPage = () => {
   const handleGoToDashboard = () => {
     navigate('/');
   };
+  
+  console.log("Current submission state:", { submitted, ratings: ratings.length, overallScore, category });
   
   return (
     <Layout>
