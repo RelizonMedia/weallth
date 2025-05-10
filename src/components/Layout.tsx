@@ -10,11 +10,11 @@ interface LayoutProps {
 }
 
 const Layout = ({ children }: LayoutProps) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Default to closed
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
   
   // On mobile, sidebar is only shown when explicitly toggled
-  const effectiveSidebarOpen = isMobile ? sidebarOpen : false; // Desktop always uses hover
+  const effectiveSidebarOpen = isMobile ? sidebarOpen : false;
   
   const toggleSidebar = () => {
     setSidebarOpen(prevState => !prevState);
