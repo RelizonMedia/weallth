@@ -39,10 +39,7 @@ const OverviewTabContent = ({ data }: OverviewTabContentProps) => {
           <CardHeader>
             <CardTitle>Recent Wellness Trends</CardTitle>
             <CardDescription>
-              {data.length < 3 
-                ? `Your ${data.length} latest wellness ${data.length === 1 ? 'entry' : 'entries'} with timestamps`
-                : 'Your latest wellness metrics with timestamps'
-              }
+              {/* Removed the text that described the number of entries */}
             </CardDescription>
           </CardHeader>
           <CardContent>
