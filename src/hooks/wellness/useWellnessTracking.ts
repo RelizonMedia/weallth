@@ -50,12 +50,13 @@ export const useWellnessTracking = () => {
     setCategory(wellnessCategory);
     setSubmitted(true);
     
-    // Save to Supabase
+    // Save to Supabase with the precise timestamp
     if (user) {
       checkAndUpdateTodayEntry.mutate({
         ratings: ratingsWithDate,
         overallScore: calculatedOverallScore,
-        category: wellnessCategory
+        category: wellnessCategory,
+        timestamp: timestamp // Pass the exact timestamp
       }, {
         onSuccess: () => {
           toast({
@@ -83,8 +84,21 @@ export const useWellnessTracking = () => {
       timestamp: timestamp // Ensure the timestamp is accurately recorded
     };
     
-    // Add the new entry to the history
-    setHistoryData(prev => [newEntry, ...prev]);
+    // Add the new entry to the history, ensuring we don't overwrite existing entries
+    setHistoryData(prev => {
+      // Check if we already have an entry for today
+      const existingEntryIndex = prev.findIndex(entry => entry.date === today);
+      
+      if (existingEntryIndex >= 0) {
+        // Replace today's entry with the latest one
+        const updatedHistory = [...prev];
+        updatedHistory[existingEntryIndex] = newEntry;
+        return updatedHistory;
+      } else {
+        // Add the new entry to the history
+        return [newEntry, ...prev];
+      }
+    });
     
     toast({
       title: "Wellness tracked successfully!",

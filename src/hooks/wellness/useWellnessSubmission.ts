@@ -19,11 +19,13 @@ export const useWellnessSubmission = () => {
       ratings: WellnessRating[];
       overallScore: number;
       category: WellnessScoreCategory;
+      timestamp?: string; // Accept a custom timestamp if provided
     }) => {
       if (!user) throw new Error("User not authenticated");
       
       const today = new Date().toISOString().split('T')[0];
-      const timestamp = new Date().toISOString(); // Capture current timestamp
+      // Use the provided timestamp or generate a new one
+      const timestamp = newEntry.timestamp || new Date().toISOString();
       
       // Check if entry for today exists
       const { data: existingEntry, error: checkError } = await supabase
@@ -78,7 +80,7 @@ export const useWellnessSubmission = () => {
         
         return existingEntry.id;
       } else {
-        // Create new entry with current timestamp
+        // Create new entry with exact timestamp
         const { data: entryData, error: entryError } = await supabase
           .from('wellness_entries')
           .insert({
@@ -93,7 +95,7 @@ export const useWellnessSubmission = () => {
   
         if (entryError) throw entryError;
   
-        // Create wellness ratings with the current timestamp
+        // Create wellness ratings with the exact same timestamp
         const ratingsToInsert = newEntry.ratings.map(rating => ({
           entry_id: entryData.id,
           metric_id: rating.metricId,

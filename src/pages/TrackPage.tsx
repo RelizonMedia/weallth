@@ -58,7 +58,7 @@ const TrackPage = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold">
-              {showingHistory ? "Wellness Tracking History" : "Track Today's Wellness"}
+              {showingHistory ? "My Wellness Tracking" : "Track Today's Wellness"}
             </h1>
             <p className="text-muted-foreground">
               {showingHistory 

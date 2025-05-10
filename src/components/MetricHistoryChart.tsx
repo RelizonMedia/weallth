@@ -66,11 +66,12 @@ const MetricHistoryChart = ({ data, metric }: MetricHistoryChartProps) => {
       formattedTime: format(date, "h:mm a"),
       category: score < 4.0 ? "Unhealthy" : 
                score < 4.5 ? "Healthy" : 
-               score < 4.7 ? "Great" : "Amazing"
+               score < 4.7 ? "Great" : "Amazing",
+      dateObj: date // Add Date object for sorting
     };
   })
   // Sort data chronologically - oldest to newest
-  .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+  .sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime())
   .filter(item => item.score > 0); // Only include days with ratings
 
   if (chartData.length === 0) {

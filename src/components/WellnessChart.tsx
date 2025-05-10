@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, ReferenceLine } from 'recharts';
 import { DailyWellnessEntry, WellnessScoreCategory } from "@/types/wellness";
@@ -50,20 +51,23 @@ const CustomActiveDot = (props: any) => {
 };
 
 const WellnessChart = ({ data }: WellnessChartProps) => {
-  // Extract date and score for the chart and sort chronologically
-  const chartData = data.map(entry => {
+  // Make a local copy of the data to avoid modifying the original array
+  const entriesWithDates = [...data].map(entry => {
     const date = new Date(entry.timestamp || entry.date);
     return {
+      ...entry,
       date: entry.date,
       score: entry.overallScore,
       timestamp: entry.timestamp || entry.date,
       formattedDate: format(date, "MMM d"),
       formattedTime: format(date, "h:mm a"),
-      category: entry.category
+      category: entry.category,
+      dateObj: date // Add actual Date object for sorting
     };
-  })
+  });
+  
   // Sort data chronologically - oldest to newest
-  .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  const chartData = entriesWithDates.sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime());
 
   return (
     <Card>
