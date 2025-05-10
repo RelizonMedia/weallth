@@ -12,6 +12,22 @@ interface WellnessHistoryItemProps {
   compact?: boolean;
 }
 
+// Function to get the color based on the wellness score
+const getScoreColor = (score: number): string => {
+  if (score < 4.0) return "bg-orange-100 text-orange-600 border-orange-200"; // Unhealthy
+  if (score < 4.5) return "bg-teal-100 text-teal-600 border-teal-200"; // Healthy
+  if (score < 4.7) return "bg-purple-100 text-purple-600 border-purple-200"; // Great
+  return "bg-violet-100 text-violet-600 border-violet-200"; // Amazing
+};
+
+// Function to get the category name based on score
+const getScoreCategory = (score: number): string => {
+  if (score < 4.0) return "Unhealthy";
+  if (score < 4.5) return "Healthy";
+  if (score < 4.7) return "Great";
+  return "Amazing";
+};
+
 const WellnessHistoryItem = ({ entry, compact }: WellnessHistoryItemProps) => {
   if (!entry) return null;
   
@@ -36,10 +52,15 @@ const WellnessHistoryItem = ({ entry, compact }: WellnessHistoryItemProps) => {
             entry.ratings.find(r => r && r.metricId === metric.id) : 
             undefined;
             
+          const score = metricRating?.score || 0;
+          const colorClasses = getScoreColor(score);
+          const category = getScoreCategory(score);
+          
           return (
-            <div key={metric.id} className="flex flex-col items-center p-3 border rounded-lg">
-              <span className="text-sm text-muted-foreground">{metric.name}</span>
-              <span className="text-2xl font-bold">{metricRating?.score || 0}</span>
+            <div key={metric.id} className={`flex flex-col items-center p-3 rounded-lg border ${colorClasses}`}>
+              <span className="text-xs font-medium">{metric.name}</span>
+              <span className="text-2xl font-bold">{score}</span>
+              <span className="text-xs mt-1">{category}</span>
             </div>
           );
         })}
