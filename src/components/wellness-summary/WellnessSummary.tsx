@@ -70,38 +70,32 @@ const WellnessSummary = ({ data, onClose }: WellnessSummaryProps) => {
 
   return (
     <div className="space-y-6">
-      <WellnessScoreDisplay
-        score={latestEntry.overallScore}
-        category={latestEntry.category}
-        previousScore={previousEntry?.overallScore}
-        timestamp={latestEntry.timestamp} // Pass the timestamp
-      />
-
-      <div className="flex justify-between items-center">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
-              <ChartLine className="h-4 w-4" />
-              <span>Overview</span>
-            </TabsTrigger>
-            <TabsTrigger value="metrics" className="flex items-center gap-2">
-              <ChartBar className="h-4 w-4" />
-              <span>Metrics</span>
-            </TabsTrigger>
-            <TabsTrigger value="history" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              <span>History</span>
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-
-      <div className="flex justify-between items-center">
-        <div className="flex-1"></div>
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        <WellnessScoreDisplay
+          score={latestEntry.overallScore}
+          category={latestEntry.category}
+          previousScore={previousEntry?.overallScore}
+          timestamp={latestEntry.timestamp}
+        />
         <DateRangeSelector onRangeChange={setDateRange} />
       </div>
 
-      <Tabs value={activeTab} defaultValue="overview">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="overview" className="flex items-center gap-2">
+            <ChartLine className="h-4 w-4" />
+            <span>Overview</span>
+          </TabsTrigger>
+          <TabsTrigger value="metrics" className="flex items-center gap-2">
+            <ChartBar className="h-4 w-4" />
+            <span>Metrics</span>
+          </TabsTrigger>
+          <TabsTrigger value="history" className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            <span>History</span>
+          </TabsTrigger>
+        </TabsList>
+
         <TabsContent value="overview" className="mt-4">
           <OverviewTabContent data={filteredData} />
         </TabsContent>
