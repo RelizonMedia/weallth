@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Calendar, ChartBar, ChartLine, Clock } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,22 +10,21 @@ import WellnessChart from "@/components/WellnessChart";
 import MetricHistoryChart from "@/components/MetricHistoryChart";
 import PointsHistory from "./PointsHistory";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
 interface WellnessTabsProps {
   historyData: DailyWellnessEntry[];
   allRatings: WellnessRating[];
 }
-
-const WellnessTabs = ({ historyData, allRatings }: WellnessTabsProps) => {
+const WellnessTabs = ({
+  historyData,
+  allRatings
+}: WellnessTabsProps) => {
   const [selectedMetric, setSelectedMetric] = useState(wellnessMetrics[0]?.id || "");
-
-  return (
-    <Tabs defaultValue="progress" className="w-full mb-4 overflow-hidden max-w-full">
+  return <Tabs defaultValue="progress" className="w-full mb-4 overflow-hidden max-w-full">
       <TabsList className="mb-3 overflow-x-auto flex whitespace-nowrap w-full max-w-full">
-        <TabsTrigger value="progress" className="text-xs md:text-sm">Progress Chart</TabsTrigger>
+        
         <TabsTrigger value="goals" className="text-xs md:text-sm">Baby Steps History</TabsTrigger>
         <TabsTrigger value="points" className="text-xs md:text-sm">Points History</TabsTrigger>
-        <TabsTrigger value="metrics" className="text-xs md:text-sm">Metric History</TabsTrigger>
+        
       </TabsList>
       
       <ScrollArea className="h-[calc(100vh-16rem)]">
@@ -75,34 +73,21 @@ const WellnessTabs = ({ historyData, allRatings }: WellnessTabsProps) => {
               
               {/* Metric selector */}
               <div className="mb-2">
-                <select 
-                  className="w-full bg-background border border-input p-1 rounded-md text-xs md:text-sm"
-                  value={selectedMetric}
-                  onChange={(e) => setSelectedMetric(e.target.value)}
-                >
-                  {wellnessMetrics.map(metric => (
-                    <option key={metric.id} value={metric.id}>
+                <select className="w-full bg-background border border-input p-1 rounded-md text-xs md:text-sm" value={selectedMetric} onChange={e => setSelectedMetric(e.target.value)}>
+                  {wellnessMetrics.map(metric => <option key={metric.id} value={metric.id}>
                       {metric.name} History
-                    </option>
-                  ))}
+                    </option>)}
                 </select>
               </div>
               
               {/* Metric chart */}
               <div className="mt-2 overflow-hidden">
-                {selectedMetric && (
-                  <MetricHistoryChart 
-                    data={historyData} 
-                    metric={wellnessMetrics.find(m => m.id === selectedMetric) || wellnessMetrics[0]} 
-                  />
-                )}
+                {selectedMetric && <MetricHistoryChart data={historyData} metric={wellnessMetrics.find(m => m.id === selectedMetric) || wellnessMetrics[0]} />}
               </div>
             </CardContent>
           </Card>
         </TabsContent>
       </ScrollArea>
-    </Tabs>
-  );
+    </Tabs>;
 };
-
 export default WellnessTabs;
