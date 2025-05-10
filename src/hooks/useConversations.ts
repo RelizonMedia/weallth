@@ -16,11 +16,14 @@ export function useConversations(userId: string | undefined) {
       setLoading(true);
       
       try {
-        // Note: Using 'any' for RPC calls until Supabase types are updated
+        // Using type assertion for the RPC function call
         const { data: sentMessages, error: sentError } = await supabase
           .rpc('get_user_conversations', { 
             user_id: userId 
-          } as any);
+          }) as unknown as { 
+            data: ConversationResult[], 
+            error: any 
+          };
           
         if (sentError) throw sentError;
         

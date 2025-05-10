@@ -19,17 +19,20 @@ export function useMessages(
       setLoading(true);
       
       try {
-        // Note: Using 'any' for RPC calls until Supabase types are updated
+        // Using type assertion for the RPC function call
         const { data: messageData, error: messageError } = await supabase
           .rpc('get_conversation_messages', { 
             user1_id: userId, 
             user2_id: selectedConversation 
-          } as any);
+          }) as unknown as {
+            data: MessageResult[],
+            error: any
+          };
           
         if (messageError) throw messageError;
         
         if (messageData) {
-          const typedMessages: MessageData[] = (messageData as any[]).map((msg: MessageResult) => ({
+          const typedMessages: MessageData[] = messageData.map((msg: MessageResult) => ({
             id: msg.id,
             sender_id: msg.sender_id,
             recipient_id: msg.recipient_id,
@@ -42,13 +45,13 @@ export function useMessages(
           
           setMessages(typedMessages);
           
-          // Mark messages as read
+          // Mark messages as read using type assertion for the RPC call
           if (typedMessages.some((msg: MessageData) => !msg.is_read && msg.recipient_id === userId)) {
             await supabase
               .rpc('mark_messages_as_read', {
                 reader_id: userId,
                 sender_id: selectedConversation
-              } as any);
+              }) as unknown as { data: any, error: any };
           }
         }
       } catch (error) {
