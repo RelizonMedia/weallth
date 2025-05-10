@@ -7,8 +7,11 @@ import './index.css'
 localStorage.setItem("theme", "light");
 localStorage.setItem("darkMode", "false");
 
-// Log application startup with domain and theme information
-console.log(`Initializing Weallth application on ${window.location.hostname}...`);
+// Get the current hostname for domain-specific logging
+const currentHostname = window.location.hostname;
+
+// Log application startup with domain information
+console.log(`Initializing Weallth application on ${currentHostname}...`);
 console.log(`Current theme: ${localStorage.getItem("theme") || "light"}`);
 
 // Improved root element detection and error handling
@@ -26,6 +29,7 @@ if (!root) {
     <h1>Application Error</h1>
     <p>The application could not initialize properly. The root element was not found.</p>
     <p>Please try refreshing the page or contact support.</p>
+    <p>Domain: ${currentHostname}</p>
   `;
   document.body.appendChild(errorDiv);
 } else {
@@ -34,17 +38,18 @@ if (!root) {
     document.documentElement.classList.remove('dark');
     document.documentElement.classList.add('light');
     
-    console.log("Mounting Weallth application with light theme...");
+    console.log(`Mounting Weallth application with light theme on ${currentHostname}...`);
     const reactRoot = createRoot(root);
     reactRoot.render(<App />);
     console.log("Weallth application mounted successfully");
   } catch (error) {
-    console.error("Failed to render application:", error);
+    console.error(`Failed to render application on ${currentHostname}:`, error);
     root.innerHTML = `
       <div style="padding: 20px; margin: 20px; border: 1px solid red;">
         <h1>Application Error</h1>
         <p>The application could not initialize properly.</p>
         <p>Please try refreshing the page or contact support.</p>
+        <p>Domain: ${currentHostname}</p>
         <p>Error details: ${error instanceof Error ? error.message : String(error)}</p>
       </div>
     `;

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import { cn } from "@/lib/utils";
@@ -20,15 +20,34 @@ const Layout = ({ children }: LayoutProps) => {
     setSidebarOpen(prevState => !prevState);
   };
 
+  // Effect to ensure proper viewport handling on different domains
+  useEffect(() => {
+    // Force viewport to be correctly sized
+    const meta = document.querySelector('meta[name="viewport"]');
+    if (meta) {
+      meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+    }
+    
+    // Add overflow control to prevent unwanted scrolling
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    
+    return () => {
+      // Clean up when component unmounts
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-background overflow-hidden">
       <Sidebar isOpen={effectiveSidebarOpen} />
       <div className={cn(
-        "transition-all duration-300 ease-in-out w-full overflow-hidden",
+        "transition-all duration-300 ease-in-out w-full max-w-full overflow-hidden",
         effectiveSidebarOpen ? "ml-64" : "ml-0"
       )}>
         <Header toggleSidebar={toggleSidebar} />
-        <main className="container mx-auto p-2 md:p-6 overflow-hidden">
+        <main className="container mx-auto p-2 md:p-6 max-w-full overflow-hidden">
           {children}
         </main>
       </div>
