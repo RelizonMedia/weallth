@@ -62,7 +62,17 @@ const OverviewTabContent = ({ data }: OverviewTabContentProps) => {
       
       {filteredData.length > 0 ? (
         <>
-          <WellnessChart data={filteredData} />
+          <div className="w-full overflow-hidden">
+            <Card>
+              <CardHeader>
+                <CardTitle>Wellness Score Trends</CardTitle>
+                <CardDescription>Your wellness score history over time</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-2">
+                <WellnessChart data={filteredData} />
+              </CardContent>
+            </Card>
+          </div>
 
           <Card>
             <CardHeader>
