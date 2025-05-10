@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle2, ListTodo } from "lucide-react";
+import { wellnessMetrics } from "@/data/wellnessMetrics";
 
 interface OverviewTabContentProps {
   data: DailyWellnessEntry[];
@@ -207,10 +208,9 @@ const OverviewTabContent = ({ data }: OverviewTabContentProps) => {
                   </div>
                   <div className="space-y-3">
                     {babyStepsToFocus.slice(0, 3).map((step, index) => {
-                      // Find the metric name for this baby step
-                      const metricName = formattedData[0]?.ratings?.find(
-                        r => r.metricId === step.metricId
-                      )?.metricName || "Wellness";
+                      // Find the metric name using the wellness metrics data
+                      const metric = wellnessMetrics.find(m => m.id === step.metricId);
+                      const metricName = metric?.name || "Wellness";
                       
                       return (
                         <div key={index} className="flex items-start gap-2 bg-muted/50 rounded-md p-3">
