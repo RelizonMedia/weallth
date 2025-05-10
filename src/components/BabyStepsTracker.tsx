@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { WellnessRating } from "@/types/wellness";
 import { wellnessMetrics } from "@/data/wellnessMetrics";
@@ -7,7 +8,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import * as confetti from "canvas-confetti";
+import confetti from "canvas-confetti";
 
 interface BabyStepsTrackerProps {
   ratings: WellnessRating[];
@@ -40,18 +41,14 @@ const BabyStepsTracker = ({ ratings, onComplete, onToggleStep }: BabyStepsTracke
   
   // Show confetti celebration effect
   const triggerCelebration = () => {
-    if (typeof confetti.default === 'function') {
-      confetti.default({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
-    } else if (typeof confetti === 'function') {
+    try {
       confetti({
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 }
       });
+    } catch (error) {
+      console.error("Error triggering confetti:", error);
     }
   };
   
