@@ -3,10 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { WellnessRating } from "@/types/wellness";
 import { wellnessMetrics } from "@/data/wellnessMetrics";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Check, Clock } from "lucide-react";
-import { useState } from "react";
+import { Check, Clock, Calendar, Star } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+import confetti from "canvas-confetti";
 
 interface BabyStepsTrackerProps {
   ratings: WellnessRating[];
@@ -25,6 +27,7 @@ const BabyStepsTracker = ({ ratings, onComplete, onToggleStep }: BabyStepsTracke
       };
     })
   );
+  const [starsEarned, setStarsEarned] = useState(0);
   
   // Filter out ratings without baby steps
   const babySteps = stepsWithData.filter(step => step.babyStep.trim() !== '');
@@ -32,6 +35,18 @@ const BabyStepsTracker = ({ ratings, onComplete, onToggleStep }: BabyStepsTracke
   // Count completed steps
   const completedCount = babySteps.filter(step => step.completed).length;
   const progress = babySteps.length > 0 ? (completedCount / babySteps.length) * 100 : 0;
+  
+  // Format the date when the baby steps were created
+  const formattedDate = ratings.length > 0 ? format(new Date(ratings[0].date), 'MMM dd, yyyy') : format(new Date(), 'MMM dd, yyyy');
+  
+  // Show confetti celebration effect
+  const triggerCelebration = () => {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+  };
   
   const handleToggle = (metricId: string, checked: boolean) => {
     // Update local state
@@ -44,12 +59,23 @@ const BabyStepsTracker = ({ ratings, onComplete, onToggleStep }: BabyStepsTracke
     // Call the parent handler
     onToggleStep(metricId, checked);
     
-    // Show toast
-    toast({
-      title: checked ? "Step completed!" : "Step marked as not completed",
-      description: `You've ${checked ? "completed" : "unmarked"} this baby step.`,
-      duration: 1500,
-    });
+    // Show celebration and increase star count if checked
+    if (checked) {
+      triggerCelebration();
+      setStarsEarned(prev => prev + 1);
+      
+      toast({
+        title: "Goal achieved! 🎉",
+        description: "You've earned a star for your wellness bank!",
+        duration: 3000,
+      });
+    } else {
+      toast({
+        title: "Step marked as not completed",
+        description: "You can complete it later when you're ready.",
+        duration: 1500,
+      });
+    }
   };
   
   const handleAllComplete = () => {
@@ -64,10 +90,21 @@ const BabyStepsTracker = ({ ratings, onComplete, onToggleStep }: BabyStepsTracke
   return (
     <Card className="mb-8">
       <CardHeader className="pb-2">
-        <CardTitle className="text-2xl">Your Baby Steps Tracker</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Track your progress on the baby steps you defined
-        </p>
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle className="text-2xl">Baby Step Goal Tracker</CardTitle>
+            <p className="text-sm text-muted-foreground flex items-center gap-1">
+              <Calendar className="h-4 w-4" /> 
+              Created on {formattedDate}
+            </p>
+          </div>
+          {starsEarned > 0 && (
+            <div className="flex items-center bg-amber-100 px-3 py-1 rounded-full">
+              <Star className="h-4 w-4 text-amber-500 mr-1 fill-amber-500" />
+              <span className="text-amber-700 font-medium">{starsEarned}</span>
+            </div>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         {babySteps.length === 0 ? (
@@ -104,9 +141,16 @@ const BabyStepsTracker = ({ ratings, onComplete, onToggleStep }: BabyStepsTracke
                     <p className={`font-medium ${step.completed ? 'line-through text-muted-foreground' : ''}`}>
                       {step.babyStep}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {step.metricName}
-                    </p>
+                    <div className="flex items-center justify-between mt-0.5">
+                      <p className="text-xs text-muted-foreground">
+                        {step.metricName}
+                      </p>
+                      {step.completed && (
+                        <p className="text-xs text-muted-foreground">
+                          Completed: {format(new Date(), 'MMM dd, yyyy')}
+                        </p>
+                      )}
+                    </div>
                   </div>
                   {step.completed ? (
                     <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">

@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { WellnessRating, DailyWellnessEntry } from "@/types/wellness";
 import WellnessSummary from "@/components/WellnessSummary";
 import BabyStepsTracker from "@/components/BabyStepsTracker";
+import { Switch } from "@/components/ui/switch";
+import { useState } from "react";
 
 interface WellnessResultsViewProps {
   ratings: WellnessRating[];
@@ -17,6 +19,7 @@ const WellnessResultsView = ({
   onToggleBabyStep 
 }: WellnessResultsViewProps) => {
   const navigate = useNavigate();
+  const [showSummary, setShowSummary] = useState(true);
   
   const handleGoToDashboard = () => {
     navigate('/');
@@ -26,7 +29,7 @@ const WellnessResultsView = ({
     <div className="py-4 space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Wellness Summary</h1>
+          <h1 className="text-3xl font-bold">Wellness Tracking</h1>
           <p className="text-muted-foreground">
             Your wellness tracking results and historical data
           </p>
@@ -36,18 +39,33 @@ const WellnessResultsView = ({
         </Button>
       </div>
       
-      {/* Full wellness summary displayed directly on the track page */}
-      <WellnessSummary 
-        data={historyData} 
-        onClose={() => {}} // Empty function since we're not using the close functionality here
-      />
+      <div className="flex items-center space-x-4">
+        <Switch 
+          id="view-toggle" 
+          checked={showSummary}
+          onCheckedChange={setShowSummary}
+        />
+        <label 
+          htmlFor="view-toggle" 
+          className="text-sm font-medium cursor-pointer"
+        >
+          {showSummary ? "Showing Wellness Summary" : "Showing Goal Tracker"}
+        </label>
+      </div>
       
-      {/* Baby Steps Tracker */}
-      <BabyStepsTracker 
-        ratings={ratings} 
-        onComplete={handleGoToDashboard}
-        onToggleStep={onToggleBabyStep}
-      />
+      {/* Conditional rendering based on toggle state */}
+      {showSummary ? (
+        <WellnessSummary 
+          data={historyData} 
+          onClose={() => setShowSummary(false)}
+        />
+      ) : (
+        <BabyStepsTracker 
+          ratings={ratings} 
+          onComplete={handleGoToDashboard}
+          onToggleStep={onToggleBabyStep}
+        />
+      )}
     </div>
   );
 };

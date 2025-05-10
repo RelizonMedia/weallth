@@ -43,7 +43,7 @@ export const useWellnessTracking = () => {
           score: rating.score,
           babyStep: rating.baby_step || '',
           completed: rating.completed || false,
-          date: entry.created_at,
+          date: entry.date, // Use entry date for all ratings
           id: rating.id
         })),
         overallScore: entry.overall_score,
@@ -109,7 +109,11 @@ export const useWellnessTracking = () => {
     }) => {
       const { error } = await supabase
         .from('wellness_ratings')
-        .update({ completed })
+        .update({ 
+          completed,
+          // Add timestamp for completion tracking
+          updated_at: new Date().toISOString()
+        })
         .eq('id', ratingId);
 
       if (error) throw error;
@@ -121,11 +125,18 @@ export const useWellnessTracking = () => {
   
   // Handle form submission
   const handleSubmit = (submittedRatings: WellnessRating[]) => {
-    setRatings(submittedRatings);
+    // Add creation date to each rating
+    const today = new Date().toISOString().split('T')[0];
+    const ratingsWithDate = submittedRatings.map(rating => ({
+      ...rating,
+      date: today
+    }));
+    
+    setRatings(ratingsWithDate);
     
     // Calculate overall wellness score (average of all ratings)
-    const totalScore = submittedRatings.reduce((sum, rating) => sum + rating.score, 0);
-    const calculatedOverallScore = totalScore / submittedRatings.length;
+    const totalScore = ratingsWithDate.reduce((sum, rating) => sum + rating.score, 0);
+    const calculatedOverallScore = totalScore / ratingsWithDate.length;
     const wellnessCategory = getWellnessCategory(calculatedOverallScore);
     
     // Set the calculated values to state
@@ -136,7 +147,7 @@ export const useWellnessTracking = () => {
     // Save to Supabase
     if (user) {
       saveWellnessMutation.mutate({
-        ratings: submittedRatings,
+        ratings: ratingsWithDate,
         overallScore: calculatedOverallScore,
         category: wellnessCategory
       }, {
@@ -159,8 +170,8 @@ export const useWellnessTracking = () => {
     
     // Create a new daily wellness entry for local state
     const newEntry: DailyWellnessEntry = {
-      date: new Date().toISOString().split('T')[0],
-      ratings: submittedRatings,
+      date: today,
+      ratings: ratingsWithDate,
       overallScore: calculatedOverallScore,
       category: wellnessCategory
     };
