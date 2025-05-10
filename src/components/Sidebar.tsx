@@ -3,6 +3,7 @@ import { Home, Activity, BarChart2, Users, MessageCircle, Settings } from "lucid
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -35,37 +36,25 @@ const NavItem = ({
 
 const Sidebar = ({ isOpen }: SidebarProps) => {
   const [isHovering, setIsHovering] = useState(false);
-  const [autoHide, setAutoHide] = useState(false);
+  const isMobile = useIsMobile();
   
-  // Set up auto-hide functionality
-  useEffect(() => {
-    // Check for mobile or smaller screens - don't use auto-hide
-    const isMobile = window.innerWidth < 1024;
-    setAutoHide(!isMobile);
-    
-    const checkScreenSize = () => {
-      const isMobile = window.innerWidth < 1024;
-      setAutoHide(!isMobile);
-    };
-    
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
-
   // Determine if sidebar should be shown (based on isOpen prop and hover state)
-  const showSidebar = isOpen && (isHovering || !autoHide);
+  // On mobile, we want the sidebar to always be hidden unless explicitly opened
+  const showSidebar = isOpen && (isHovering || isMobile);
   
   return (
     <>
-      {/* Hover detection area - always visible */}
-      <div
-        className={cn(
-          "fixed inset-y-0 left-0 z-30 w-3 transition-opacity duration-300",
-          showSidebar ? "opacity-0" : "opacity-100"
-        )}
-        onMouseEnter={() => setIsHovering(true)}
-        aria-hidden="true"
-      />
+      {/* Hover detection area - always visible on desktop, hidden on mobile */}
+      {!isMobile && (
+        <div
+          className={cn(
+            "fixed inset-y-0 left-0 z-30 w-3 transition-opacity duration-300",
+            showSidebar ? "opacity-0" : "opacity-100"
+          )}
+          onMouseEnter={() => setIsHovering(true)}
+          aria-hidden="true"
+        />
+      )}
       
       {/* Main sidebar */}
       <aside
@@ -73,8 +62,8 @@ const Sidebar = ({ isOpen }: SidebarProps) => {
           "fixed inset-y-0 left-0 z-40 w-64 bg-background border-r transform transition-transform duration-300 ease-in-out",
           showSidebar ? "translate-x-0" : "-translate-x-full"
         )}
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
+        onMouseEnter={() => !isMobile && setIsHovering(true)}
+        onMouseLeave={() => !isMobile && setIsHovering(false)}
       >
         <div className="flex flex-col h-full p-4">
           <div className="flex items-center gap-2 mb-10 px-2 py-4">
