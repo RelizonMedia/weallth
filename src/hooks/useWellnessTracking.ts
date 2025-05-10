@@ -45,11 +45,11 @@ export const useWellnessTracking = () => {
           completed: rating.completed || false,
           date: entry.date, // Use entry date for all ratings
           id: rating.id,
-          timestamp: rating.created_at || new Date().toISOString() // Add timestamp information
+          timestamp: rating.created_at || entry.created_at || new Date().toISOString() // Include timestamp
         })),
         overallScore: entry.overall_score,
         category: entry.category as WellnessScoreCategory,
-        timestamp: entry.created_at || new Date().toISOString() // Add timestamp to the entry
+        timestamp: entry.created_at || new Date().toISOString() // Ensure timestamp is included
       }));
     },
     enabled: !!user
@@ -154,7 +154,7 @@ export const useWellnessTracking = () => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['wellnessEntries'] });
+      queryClient.invalidateQueries({ queryKey: ['wellnessEntries'] as unknown as never });
     }
   });
 
@@ -179,7 +179,7 @@ export const useWellnessTracking = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['wellnessEntries'] });
+      queryClient.invalidateQueries({ queryKey: ['wellnessEntries'] as unknown as never });
     }
   });
   
@@ -271,6 +271,23 @@ export const useWellnessTracking = () => {
         updateBabyStepMutation.mutate({
           ratingId: rating.id,
           completed
+        }, {
+          onSuccess: () => {
+            // Update the local state for immediate feedback
+            const updatedHistoryData = historyData.map(entry => {
+              if (entry.date === latestEntry.date) {
+                return {
+                  ...entry,
+                  ratings: entry.ratings.map(r => 
+                    r.metricId === metricId ? { ...r, completed } : r
+                  )
+                };
+              }
+              return entry;
+            });
+            
+            setHistoryData(updatedHistoryData);
+          }
         });
       }
     }

@@ -24,17 +24,23 @@ const WellnessTrackingForm = ({ onSubmit }: WellnessTrackingFormProps) => {
   const completionPercentage = (ratedMetricsCount / wellnessMetrics.length) * 100;
   
   const handleSaveRating = (rating: WellnessRating) => {
+    // Add timestamp to the rating when saved
+    const ratingWithTimestamp = {
+      ...rating,
+      timestamp: new Date().toISOString()
+    };
+    
     // Check if we already have a rating for this metric
     const existingIndex = ratings.findIndex(r => r.metricId === rating.metricId);
     
     if (existingIndex >= 0) {
       // Update existing rating
       const updatedRatings = [...ratings];
-      updatedRatings[existingIndex] = rating;
+      updatedRatings[existingIndex] = ratingWithTimestamp;
       setRatings(updatedRatings);
     } else {
       // Add new rating
-      setRatings(prev => [...prev, rating]);
+      setRatings(prev => [...prev, ratingWithTimestamp]);
     }
     
     toast({
@@ -57,8 +63,15 @@ const WellnessTrackingForm = ({ onSubmit }: WellnessTrackingFormProps) => {
       return;
     }
     
+    // Add timestamp to all ratings before submitting
+    const currentTime = new Date().toISOString();
+    const ratingsWithTimestamp = ratings.map(rating => ({
+      ...rating,
+      timestamp: rating.timestamp || currentTime
+    }));
+    
     // Pass the ratings to the parent component
-    onSubmit(ratings);
+    onSubmit(ratingsWithTimestamp);
   };
   
   return (
