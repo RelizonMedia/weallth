@@ -40,7 +40,7 @@ const PointsHistory = ({
             <TableRow>
               <TableHead>Date</TableHead>
               <TableHead>Wellness Score</TableHead>
-              <TableHead>Points Earned</TableHead>
+              <TableHead>Stars Awarded</TableHead>
               <TableHead className="text-right">Baby Steps Completed</TableHead>
             </TableRow>
           </TableHeader>
