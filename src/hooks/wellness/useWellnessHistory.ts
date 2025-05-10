@@ -35,7 +35,7 @@ export const useWellnessHistory = () => {
         date: entry.date,
         ratings: entry.wellness_ratings.map(rating => ({
           metricId: rating.metric_id,
-          score: rating.score,
+          score: rating.score / 10, // Convert back from integer to decimal (45 -> 4.5)
           babyStep: rating.baby_step || '',
           completed: rating.completed || false,
           date: entry.date,

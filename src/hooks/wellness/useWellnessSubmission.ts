@@ -63,10 +63,11 @@ export const useWellnessSubmission = () => {
         if (deleteError) throw deleteError;
         
         // Insert new ratings with the current timestamp
+        // Convert decimal scores to integers by multiplying by 10 - to store 4.5 as 45
         const ratingsToInsert = newEntry.ratings.map(rating => ({
           entry_id: existingEntry.id,
           metric_id: rating.metricId,
-          score: rating.score,
+          score: Math.round(rating.score * 10), // Convert decimal to integer (4.5 -> 45)
           baby_step: rating.babyStep,
           completed: rating.completed,
           created_at: timestamp
@@ -96,10 +97,11 @@ export const useWellnessSubmission = () => {
         if (entryError) throw entryError;
   
         // Create wellness ratings with the exact same timestamp
+        // Convert decimal scores to integers by multiplying by 10
         const ratingsToInsert = newEntry.ratings.map(rating => ({
           entry_id: entryData.id,
           metric_id: rating.metricId,
-          score: rating.score,
+          score: Math.round(rating.score * 10), // Convert decimal to integer (4.5 -> 45)
           baby_step: rating.babyStep,
           completed: rating.completed,
           created_at: timestamp
