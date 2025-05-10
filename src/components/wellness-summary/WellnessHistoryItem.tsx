@@ -28,8 +28,22 @@ const getScoreCategory = (score: number): string => {
   return "Amazing";
 };
 
+// Function to get the text color based on the category
+const getCategoryTextColor = (category: string): string => {
+  switch (category) {
+    case "Unhealthy": return "text-red-600";
+    case "Healthy": return "text-green-600";
+    case "Great": return "text-orange-600";
+    case "Amazing": return "text-purple-600";
+    default: return "text-wellness-teal";
+  }
+};
+
 const WellnessHistoryItem = ({ entry, compact }: WellnessHistoryItemProps) => {
   if (!entry) return null;
+  
+  // Get the appropriate text color for the category
+  const categoryColor = getCategoryTextColor(entry.category);
   
   return (
     <div className="border rounded-lg p-4">
@@ -40,7 +54,7 @@ const WellnessHistoryItem = ({ entry, compact }: WellnessHistoryItemProps) => {
             {entry.formattedDate} at {entry.formattedTime}
           </span>
         </div>
-        <div className="bg-wellness-teal/10 text-wellness-teal px-3 py-1 rounded-full text-sm font-medium">
+        <div className={`bg-opacity-10 px-3 py-1 rounded-full text-sm font-medium ${categoryColor}`}>
           {entry.category}
         </div>
       </div>
