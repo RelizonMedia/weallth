@@ -2,11 +2,11 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { DailyWellnessEntry } from "@/types/wellness";
 import WellnessChart from "@/components/WellnessChart";
-import { useBabyStepsMutation } from "./overview-tab/useBabyStepsMutation";
-import WellnessHistorySection from "./overview-tab/WellnessHistorySection";
-import BabyStepsFocus from "./overview-tab/BabyStepsFocus";
-import EmptyStateCard from "./overview-tab/EmptyStateCard";
-import BabyStepsHistoryChart from "./overview-tab/BabyStepsHistoryChart";
+import { useBabyStepsMutation } from "./useBabyStepsMutation";
+import WellnessHistorySection from "./WellnessHistorySection";
+import BabyStepsFocus from "./BabyStepsFocus";
+import EmptyStateCard from "./EmptyStateCard";
+import BabyStepsHistoryChart from "./BabyStepsHistoryChart";
 
 interface OverviewTabContentProps {
   data: DailyWellnessEntry[];
