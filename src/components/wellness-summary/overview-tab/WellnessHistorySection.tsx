@@ -2,6 +2,7 @@
 import { DailyWellnessEntry } from "@/types/wellness";
 import WellnessHistoryItem from "../WellnessHistoryItem";
 import { format } from "date-fns";
+import EmptyStateCard from "./EmptyStateCard";
 
 interface WellnessHistorySectionProps {
   data: DailyWellnessEntry[];
@@ -23,14 +24,15 @@ const WellnessHistorySection = ({ data, onUpdateBabyStep }: WellnessHistorySecti
 
   return (
     <div className="space-y-4">
-      {/* Only show the most recent entry */}
-      {formattedData.length > 0 && (
+      {formattedData.length > 0 ? (
         <WellnessHistoryItem 
           key={0} 
           entry={formattedData[0]} 
           compact={false} 
           onUpdateBabyStep={onUpdateBabyStep}
         />
+      ) : (
+        <EmptyStateCard />
       )}
     </div>
   );
