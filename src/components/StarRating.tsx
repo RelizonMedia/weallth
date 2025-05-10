@@ -19,7 +19,6 @@ const StarRating = ({
 }: StarRatingProps) => {
   const [hoverValue, setHoverValue] = useState<number | null>(null);
   const [showSlider, setShowSlider] = useState(false);
-  const [precision, setPrecision] = useState(false);
   
   const sizes = {
     sm: "w-4 h-4",
@@ -32,7 +31,6 @@ const StarRating = ({
   // Reset state when value changes externally
   useEffect(() => {
     setShowSlider(false);
-    setPrecision(false);
   }, [value]);
   
   const handleSliderChange = (newValue: number[]) => {
@@ -41,37 +39,13 @@ const StarRating = ({
     }
   };
 
-  // Handle star click with better precision
-  const handleStarClick = (starPosition: number, event: React.MouseEvent) => {
-    if (readOnly) return;
-
-    // Get the relative position of the click within the star element
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const width = rect.width;
-    const clickPosition = x / width;
-    
-    // Convert the position to a decimal value between 0 and 1
-    const decimalValue = Math.max(0.1, Math.min(1.0, clickPosition));
-    
-    // Apply the decimal to the star position
-    const preciseRating = (starPosition - 1) + decimalValue;
-    
-    // Round to nearest 0.1
-    const roundedRating = Math.max(0.1, Math.min(5, Math.round(preciseRating * 10) / 10));
-    
-    onChange(roundedRating);
-    setShowSlider(true);
-    setPrecision(true);
-  };
-
   // Display stars based on precise rating value
   const renderStars = () => {
     return [1, 2, 3, 4, 5].map((star) => {
       // Calculate fill percentage for this star
       let fillPercentage = 0;
       
-      if (hoverValue !== null && !precision) {
+      if (hoverValue !== null) {
         // When hovering
         if (star <= Math.floor(hoverValue)) {
           fillPercentage = 100;
@@ -95,13 +69,20 @@ const StarRating = ({
             "p-0.5 focus:outline-none transition-all relative",
             readOnly ? "cursor-default" : "cursor-pointer"
           )}
-          onClick={(e) => {
+          onClick={() => {
             if (!readOnly) {
-              handleStarClick(star, e);
+              if (star === Math.floor(value) && value === star) {
+                // If clicking on the same full star, toggle slider
+                setShowSlider(!showSlider);
+              } else {
+                // Set to exactly this star value
+                onChange(star);
+                setShowSlider(false);
+              }
             }
           }}
-          onMouseEnter={() => !readOnly && !precision && setHoverValue(star)}
-          onMouseLeave={() => !readOnly && !precision && setHoverValue(null)}
+          onMouseEnter={() => !readOnly && setHoverValue(star)}
+          onMouseLeave={() => !readOnly && setHoverValue(null)}
           disabled={readOnly}
         >
           <Star 
@@ -135,18 +116,6 @@ const StarRating = ({
         <span className="ml-2 text-sm font-medium">
           {value.toFixed(1)}
         </span>
-        
-        {!readOnly && (
-          <button 
-            className="ml-2 text-xs text-blue-600 hover:underline"
-            onClick={() => {
-              setShowSlider(!showSlider);
-              setPrecision(true);
-            }}
-          >
-            {showSlider ? "Hide" : "Fine-tune"}
-          </button>
-        )}
       </div>
       
       {showSlider && !readOnly && (
