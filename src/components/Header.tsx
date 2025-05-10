@@ -1,5 +1,5 @@
 
-import { Bell, Menu, User } from "lucide-react";
+import { Bell, Menu, User, Activity, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu,
@@ -25,6 +25,14 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
 
   const handleProfileClick = () => {
     navigate('/profile');
+  };
+
+  const handleWellnessTracking = () => {
+    navigate('/track');
+  };
+
+  const handleWellnessBank = () => {
+    navigate('/wellness-bank');
   };
 
   return (
@@ -84,6 +92,20 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="cursor-pointer" onClick={handleProfileClick}>Profile</DropdownMenuItem>
+              <DropdownMenuItem 
+                className="cursor-pointer flex items-center" 
+                onClick={handleWellnessTracking}
+              >
+                <Activity className="h-4 w-4 mr-2" />
+                <span>My Wellness Tracking</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                className="cursor-pointer flex items-center" 
+                onClick={handleWellnessBank}
+              >
+                <Wallet className="h-4 w-4 mr-2" />
+                <span>My Wellness Bank</span>
+              </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer">Settings</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="cursor-pointer" onClick={signOut}>Log out</DropdownMenuItem>
