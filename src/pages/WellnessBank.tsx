@@ -1,10 +1,11 @@
+
 import Layout from "@/components/Layout";
 import { useWellnessTracking } from "@/hooks/wellness/useWellnessTracking";
 import WellnessStatsCards from "@/components/wellness-bank/WellnessStatsCards";
 import WellnessTabs from "@/components/wellness-bank/WellnessTabs";
 import WellnessHistoryDetail from "@/components/wellness-bank/WellnessHistoryDetail";
 import { useToast } from "@/hooks/use-toast";
-import { Trophy } from "lucide-react"; // Add missing Trophy icon import
+import { Trophy } from "lucide-react"; 
 
 const WellnessBank = () => {
   const {
@@ -27,6 +28,12 @@ const WellnessBank = () => {
   const tipsShared = 12;
   const celebrationsGiven = 8;
   const communityMembers = 5;
+  
+  // Calculate combined total stars (personal + community)
+  const totalPersonalStars = totalPoints;
+  const totalCommunityStars = tipsShared + celebrationsGiven;
+  const combinedTotalStars = totalPersonalStars + totalCommunityStars;
+
   return <Layout>
       <div className="container max-w-5xl py-8">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4">
@@ -35,12 +42,20 @@ const WellnessBank = () => {
             <p className="text-muted-foreground">Track your wellness achievements and community impact</p>
           </div>
           
-          <div className="mt-2 md:mt-0 flex items-center gap-2">
+          <div className="mt-2 md:mt-0 flex items-center gap-3">
             <div className="bg-amber-100 text-amber-800 px-4 py-2 rounded-lg flex items-center">
               <Trophy className="h-5 w-5 mr-2 text-amber-600" />
               <div>
                 <div className="text-xs font-medium">Total Wellness Stars</div>
                 <div className="text-lg font-bold">{totalPoints}</div>
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-r from-amber-100 to-blue-100 text-amber-800 px-4 py-2 rounded-lg flex items-center">
+              <Trophy className="h-5 w-5 mr-2 text-amber-600" />
+              <div>
+                <div className="text-xs font-medium">Combined Total Stars</div>
+                <div className="text-lg font-bold">{combinedTotalStars}</div>
               </div>
             </div>
           </div>
