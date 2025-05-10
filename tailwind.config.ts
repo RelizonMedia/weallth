@@ -111,6 +111,28 @@ export default {
 						boxShadow: '0 0 25px rgba(78, 205, 196, 0.9)'
 					}
 				},
+				'ocean-wave': {
+					'0%': { 
+						boxShadow: '0 0 10px rgba(14, 165, 233, 0.6)',
+						opacity: '0.95'
+					},
+					'25%': {
+						boxShadow: '0 0 15px rgba(51, 195, 240, 0.7)',
+						opacity: '1'
+					},
+					'50%': { 
+						boxShadow: '0 0 20px rgba(30, 174, 219, 0.8)',
+						opacity: '0.9'
+					},
+					'75%': {
+						boxShadow: '0 0 15px rgba(51, 195, 240, 0.7)',
+						opacity: '1'
+					},
+					'100%': {
+						boxShadow: '0 0 10px rgba(14, 165, 233, 0.6)',
+						opacity: '0.95'
+					}
+				},
 				'float': {
 					'0%, 100%': { transform: 'translateY(0)' },
 					'50%': { transform: 'translateY(-10px)' }
@@ -121,6 +143,7 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'pulse-gentle': 'pulse-gentle 4s ease-in-out infinite',
 				'peaceful-pulse': 'peaceful-pulse 6s ease-in-out infinite',
+				'ocean-wave': 'ocean-wave 8s ease-in-out infinite',
 				'float': 'float 6s ease-in-out infinite'
 			},
 			fontFamily: {

@@ -126,10 +126,10 @@ const Index = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6">
-            {/* Track Wellness Today Button - with peaceful slow pulsing animation */}
+            {/* Track Wellness Today Button - with ocean wave animation effect */}
             <div className="flex justify-center">
               <Button asChild 
-                className="px-8 py-6 shadow-lg bg-gradient-to-r from-wellness-purple to-wellness-teal hover:from-wellness-teal hover:to-wellness-purple text-white transition-all duration-500 animate-peaceful-pulse"
+                className="px-8 py-6 shadow-lg bg-gradient-to-r from-[#0EA5E9] to-[#33C3F0] hover:from-[#33C3F0] hover:to-[#1EAEDB] text-white transition-all duration-700 animate-ocean-wave"
                 size="lg">
                 <Link to="/track?mode=new" className="flex items-center gap-2">
                   <CalendarPlus className="h-6 w-6" />
