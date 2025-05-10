@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import WellnessScoreDisplay from "@/components/WellnessScoreDisplay";
@@ -6,11 +5,14 @@ import WellnessChart from "@/components/WellnessChart";
 import BabyStepsList from "@/components/BabyStepsList";
 import WellnessStreak from "@/components/WellnessStreak";
 import { Button } from "@/components/ui/button";
-import { CalendarPlus, MessageCircle } from "lucide-react";
+import { CalendarPlus, MessageCircle, ShoppingCart } from "lucide-react";
 import { demoWellnessData } from "@/data/wellnessMetrics";
 import { DailyWellnessEntry, WellnessRating, WellnessScoreCategory } from "@/types/wellness";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { marketplaceProducts } from "@/data/marketplaceData";
+import ProductCard from "@/components/ProductCard";
 
 const Index = () => {
   const [wellnessData, setWellnessData] = useState(demoWellnessData);
@@ -82,6 +84,11 @@ const Index = () => {
     }))
   };
 
+  // Get recommended products for home page display
+  const recommendedProducts = marketplaceProducts
+    .filter(product => product.tags.includes("recommended"))
+    .slice(0, 3);
+
   return (
     <Layout>
       <div className="flex flex-col space-y-8">
@@ -151,6 +158,31 @@ const Index = () => {
             </Button>
           </div>
         </div>
+        
+        {/* Wellness Marketplace Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Wellness Marketplace</CardTitle>
+            <CardDescription>
+              Discover products and services to enhance your wellness journey
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {recommendedProducts.map(product => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+            <div className="mt-6 flex justify-center">
+              <Button asChild variant="outline">
+                <Link to="/marketplace">
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  Visit Full Marketplace
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </Layout>
   );
