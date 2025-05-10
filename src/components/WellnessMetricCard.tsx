@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Activity, Check, Sun, Moon, Heart, Users, TrendingUp, Wallet, Apple, Smile } from "lucide-react";
+import { Activity, Check, Sun, Moon, Heart, Users, TrendingUp, Wallet, Apple, Smile, History } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import StarRating from "./StarRating";
 import { Input } from "@/components/ui/input";
@@ -23,7 +23,8 @@ const iconMap: Record<string, React.ElementType> = {
   "trending-up": TrendingUp,
   wallet: Wallet,
   apple: Apple,
-  smile: Smile
+  smile: Smile,
+  history: History
 };
 
 const WellnessMetricCard = ({ metric, initialRating, onSave }: WellnessMetricCardProps) => {

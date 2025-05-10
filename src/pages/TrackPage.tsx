@@ -4,21 +4,25 @@ import Layout from "@/components/Layout";
 import WellnessMetricCard from "@/components/WellnessMetricCard";
 import { Button } from "@/components/ui/button";
 import { wellnessMetrics, getWellnessCategory } from "@/data/wellnessMetrics";
-import { WellnessRating } from "@/types/wellness";
+import { WellnessRating, DailyWellnessEntry } from "@/types/wellness";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { AlertCircle, CheckCircle } from "lucide-react";
+import { AlertCircle, CheckCircle, ChartPie } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import WellnessScoreDisplay from "@/components/WellnessScoreDisplay";
 import { Progress } from "@/components/ui/progress";
 import BabyStepsTracker from "@/components/BabyStepsTracker";
+import WellnessSummary from "@/components/WellnessSummary";
+import { demoWellnessData } from "@/data/wellnessMetrics";
 
 const TrackPage = () => {
   const [ratings, setRatings] = useState<WellnessRating[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [showBabySteps, setShowBabySteps] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
   const [overallScore, setOverallScore] = useState(0);
   const [category, setCategory] = useState("");
+  const [historyData, setHistoryData] = useState<DailyWellnessEntry[]>(demoWellnessData.entries);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -69,12 +73,16 @@ const TrackPage = () => {
     setCategory(wellnessCategory);
     setSubmitted(true);
     
-    console.log("Submitting wellness entry:", {
+    // Create a new daily wellness entry
+    const newEntry: DailyWellnessEntry = {
       date: new Date().toISOString().split('T')[0],
       ratings,
       overallScore: calculatedOverallScore,
       category: wellnessCategory
-    });
+    };
+    
+    // Add the new entry to the history
+    setHistoryData(prev => [...prev, newEntry]);
     
     toast({
       title: "Wellness tracked successfully!",
@@ -101,6 +109,10 @@ const TrackPage = () => {
     navigate('/');
   };
   
+  const handleToggleSummary = () => {
+    setShowSummary(prev => !prev);
+  };
+  
   // Calculate completion percentage based on scored metrics only
   const completionPercentage = (ratedMetricsCount / wellnessMetrics.length) * 100;
   
@@ -112,13 +124,28 @@ const TrackPage = () => {
   return (
     <Layout>
       <div className="flex flex-col space-y-6">
-        {!submitted && (
+        {showSummary ? (
+          <WellnessSummary 
+            data={historyData} 
+            onClose={() => setShowSummary(false)} 
+          />
+        ) : !submitted ? (
           <>
-            <div className="flex flex-col space-y-2">
-              <h1 className="text-3xl font-bold">Track Today's Wellness</h1>
-              <p className="text-muted-foreground">
-                Rate each of your 10 core wellness metrics and set baby steps for improvement
-              </p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h1 className="text-3xl font-bold">Track Today's Wellness</h1>
+                <p className="text-muted-foreground">
+                  Rate each of your 10 core wellness metrics and set baby steps for improvement
+                </p>
+              </div>
+              <Button 
+                onClick={handleToggleSummary} 
+                variant="outline" 
+                className="flex items-center gap-2"
+              >
+                <ChartPie className="h-5 w-5" />
+                Summary
+              </Button>
             </div>
             
             <Alert className="bg-wellness-mint border-wellness-teal">
@@ -174,9 +201,7 @@ const TrackPage = () => {
               </Button>
             </div>
           </>
-        )}
-
-        {submitted && !showBabySteps && (
+        ) : !showBabySteps ? (
           <div className="flex flex-col items-center space-y-6 py-8">
             <div className="w-full max-w-md">
               <WellnessScoreDisplay
@@ -189,9 +214,12 @@ const TrackPage = () => {
               <p className="text-lg">
                 Thank you for tracking your wellness today! Your data has been saved.
               </p>
-              <div className="flex space-x-4 justify-center">
+              <div className="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-4 justify-center">
                 <Button onClick={handleViewBabySteps} size="lg" className="bg-wellness-purple hover:bg-wellness-purple/90">
                   View Baby Steps Tracker
+                </Button>
+                <Button onClick={handleToggleSummary} size="lg" className="bg-wellness-teal hover:bg-wellness-teal/90">
+                  View Wellness Summary
                 </Button>
                 <Button onClick={handleGoToDashboard} size="lg" variant="outline">
                   Go to Dashboard
@@ -199,15 +227,19 @@ const TrackPage = () => {
               </div>
             </div>
           </div>
-        )}
-
-        {submitted && showBabySteps && (
+        ) : (
           <div className="py-4">
-            <div className="mb-6">
-              <h1 className="text-3xl font-bold">Your Baby Steps</h1>
-              <p className="text-muted-foreground">
-                Track your daily progress on the baby steps you've set
-              </p>
+            <div className="mb-6 flex justify-between items-center">
+              <div>
+                <h1 className="text-3xl font-bold">Your Baby Steps</h1>
+                <p className="text-muted-foreground">
+                  Track your daily progress on the baby steps you've set
+                </p>
+              </div>
+              <Button onClick={handleToggleSummary} variant="outline" className="flex items-center gap-2">
+                <ChartPie className="h-5 w-5" />
+                View Summary
+              </Button>
             </div>
             
             <div className="mb-6">
