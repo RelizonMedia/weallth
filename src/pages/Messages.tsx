@@ -187,7 +187,7 @@ const Messages = () => {
       // Using type assertion to bypass TypeScript checking
       const { error } = await supabase
         .from('messages')
-        .insert(newMessage);
+        .insert(newMessage as any);
         
       if (error) throw error;
       
