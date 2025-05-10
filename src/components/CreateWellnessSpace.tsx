@@ -16,11 +16,13 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 import { Globe, Lock, Image, Video } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { WellnessSpaceData } from "@/types/message";
 
 interface CreateWellnessSpaceProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated?: (spaceData: any) => void;
+  onCreated?: (spaceData: WellnessSpaceData) => void;
 }
 
 const CreateWellnessSpace = ({ open, onOpenChange, onCreated }: CreateWellnessSpaceProps) => {
@@ -50,6 +52,17 @@ const CreateWellnessSpace = ({ open, onOpenChange, onCreated }: CreateWellnessSp
       return;
     }
     
+    // Validate file size
+    const maxSize = mediaType === "image" ? 5 * 1024 * 1024 : 20 * 1024 * 1024; // 5MB for images, 20MB for videos
+    if (file.size > maxSize) {
+      toast({
+        title: "File too large",
+        description: `${mediaType} files must be less than ${maxSize / (1024 * 1024)}MB.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setMediaFile(file);
     
     // Create preview
@@ -70,11 +83,27 @@ const CreateWellnessSpace = ({ open, onOpenChange, onCreated }: CreateWellnessSp
     setIsSubmitting(true);
     
     try {
-      // In a real app, this would be a call to your API/database
-      // For now, we'll simulate the creation with a timeout
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Get the current user
+      const { data: { user } } = await supabase.auth.getUser();
       
-      const newSpace = {
+      if (!user) {
+        toast({
+          title: "Authentication Error",
+          description: "You must be signed in to create a wellness space.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      let mediaUrl = null;
+      
+      // In a real implementation, we would upload the media file to storage
+      // and get the URL, but for now we'll just use the preview
+      if (mediaPreview) {
+        mediaUrl = mediaPreview;
+      }
+      
+      const newSpace: WellnessSpaceData = {
         id: `space-${Date.now()}`,
         name,
         description,
@@ -82,10 +111,22 @@ const CreateWellnessSpace = ({ open, onOpenChange, onCreated }: CreateWellnessSp
         allowInvites,
         members: 1,
         createdAt: new Date().toISOString(),
-        // If we had real file storage, we'd upload the file and get a URL
-        mediaUrl: mediaPreview,
+        isCreator: true,
+        mediaUrl,
         mediaType: mediaFile ? mediaType : "none",
+        ownerId: user.id,
       };
+      
+      // In a real implementation, we would save to Supabase here
+      // await supabase.from('wellness_spaces').insert({
+      //   name,
+      //   description,
+      //   is_private: privacy === "private",
+      //   allow_invites: allowInvites,
+      //   media_url: mediaUrl,
+      //   media_type: mediaFile ? mediaType : "none",
+      //   owner_id: user.id,
+      // });
       
       toast({
         title: "Wellness space created!",
@@ -106,6 +147,8 @@ const CreateWellnessSpace = ({ open, onOpenChange, onCreated }: CreateWellnessSp
       setMediaPreview(null);
       onOpenChange(false);
     } catch (error) {
+      console.error("Error creating wellness space:", error);
+      
       toast({
         title: "Failed to create space",
         description: "An error occurred while creating your wellness space.",

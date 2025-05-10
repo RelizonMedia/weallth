@@ -38,3 +38,30 @@ export type MessageResult = {
   updated_at: string;
   sender_name: string | null;
 };
+
+export type SocialLink = {
+  platform: string;
+  url: string;
+};
+
+export type WellnessSpaceData = {
+  id: string;
+  name: string;
+  description: string;
+  isPrivate: boolean;
+  members: number;
+  createdAt: string;
+  isCreator: boolean;
+  mediaUrl: string | null;
+  mediaType: 'none' | 'image' | 'video';
+  ownerId?: string;
+};
+
+export type PrivacyLevel = 'private' | 'friends' | 'spaces' | 'public';
+
+export type MetricPrivacySetting = {
+  metricId: string;
+  privacyLevel: PrivacyLevel;
+  allowedSpaceIds?: string[];
+  allowedUserIds?: string[];
+};

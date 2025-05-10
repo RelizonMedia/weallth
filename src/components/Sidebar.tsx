@@ -1,5 +1,5 @@
 
-import { Home, Activity, BarChart2, Users, MessageCircle, Settings, ShoppingCart } from "lucide-react";
+import { Home, Activity, Users, MessageCircle, Settings, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -72,8 +72,8 @@ const Sidebar = ({ isOpen }: SidebarProps) => {
           <nav className="space-y-2 flex-1">
             <NavItem icon={Home} label="Dashboard" active href="/" />
             <NavItem icon={Activity} label="Track Today" href="/track" />
-            <NavItem icon={BarChart2} label="Progress" href="/progress" />
             <NavItem icon={Users} label="Community" href="/community" />
+            <NavItem icon={Users} label="My Wellness Spaces" href="/my-wellness-spaces" />
             <NavItem icon={MessageCircle} label="My AI Companion" href="/ai-companion" />
             <NavItem icon={ShoppingCart} label="Wellness Marketplace" href="/marketplace" />
           </nav>
