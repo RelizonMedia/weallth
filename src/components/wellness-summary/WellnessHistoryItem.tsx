@@ -1,9 +1,13 @@
 
-import { Clock } from "lucide-react";
+import { Clock, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { wellnessMetrics } from "@/data/wellnessMetrics";
-import { DailyWellnessEntry } from "@/types/wellness";
+import { DailyWellnessEntry, WellnessRating } from "@/types/wellness";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 interface WellnessHistoryItemProps {
   entry: DailyWellnessEntry & { 
@@ -11,6 +15,7 @@ interface WellnessHistoryItemProps {
     formattedTime: string;
   };
   compact?: boolean;
+  onUpdateBabyStep?: (metricId: string, babyStep: string) => void;
 }
 
 // Function to get the color based on the wellness score
@@ -40,11 +45,42 @@ const getCategoryTextColor = (category: string): string => {
   }
 };
 
-const WellnessHistoryItem = ({ entry, compact }: WellnessHistoryItemProps) => {
+// Function to generate recommendations based on metric and score
+const getRecommendation = (metricId: string, score: number): string => {
+  const metric = wellnessMetrics.find(m => m.id === metricId);
+  
+  if (score >= 4.7) {
+    return `Keep up your amazing work with ${metric?.name.toLowerCase()}!`;
+  } else if (score >= 4.5) {
+    return `You're doing great with ${metric?.name.toLowerCase()}. Small improvements could make it amazing.`;
+  } else if (score >= 4.0) {
+    return `Your ${metric?.name.toLowerCase()} is healthy. Consider focusing on consistency.`;
+  } else {
+    return `This area needs attention. Small daily habits can improve your ${metric?.name.toLowerCase()}.`;
+  }
+};
+
+const WellnessHistoryItem = ({ entry, compact, onUpdateBabyStep }: WellnessHistoryItemProps) => {
+  const [editingMetricId, setEditingMetricId] = useState<string | null>(null);
+  const [babyStepInput, setBabyStepInput] = useState("");
+  const { toast } = useToast();
+  
   if (!entry) return null;
   
   // Get the appropriate text color for the category
   const categoryColor = getCategoryTextColor(entry.category);
+  
+  const handleAddBabyStep = (metricId: string) => {
+    if (babyStepInput.trim() && onUpdateBabyStep) {
+      onUpdateBabyStep(metricId, babyStepInput.trim());
+      setEditingMetricId(null);
+      setBabyStepInput("");
+      toast({
+        title: "Baby step added",
+        description: "Your baby step has been added successfully",
+      });
+    }
+  };
   
   return (
     <div className="border rounded-lg p-4">
@@ -70,6 +106,8 @@ const WellnessHistoryItem = ({ entry, compact }: WellnessHistoryItemProps) => {
           const score = metricRating?.score || 0;
           const colorClasses = getScoreColor(score);
           const category = getScoreCategory(score);
+          const recommendation = getRecommendation(metric.id, score);
+          const hasBabyStep = metricRating?.babyStep && metricRating.babyStep.trim() !== "";
           
           return (
             <HoverCard key={metric.id}>
@@ -80,10 +118,67 @@ const WellnessHistoryItem = ({ entry, compact }: WellnessHistoryItemProps) => {
                   <span className="text-xs mt-1">{category}</span>
                 </div>
               </HoverCardTrigger>
-              <HoverCardContent className="w-80">
-                <div className="space-y-2">
-                  <h4 className="font-semibold">{metric.name}</h4>
-                  <p className="text-sm text-muted-foreground">{metric.description}</p>
+              <HoverCardContent className="w-80 p-4">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold">{metric.name}</h4>
+                    <p className="text-sm text-muted-foreground">{metric.description}</p>
+                  </div>
+                  
+                  <div>
+                    <h5 className="font-medium text-sm">Recommendation:</h5>
+                    <p className="text-sm">{recommendation}</p>
+                  </div>
+                  
+                  <div>
+                    <h5 className="font-medium text-sm">Baby Step:</h5>
+                    {editingMetricId === metric.id ? (
+                      <div className="flex flex-col space-y-2">
+                        <Input 
+                          placeholder="Enter a small step to improve"
+                          value={babyStepInput}
+                          onChange={(e) => setBabyStepInput(e.target.value)}
+                          className="text-sm"
+                        />
+                        <div className="flex justify-end space-x-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setEditingMetricId(null)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button 
+                            size="sm"
+                            onClick={() => handleAddBabyStep(metric.id)}
+                          >
+                            Save
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        {hasBabyStep ? (
+                          <p className="text-sm">{metricRating?.babyStep}</p>
+                        ) : (
+                          <div className="flex items-center">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              className="text-xs flex items-center"
+                              onClick={() => {
+                                setEditingMetricId(metric.id);
+                                setBabyStepInput("");
+                              }}
+                            >
+                              <Plus className="h-3 w-3 mr-1" />
+                              Add baby step
+                            </Button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
               </HoverCardContent>
             </HoverCard>
