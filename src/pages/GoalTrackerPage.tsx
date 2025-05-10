@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
-import { useWellnessTracking } from "@/hooks/useWellnessTracking";
+import { useWellnessTracking } from "@/hooks/wellness/useWellnessTracking";
 import { Progress } from "@/components/ui/progress";
 import BabyStepsHistory from "@/components/BabyStepsHistory";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

@@ -3,7 +3,7 @@ import Layout from "@/components/Layout";
 import { Progress } from "@/components/ui/progress";
 import WellnessTrackingForm from "@/components/WellnessTrackingForm";
 import WellnessResultsView from "@/components/WellnessResultsView";
-import { useWellnessTracking } from "@/hooks/useWellnessTracking";
+import { useWellnessTracking } from "@/hooks/wellness/useWellnessTracking";
 import WellnessSummary from "@/components/WellnessSummary";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
