@@ -46,8 +46,17 @@ const App = () => {
         throw new Error("Root element not found");
       }
       
-      // Add this line to handle CORS if needed
-      document.domain = document.domain.split('.').slice(-2).join('.');
+      // Safely handle domain for cross-origin purposes - only attempt if there are multiple parts
+      try {
+        const hostParts = window.location.hostname.split('.');
+        if (hostParts.length > 2 && !['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+          // Only set document.domain for subdomains, not for top-level domains
+          document.domain = hostParts.slice(-2).join('.');
+        }
+      } catch (domainError) {
+        console.warn("Domain setup skipped:", domainError);
+        // Non-critical error, continue initialization
+      }
       
       // Simulate initialization process
       const initApp = setTimeout(() => {
