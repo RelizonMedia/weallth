@@ -11,14 +11,17 @@ localStorage.setItem("darkMode", "false");
 const currentHostname = window.location.hostname;
 const isPreviewDomain = currentHostname.includes('preview--') || 
                         currentHostname.includes('lovable.app') || 
+                        currentHostname.includes('lovable.dev') ||
                         currentHostname === 'weallth.ai';
 const isProductionDomain = currentHostname === 'weallth.ai';
 
 // Log application startup with domain information
-console.log(`Initializing Weallth application on ${currentHostname}...`);
-console.log(`Current theme: ${localStorage.getItem("theme") || "light"}`);
-console.log(`Is preview or production domain: ${isPreviewDomain}`);
-console.log(`Is production domain: ${isProductionDomain}`);
+console.log(`[STARTUP] Initializing Weallth application on ${currentHostname}...`);
+console.log(`[STARTUP] Current theme: ${localStorage.getItem("theme") || "light"}`);
+console.log(`[STARTUP] Is preview domain: ${isPreviewDomain}`);
+console.log(`[STARTUP] Is production domain: ${isProductionDomain}`);
+console.log(`[STARTUP] Window size: ${window.innerWidth}x${window.innerHeight}`);
+console.log(`[STARTUP] User agent: ${navigator.userAgent}`);
 
 // Force HTTPS redirection on production domain
 if (isProductionDomain && window.location.protocol !== 'https:') {
@@ -27,6 +30,7 @@ if (isProductionDomain && window.location.protocol !== 'https:') {
 
 // Create app fallback content in case of critical render failure
 const createFallbackContent = (error: any) => {
+  console.error("[CRITICAL] Rendering fallback content due to error:", error);
   return `
     <div style="padding: 20px; margin: 20px; font-family: system-ui, -apple-system, sans-serif;">
       <h1>Weallth</h1>
@@ -46,6 +50,7 @@ const createFallbackContent = (error: any) => {
 
 // Production domain specific fallback
 const createProductionFallback = () => {
+  console.log("[FALLBACK] Rendering production fallback content");
   return `
     <div style="padding: 20px; margin: 20px; font-family: system-ui, -apple-system, sans-serif; text-align: center; max-width: 500px; margin: 0 auto;">
       <h1 style="color: #6366f1;">Weallth</h1>
@@ -64,7 +69,7 @@ const root = document.getElementById("root");
 
 // Add detailed error logging
 if (!root) {
-  console.error("Critical Error: Root element not found. Cannot mount React application.");
+  console.error("[CRITICAL] Root element not found. Cannot mount React application.");
   // Create a fallback element to show error
   const errorDiv = document.createElement('div');
   errorDiv.style.padding = '20px';
@@ -86,7 +91,8 @@ if (!root) {
   document.body.appendChild(errorDiv);
 } else {
   try {
-    // Apply light theme to document
+    // Force light mode for preview and development
+    console.log("[STARTUP] Setting up document styles and theme");
     document.documentElement.classList.remove('dark');
     document.documentElement.classList.add('light');
     
@@ -95,6 +101,15 @@ if (!root) {
     if (viewportMeta) {
       viewportMeta.setAttribute('content', 
         'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+      console.log("[STARTUP] Viewport meta tag configured");
+    } else {
+      console.warn("[STARTUP] Viewport meta tag not found");
+      // Add viewport meta tag if missing
+      const meta = document.createElement('meta');
+      meta.name = 'viewport';
+      meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+      document.head.appendChild(meta);
+      console.log("[STARTUP] Viewport meta tag added");
     }
     
     // Force document and body styles for proper rendering
@@ -102,13 +117,43 @@ if (!root) {
     document.body.style.minHeight = '100%';
     document.body.style.margin = '0';
     
-    console.log(`Mounting Weallth application with light theme on ${currentHostname}...`);
+    console.log(`[STARTUP] Mounting Weallth application with light theme on ${currentHostname}...`);
     
     // Try to render using React
     try {
+      // Add diagnostic visible element before React mount
+      const diagnosticEl = document.createElement('div');
+      diagnosticEl.id = 'pre-react-diagnostic';
+      diagnosticEl.style.position = 'fixed';
+      diagnosticEl.style.bottom = '10px';
+      diagnosticEl.style.right = '10px';
+      diagnosticEl.style.padding = '5px';
+      diagnosticEl.style.backgroundColor = 'rgba(0,0,0,0.7)';
+      diagnosticEl.style.color = 'white';
+      diagnosticEl.style.fontSize = '10px';
+      diagnosticEl.style.zIndex = '9999';
+      diagnosticEl.textContent = `Init: ${currentHostname} (${new Date().toISOString().substring(11, 19)})`;
+      document.body.appendChild(diagnosticEl);
+      
+      console.log("[STARTUP] Creating React root and mounting app");
       const reactRoot = createRoot(root);
       reactRoot.render(<App />);
-      console.log("Weallth application mounted successfully");
+      console.log("[STARTUP] Weallth application mounted successfully");
+      
+      // Update diagnostic element after successful mount
+      setTimeout(() => {
+        if (document.getElementById('pre-react-diagnostic')) {
+          document.getElementById('pre-react-diagnostic')!.textContent = 
+            `Mounted: ${currentHostname} (${new Date().toISOString().substring(11, 19)})`;
+          // Remove after a few seconds
+          setTimeout(() => {
+            const el = document.getElementById('pre-react-diagnostic');
+            if (el && el.parentNode) {
+              el.parentNode.removeChild(el);
+            }
+          }, 5000);
+        }
+      }, 1000);
       
       // For production domain, ensure a navigation is possible to auth
       if (isProductionDomain) {
@@ -116,7 +161,7 @@ if (!root) {
         setTimeout(() => {
           const hasContent = document.body.innerText.length > 100;
           if (!hasContent) {
-            console.log("Detected potential blank page on production domain - adding fallback links");
+            console.log("[STARTUP] Detected potential blank page on production domain - adding fallback links");
             const navDiv = document.createElement('div');
             navDiv.style.position = 'fixed';
             navDiv.style.bottom = '20px';
@@ -136,7 +181,7 @@ if (!root) {
         }, 2000);
       }
     } catch (reactError) {
-      console.error(`React render error on ${currentHostname}:`, reactError);
+      console.error(`[CRITICAL] React render error on ${currentHostname}:`, reactError);
       
       if (isProductionDomain) {
         // Special handling for production domain - just show auth link
@@ -148,13 +193,13 @@ if (!root) {
       
       // Try to report the error (can be expanded with analytics)
       try {
-        console.error("React render error:", reactError);
+        console.error("[CRITICAL] React render error details:", reactError);
       } catch (e) {
         // Silent catch for any reporting errors
       }
     }
   } catch (error) {
-    console.error(`Critical initialization error on ${currentHostname}:`, error);
+    console.error(`[CRITICAL] Critical initialization error on ${currentHostname}:`, error);
     if (isProductionDomain) {
       root.innerHTML = createProductionFallback();
     } else if (root) {

@@ -13,6 +13,7 @@ interface LayoutProps {
 const Layout = ({ children }: LayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
+  const [appReady, setAppReady] = useState(false);
   
   // On mobile, sidebar is only shown when explicitly toggled
   const effectiveSidebarOpen = isMobile ? sidebarOpen : false;
@@ -36,18 +37,26 @@ const Layout = ({ children }: LayoutProps) => {
     // Check if we're on a preview domain or production domain
     const isPreviewOrProdDomain = window.location.hostname.includes('preview--') || 
                                  window.location.hostname.includes('lovable.app') ||
+                                 window.location.hostname.includes('lovable.dev') ||
                                  window.location.hostname === 'weallth.ai';
     
     if (isPreviewOrProdDomain) {
-      console.log("Preview or production domain detected, ensuring proper rendering");
+      console.log("[Layout] Preview or production domain detected, ensuring proper rendering");
       // Force a style update to ensure rendering
       document.documentElement.style.height = '100%';
       document.body.style.minHeight = '100%';
       document.body.style.margin = '0';
     }
     
+    // Mark app as ready after a short delay
+    const timer = setTimeout(() => {
+      setAppReady(true);
+      console.log("[Layout] App marked as ready");
+    }, 500);
+    
     return () => {
       // Clean up when component unmounts
+      clearTimeout(timer);
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
     };
@@ -55,6 +64,15 @@ const Layout = ({ children }: LayoutProps) => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Diagnostic overlay for preview/editor domains */}
+      {window.location.hostname.includes('lovable.dev') && !appReady && (
+        <div className="fixed inset-0 bg-background flex flex-col items-center justify-center z-50">
+          <div className="animate-spin h-8 w-8 border-4 border-primary rounded-full border-t-transparent mb-4"></div>
+          <p className="text-lg font-medium">Loading Weallth Application</p>
+          <p className="text-sm text-muted-foreground mt-2">Initializing components...</p>
+        </div>
+      )}
+      
       <Sidebar isOpen={effectiveSidebarOpen} />
       <div className={cn(
         "transition-all duration-300 ease-in-out w-full max-w-full",

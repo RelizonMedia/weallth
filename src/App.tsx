@@ -18,6 +18,7 @@ import NotFound from "@/pages/NotFound";
 import AICompanionPage from "@/pages/AICompanionPage";
 import MarketplacePage from "@/pages/MarketplacePage";
 import MyWellnessSpaces from "@/pages/MyWellnessSpaces";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,6 +30,30 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  // Add diagnostic logging for App component mount
+  useEffect(() => {
+    const hostname = window.location.hostname;
+    console.log(`[App] App component mounted on ${hostname} at ${new Date().toISOString()}`);
+    console.log(`[App] Window dimensions: ${window.innerWidth}x${window.innerHeight}`);
+    
+    // Log document ready state
+    console.log(`[App] Document ready state: ${document.readyState}`);
+    
+    // Check for potential rendering issues
+    if (hostname.includes('lovable.dev') || hostname.includes('lovable.app')) {
+      console.log('[App] Running on Lovable domain - performing additional diagnostics');
+      
+      // Check if styles are loading correctly
+      const styleSheets = document.styleSheets;
+      console.log(`[App] Number of style sheets loaded: ${styleSheets.length}`);
+      
+      // Check for critical DOM elements
+      const rootElement = document.getElementById('root');
+      console.log(`[App] Root element exists: ${!!rootElement}`);
+      console.log(`[App] Root element dimensions: ${rootElement?.clientWidth || 0}x${rootElement?.clientHeight || 0}`);
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Router>

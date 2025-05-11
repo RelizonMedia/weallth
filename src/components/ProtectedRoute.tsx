@@ -31,6 +31,14 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         userMetadata: user.user_metadata
       });
     }
+    
+    // For Lovable.dev domain, log additional diagnostic information
+    if (hostname.includes('lovable.dev') || hostname.includes('lovable.app')) {
+      console.log('[ProtectedRoute] Running on Lovable domain - additional diagnostics:');
+      console.log('[ProtectedRoute] Document readyState:', document.readyState);
+      console.log('[ProtectedRoute] Window dimensions:', window.innerWidth, 'x', window.innerHeight);
+      console.log('[ProtectedRoute] DOM content loaded:', document.readyState !== 'loading');
+    }
   }, [loading, user, authTimeout, hostname, pathname]);
   
   // Add a timeout to prevent infinite loading state
@@ -77,6 +85,17 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         <p className="text-xs text-muted-foreground mt-2">Domain: {hostname}</p>
         <p className="text-xs text-muted-foreground">Path: {pathname}</p>
         <p className="text-xs text-muted-foreground">Mount time: {mountTimestamp}</p>
+        
+        {/* Add diagnostic information for preview/editing domains */}
+        {(hostname.includes('lovable.dev') || hostname.includes('lovable.app')) && (
+          <div className="mt-4 p-3 border border-dashed border-amber-500 rounded bg-amber-50 text-amber-800 max-w-md mx-auto">
+            <p className="font-semibold text-sm">Preview Diagnostic Information</p>
+            <p className="text-xs mt-1">Browser: {navigator.userAgent.substring(0, 80)}</p>
+            <p className="text-xs">Screen: {window.screen.width}x{window.screen.height}</p>
+            <p className="text-xs">Window: {window.innerWidth}x{window.innerHeight}</p>
+            <p className="text-xs mt-1">If screen appears blank, try refreshing the page</p>
+          </div>
+        )}
       </div>
     );
   }
