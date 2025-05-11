@@ -1,4 +1,4 @@
-import { Bell, Menu, User, Activity, Wallet, Target, Users, Mail } from "lucide-react";
+import { Bell, Menu, User, Activity, Wallet, Target, Users, Mail, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
@@ -40,9 +40,12 @@ const Header = ({
           <Menu className="h-5 w-5" />
         </Button>
         
-        <div className="font-display text-2xl text-wellness-purple mr-auto">
-          <Link to="/">
-            We<span className="text-wellness-teal">allth</span>
+        <div className="font-display text-2xl text-wellness-purple mr-auto flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-2">
+            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-wellness-purple to-wellness-teal flex items-center justify-center">
+              <Star className="h-4 w-4 text-white" />
+            </div>
+            <span>We<span className="text-wellness-teal">allth</span></span>
           </Link>
         </div>
 

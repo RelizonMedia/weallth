@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { demoWellnessData } from "@/data/wellnessMetrics";
@@ -17,6 +16,9 @@ import WellnessSummarySection from "@/components/home/WellnessSummarySection";
 import WellnessProgressChart from "@/components/home/WellnessProgressChart";
 import AiCompanionCallout from "@/components/home/AiCompanionCallout";
 import MarketplaceSection from "@/components/home/MarketplaceSection";
+
+// Add custom styles for our logo animations
+import "./index-styles.css";
 
 const Index = () => {
   const [wellnessData, setWellnessData] = useState(demoWellnessData);
