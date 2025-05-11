@@ -43,7 +43,7 @@ const Header = ({
         <div className="font-display text-2xl text-wellness-purple mr-auto flex items-center space-x-2">
           <Link to="/" className="flex items-center space-x-2">
             <div className="h-8 w-8 rounded-full bg-gradient-to-br from-wellness-purple to-wellness-teal flex items-center justify-center">
-              <Star className="h-4 w-4 text-white" />
+              <span className="text-white font-display font-bold text-sm">W</span>
             </div>
             <span>We<span className="text-wellness-teal">allth</span></span>
           </Link>
