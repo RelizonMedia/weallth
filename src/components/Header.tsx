@@ -4,9 +4,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
+
 interface HeaderProps {
   toggleSidebar: () => void;
 }
+
 const Header = ({
   toggleSidebar
 }: HeaderProps) => {
@@ -16,6 +18,7 @@ const Header = ({
     user
   } = useAuth();
   const navigate = useNavigate();
+  
   const handleProfileClick = () => {
     navigate('/profile');
   };
@@ -34,6 +37,7 @@ const Header = ({
   const handleMessages = () => {
     navigate('/messages');
   };
+  
   return <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
       <div className="flex h-16 items-center px-4 md:px-6">
         <Button variant="ghost" size="icon" className="md:hidden mr-2" onClick={toggleSidebar}>
@@ -112,4 +116,5 @@ const Header = ({
       </div>
     </header>;
 };
+
 export default Header;

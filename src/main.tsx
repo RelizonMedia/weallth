@@ -117,69 +117,54 @@ if (!root) {
     document.body.style.minHeight = '100%';
     document.body.style.margin = '0';
     
+    // Add a temporary diagnostic element to indicate loading in progress
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.id = 'lovable-loading-indicator';
+    loadingIndicator.style.position = 'fixed';
+    loadingIndicator.style.top = '0';
+    loadingIndicator.style.left = '0';
+    loadingIndicator.style.width = '100%';
+    loadingIndicator.style.height = '100%';
+    loadingIndicator.style.background = '#ffffff';
+    loadingIndicator.style.zIndex = '9999';
+    loadingIndicator.style.display = 'flex';
+    loadingIndicator.style.flexDirection = 'column';
+    loadingIndicator.style.alignItems = 'center';
+    loadingIndicator.style.justifyContent = 'center';
+    loadingIndicator.innerHTML = `
+      <div style="text-align: center;">
+        <h1 style="color: #6366f1; font-family: system-ui, -apple-system, sans-serif;">Weallth</h1>
+        <div style="margin: 20px 0;">
+          <div style="width: 40px; height: 40px; border: 4px solid #e5e7eb; border-top-color: #6366f1; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+        </div>
+        <p style="font-family: system-ui, -apple-system, sans-serif;">Loading your wellness journey...</p>
+        <p style="font-size: 12px; color: #6b7280; font-family: system-ui, -apple-system, sans-serif;">${currentHostname}</p>
+      </div>
+      <style>
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      </style>
+    `;
+    document.body.appendChild(loadingIndicator);
+    
     console.log(`[STARTUP] Mounting Weallth application with light theme on ${currentHostname}...`);
     
     // Try to render using React
     try {
-      // Add diagnostic visible element before React mount
-      const diagnosticEl = document.createElement('div');
-      diagnosticEl.id = 'pre-react-diagnostic';
-      diagnosticEl.style.position = 'fixed';
-      diagnosticEl.style.bottom = '10px';
-      diagnosticEl.style.right = '10px';
-      diagnosticEl.style.padding = '5px';
-      diagnosticEl.style.backgroundColor = 'rgba(0,0,0,0.7)';
-      diagnosticEl.style.color = 'white';
-      diagnosticEl.style.fontSize = '10px';
-      diagnosticEl.style.zIndex = '9999';
-      diagnosticEl.textContent = `Init: ${currentHostname} (${new Date().toISOString().substring(11, 19)})`;
-      document.body.appendChild(diagnosticEl);
-      
       console.log("[STARTUP] Creating React root and mounting app");
       const reactRoot = createRoot(root);
       reactRoot.render(<App />);
       console.log("[STARTUP] Weallth application mounted successfully");
       
-      // Update diagnostic element after successful mount
+      // Remove loading indicator after successful mount
       setTimeout(() => {
-        if (document.getElementById('pre-react-diagnostic')) {
-          document.getElementById('pre-react-diagnostic')!.textContent = 
-            `Mounted: ${currentHostname} (${new Date().toISOString().substring(11, 19)})`;
-          // Remove after a few seconds
-          setTimeout(() => {
-            const el = document.getElementById('pre-react-diagnostic');
-            if (el && el.parentNode) {
-              el.parentNode.removeChild(el);
-            }
-          }, 5000);
+        const loadingEl = document.getElementById('lovable-loading-indicator');
+        if (loadingEl && loadingEl.parentNode) {
+          loadingEl.parentNode.removeChild(loadingEl);
         }
       }, 1000);
       
-      // For production domain, ensure a navigation is possible to auth
-      if (isProductionDomain) {
-        // Add a backup navigation option after a brief delay
-        setTimeout(() => {
-          const hasContent = document.body.innerText.length > 100;
-          if (!hasContent) {
-            console.log("[STARTUP] Detected potential blank page on production domain - adding fallback links");
-            const navDiv = document.createElement('div');
-            navDiv.style.position = 'fixed';
-            navDiv.style.bottom = '20px';
-            navDiv.style.right = '20px';
-            navDiv.style.padding = '10px';
-            navDiv.style.backgroundColor = 'rgba(255,255,255,0.8)';
-            navDiv.style.borderRadius = '8px';
-            navDiv.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
-            navDiv.innerHTML = `
-              <strong>Navigation:</strong>
-              <div style="margin-top: 8px;">
-                <a href="/auth" style="display: block; padding: 8px 16px; background-color: #6366f1; color: white; text-decoration: none; border-radius: 4px; text-align: center;">Sign In / Register</a>
-              </div>
-            `;
-            document.body.appendChild(navDiv);
-          }
-        }, 2000);
-      }
     } catch (reactError) {
       console.error(`[CRITICAL] React render error on ${currentHostname}:`, reactError);
       
