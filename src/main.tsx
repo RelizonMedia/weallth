@@ -28,6 +28,11 @@ if (isProductionDomain && window.location.protocol !== 'https:') {
   window.location.href = 'https://weallth.ai' + window.location.pathname + window.location.search;
 }
 
+// Handle window-level errors to log them
+window.addEventListener('error', (event) => {
+  console.error('[CRITICAL] Window error caught:', event.error || event.message);
+});
+
 // Create app fallback content in case of critical render failure
 const createFallbackContent = (error: any) => {
   console.error("[CRITICAL] Rendering fallback content due to error:", error);
@@ -114,8 +119,9 @@ if (!root) {
     
     // Force document and body styles for proper rendering
     document.documentElement.style.height = '100%';
-    document.body.style.minHeight = '100%';
+    document.body.style.height = '100%';
     document.body.style.margin = '0';
+    document.body.style.display = 'block';
     
     // Add a temporary diagnostic element to indicate loading in progress
     const loadingIndicator = document.createElement('div');
@@ -150,39 +156,41 @@ if (!root) {
     
     console.log(`[STARTUP] Mounting Weallth application with light theme on ${currentHostname}...`);
     
-    // Try to render using React
-    try {
-      console.log("[STARTUP] Creating React root and mounting app");
-      const reactRoot = createRoot(root);
-      reactRoot.render(<App />);
-      console.log("[STARTUP] Weallth application mounted successfully");
-      
-      // Remove loading indicator after successful mount
-      setTimeout(() => {
-        const loadingEl = document.getElementById('lovable-loading-indicator');
-        if (loadingEl && loadingEl.parentNode) {
-          loadingEl.parentNode.removeChild(loadingEl);
-        }
-      }, 1000);
-      
-    } catch (reactError) {
-      console.error(`[CRITICAL] React render error on ${currentHostname}:`, reactError);
-      
-      if (isProductionDomain) {
-        // Special handling for production domain - just show auth link
-        root.innerHTML = createProductionFallback();
-      } else {
-        // Create a more detailed fallback UI in case of React failure
-        root.innerHTML = createFallbackContent(reactError);
-      }
-      
-      // Try to report the error (can be expanded with analytics)
+    // Try to render using React after a short delay (helps with some race conditions)
+    setTimeout(() => {
       try {
-        console.error("[CRITICAL] React render error details:", reactError);
-      } catch (e) {
-        // Silent catch for any reporting errors
+        console.log("[STARTUP] Creating React root and mounting app");
+        const reactRoot = createRoot(root);
+        reactRoot.render(<App />);
+        console.log("[STARTUP] Weallth application mounted successfully");
+        
+        // Remove loading indicator after successful mount
+        setTimeout(() => {
+          const loadingEl = document.getElementById('lovable-loading-indicator');
+          if (loadingEl && loadingEl.parentNode) {
+            loadingEl.parentNode.removeChild(loadingEl);
+          }
+        }, 1000);
+        
+      } catch (reactError) {
+        console.error(`[CRITICAL] React render error on ${currentHostname}:`, reactError);
+        
+        if (isProductionDomain) {
+          // Special handling for production domain - just show auth link
+          root.innerHTML = createProductionFallback();
+        } else {
+          // Create a more detailed fallback UI in case of React failure
+          root.innerHTML = createFallbackContent(reactError);
+        }
+        
+        // Try to report the error (can be expanded with analytics)
+        try {
+          console.error("[CRITICAL] React render error details:", reactError);
+        } catch (e) {
+          // Silent catch for any reporting errors
+        }
       }
-    }
+    }, 50);
   } catch (error) {
     console.error(`[CRITICAL] Critical initialization error on ${currentHostname}:`, error);
     if (isProductionDomain) {
