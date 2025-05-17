@@ -1,43 +1,100 @@
 
-import { useState, useEffect } from "react";
-import { useToast as useShadcnToast } from "@/components/ui/use-toast";
+import { useState } from "react";
+// Import directly from the UI component to avoid circular dependencies
+import {
+  Toast,
+  ToastActionElement,
+  ToastProps,
+} from "@/components/ui/toast";
 
-interface ToastOptions {
-  title?: string;
-  description?: string;
-  variant?: "default" | "destructive";
-  duration?: number;
+export type ToasterToast = ToastProps & {
+  id: string;
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  action?: ToastActionElement;
+};
+
+const TOAST_LIMIT = 20;
+const TOAST_REMOVE_DELAY = 1000;
+
+type ToastState = {
+  toasts: ToasterToast[];
+};
+
+// Create a proper context-free implementation
+let count = 0;
+let listeners: Array<(state: ToastState) => void> = [];
+
+const toastState: ToastState = {
+  toasts: [],
+};
+
+function update(state: ToastState) {
+  toastState.toasts = state.toasts;
+  listeners.forEach((listener) => {
+    listener(toastState);
+  });
 }
 
-// Export a proper hook implementation
+function subscribe(listener: (state: ToastState) => void) {
+  listeners.push(listener);
+  return () => {
+    listeners = listeners.filter((l) => l !== listener);
+  };
+}
+
 export function useToast() {
-  return useShadcnToast();
+  const [state, setState] = useState<ToastState>({ toasts: [] });
+
+  useState(() => {
+    const unsubscribe = subscribe(setState);
+    return unsubscribe;
+  });
+
+  function dismissToast(toastId: string) {
+    update({
+      toasts: toastState.toasts.filter((toast) => {
+        if (toast.id === toastId) {
+          return false;
+        }
+        return true;
+      }),
+    });
+  }
+
+  function toast(props: Omit<ToasterToast, "id">) {
+    const id = count++;
+    const newToast = { id: String(id), ...props };
+
+    update({
+      toasts: [newToast, ...toastState.toasts].slice(0, TOAST_LIMIT),
+    });
+
+    return {
+      id: String(id),
+      dismiss: () => dismissToast(String(id)),
+      update: (props: ToasterToast) => {
+        update({
+          toasts: toastState.toasts.map((t) =>
+            t.id === String(id) ? { ...t, ...props } : t
+          ),
+        });
+      },
+    };
+  }
+
+  return {
+    toast,
+    toasts: state.toasts,
+    dismiss: dismissToast,
+  };
 }
 
 // Standalone toast function
-export const toast = (options: ToastOptions) => {
-  // Create an element to dispatch a custom event
-  const toastEvent = new CustomEvent("toast", { 
-    detail: options 
-  });
-  
-  // Dispatch the event
-  document.dispatchEvent(toastEvent);
+export const toast = (props: Omit<ToasterToast, "id">) => {
+  const { toast: toastFunc } = useToast();
+  return toastFunc(props);
 };
 
-// Add listener to handle toast events
-if (typeof window !== 'undefined') {
-  // Avoid adding multiple listeners
-  const hasListener = (window as any).__hasToastListener;
-  
-  if (!hasListener) {
-    document.addEventListener("toast", ((e: CustomEvent<ToastOptions>) => {
-      const { toast } = useShadcnToast();
-      if (toast) {
-        toast(e.detail);
-      }
-    }) as EventListener);
-    
-    (window as any).__hasToastListener = true;
-  }
-}
+// Export types
+export type { ToastState };
