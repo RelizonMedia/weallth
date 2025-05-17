@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 // Import directly from the UI component to avoid circular dependencies
 import {
   Toast,
@@ -21,14 +21,13 @@ type ToastState = {
   toasts: ToasterToast[];
 };
 
-// Create a proper context-free implementation
+// Create a singleton pattern implementation to avoid recursion
+// This avoids the circular dependency problem
 let count = 0;
-let listeners: Array<(state: ToastState) => void> = [];
+let listeners: ((state: ToastState) => void)[] = [];
+const toastState: ToastState = { toasts: [] };
 
-const toastState: ToastState = {
-  toasts: [],
-};
-
+// Internal functions for managing toast state
 function update(state: ToastState) {
   toastState.toasts = state.toasts;
   listeners.forEach((listener) => {
@@ -43,58 +42,52 @@ function subscribe(listener: (state: ToastState) => void) {
   };
 }
 
+// Create a standalone toast function that doesn't use the hook
+function createToast(props: Omit<ToasterToast, "id">) {
+  const id = String(count++);
+  const newToast = { id, ...props };
+
+  update({
+    toasts: [newToast, ...toastState.toasts].slice(0, TOAST_LIMIT),
+  });
+
+  return {
+    id,
+    dismiss: () => dismissToast(id),
+    update: (props: ToasterToast) => {
+      update({
+        toasts: toastState.toasts.map((t) =>
+          t.id === id ? { ...t, ...props } : t
+        ),
+      });
+    },
+  };
+}
+
+function dismissToast(toastId: string) {
+  update({
+    toasts: toastState.toasts.filter((toast) => toast.id !== toastId),
+  });
+}
+
+// The hook implementation that subscribes to state changes
 export function useToast() {
   const [state, setState] = useState<ToastState>({ toasts: [] });
 
-  useState(() => {
+  useEffect(() => {
     const unsubscribe = subscribe(setState);
     return unsubscribe;
-  });
-
-  function dismissToast(toastId: string) {
-    update({
-      toasts: toastState.toasts.filter((toast) => {
-        if (toast.id === toastId) {
-          return false;
-        }
-        return true;
-      }),
-    });
-  }
-
-  function toast(props: Omit<ToasterToast, "id">) {
-    const id = count++;
-    const newToast = { id: String(id), ...props };
-
-    update({
-      toasts: [newToast, ...toastState.toasts].slice(0, TOAST_LIMIT),
-    });
-
-    return {
-      id: String(id),
-      dismiss: () => dismissToast(String(id)),
-      update: (props: ToasterToast) => {
-        update({
-          toasts: toastState.toasts.map((t) =>
-            t.id === String(id) ? { ...t, ...props } : t
-          ),
-        });
-      },
-    };
-  }
+  }, []);
 
   return {
-    toast,
+    toast: createToast,
     toasts: state.toasts,
     dismiss: dismissToast,
   };
 }
 
-// Standalone toast function
-export const toast = (props: Omit<ToasterToast, "id">) => {
-  const { toast: toastFunc } = useToast();
-  return toastFunc(props);
-};
+// Standalone toast function (IMPORTANT: this doesn't use the hook to prevent recursion)
+export const toast = createToast;
 
 // Export types
 export type { ToastState };
